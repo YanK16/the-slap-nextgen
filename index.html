@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Slap NextGen 👏</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            slap: {
+              50: '#fff1f2',
+              100: '#ffe4e6',
+              200: '#fecdd3',
+              300: '#fda4af',
+              400: '#fb7185',
+              500: '#f43f5e',
+              600: '#e11d48',
+              700: '#be123c',
+              800: '#9f1239',
+              900: '#881337',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    .slap-gradient {
+      background: linear-gradient(135deg, #f43f5e 0%, #a855f7 100%);
+    }
+    .slap-glow {
+      box-shadow: 0 0 20px rgba(244, 63, 94, 0.35);
+    }
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+    }
+    .dark .glass-panel {
+      background: rgba(24, 24, 27, 0.85);
+      backdrop-filter: blur(12px);
+    }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #f43f5e;
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 dark:bg-zinc-950 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col font-sans transition-colors duration-200">
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Header -->
+  <header class="sticky top-0 z-40 glass-panel border-b border-slate-200 dark:border-zinc-800 transition-colors">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      <!-- Logo & Brand -->
+      <div class="flex items-center gap-3 cursor-pointer" onclick="app.navigate('feed')">
+        <div class="w-10 h-10 slap-gradient rounded-2xl flex items-center justify-center text-2xl shadow-lg transform hover:scale-105 transition-transform text-white">
+          👏
+        </div>
+        <div>
+          <h1 class="font-black text-xl tracking-tight bg-gradient-to-r from-slap-600 via-pink-500 to-purple-600 bg-clip-text text-transparent">
+            The Slap <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-slap-100 dark:bg-slap-950/70 text-slap-700 dark:text-slap-300 ml-1">NextGen</span>
+          </h1>
+          <p class="text-[10px] text-slate-500 dark:text-slate-400 font-medium tracking-wide">WHAT'S YOUR MOOD TODAY?</p>
+        </div>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="hidden md:flex flex-1 max-w-md relative">
+        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+        <input type="text" id="search-input" placeholder="Buscar en The Slap, personas o #hashtags..." 
+          class="w-full pl-10 pr-4 py-2 rounded-full bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 focus:outline-none focus:ring-2 focus:ring-slap-500 text-sm transition-all">
+      </div>
+
+      <!-- Header Actions -->
+      <div class="flex items-center gap-3">
+        <button onclick="app.toggleDarkMode()" class="p-2.5 rounded-full bg-slate-200/60 dark:bg-zinc-800 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-zinc-700 transition" title="Cambiar tema">
+          <i id="theme-icon" class="fa-solid fa-moon"></i>
+        </button>
+
+        <div id="auth-nav-container" class="flex items-center gap-2">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- Left Sidebar -->
+    <aside class="lg:col-span-3 space-y-4">
+      <!-- Profile Summary Card -->
+      <div id="sidebar-profile-card" class="bg-white dark:bg-zinc-900 rounded-2xl p-5 border border-slate-200/80 dark:border-zinc-800/80 shadow-sm">
+        <!-- JS Populated -->
+      </div>
+
+      <!-- Quick Navigation Menu -->
+      <nav class="bg-white dark:bg-zinc-900 rounded-2xl p-3 border border-slate-200/80 dark:border-zinc-800/80 shadow-sm space-y-1">
+        <button onclick="app.navigate('feed')" id="nav-feed" class="w-full flex items-center gap-3.5 px-4 py-3 rounded-xl font-medium text-sm transition-colors text-slap-600 dark:text-slap-400 bg-slap-50 dark:bg-slap-950/40">
+          <i class="fa-solid fa-hands-clapping text-lg"></i>
+          <span>Feed Principal</span>
+        </button>
+        <button onclick="app.navigate('explore')" id="nav-explore" class="w-full flex items-center gap-3.5 px-4 py-3 rounded-xl font-medium text-sm transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800/60">
+          <i class="fa-solid fa-compass text-lg"></i>
+          <span>Explorar Tendencias</span>
+        </button>
+        <button onclick="app.navigate('my-profile')" id="nav-profile" class="w-full flex items-center gap-3.5 px-4 py-3 rounded-xl font-medium text-sm transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800/60">
+          <i class="fa-solid fa-user text-lg"></i>
+          <span>Mi Perfil Slap</span>
+        </button>
+        <button onclick="app.navigate('settings')" id="nav-settings" class="w-full flex items-center gap-3.5 px-4 py-3 rounded-xl font-medium text-sm transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800/60">
+          <i class="fa-solid fa-gear text-lg"></i>
+          <span>Configuración</span>
+        </button>
+      </nav>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="lg:col-span-6 space-y-5">
+      
+      <!-- Slap Creator Composer -->
+      <div id="slap-composer-container" class="bg-white dark:bg-zinc-900 rounded-2xl p-4 border border-slate-200/80 dark:border-zinc-800/80 shadow-sm space-y-3">
+        <div class="flex items-start gap-3">
+          <img id="composer-user-avatar" src="" alt="Avatar" class="w-11 h-11 rounded-full object-cover border-2 border-slap-500">
+          <div class="flex-1 space-y-3">
+            
+            <!-- Mood Selector -->
+            <div class="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+              <span>Estado de Ánimo:</span>
+              <select id="composer-mood-select" class="bg-slate-100 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-2.5 py-1 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-slap-500">
+                <option value="😊 Épico">😊 Épico</option>
+                <option value="🎭 Dramático">🎭 Dramático</option>
+                <option value="🎤 Cantando">🎤 Cantando</option>
+                <option value="🎬 Actuando">🎬 Actuando</option>
+                <option value="🤯 Sorprendido">🤯 Sorprendido</option>
+                <option value="😴 Aburrido">😴 Aburrido</option>
+              </select>
+            </div>
+            
+            <!-- Text Area -->
+            <textarea id="composer-text" rows="3" placeholder="¿Qué está pasando en Hollywood Arts? Publica tu Slap..." 
+              class="w-full bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700/70 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-slap-500 resize-none transition"></textarea>
+            
+            <!-- Media Upload Preview Box -->
+            <div id="media-preview-box" class="hidden p-3 rounded-xl bg-slate-100 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 relative">
+              <button onclick="app.clearComposerMedia()" class="absolute top-2 right-2 p-1.5 rounded-full bg-red-500 text-white text-xs hover:bg-red-600 transition">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+              <div id="media-preview-content" class="max-h-52 overflow-hidden rounded-lg flex items-center justify-center">
+                <!-- Media preview rendered here -->
+              </div>
+            </div>
+
+            <!-- Upload File Inputs (Hidden) -->
+            <input type="file" id="video-file-input" accept="video/*" class="hidden" onchange="app.handleMediaUpload(event, 'video')">
+            <input type="file" id="audio-file-input" accept="audio/*" class="hidden" onchange="app.handleMediaUpload(event, 'audio')">
+
+            <!-- Actions Bar -->
+            <div class="flex items-center justify-between pt-1 flex-wrap gap-2">
+              <div class="flex items-center gap-1.5">
+                <button type="button" onclick="document.getElementById('video-file-input').click()" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 transition">
+                  <i class="fa-solid fa-video text-purple-500"></i>
+                  <span>Vídeo</span>
+                </button>
+                <button type="button" onclick="document.getElementById('audio-file-input').click()" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 transition">
+                  <i class="fa-solid fa-music text-pink-500"></i>
+                  <span>Audio</span>
+                </button>
+                <button type="button" onclick="app.addComposerEmoji('👏')" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 text-base" title="Aplauso">👏</button>
+                <button type="button" onclick="app.addComposerEmoji('🎬')" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 text-base" title="Claqueta">🎬</button>
+              </div>
+
+              <button onclick="app.publishSlap()" class="slap-gradient text-white font-bold px-5 py-2 rounded-xl text-sm shadow-md hover:brightness-105 active:scale-95 transition transform flex items-center gap-2">
+                <span>Slap it!</span> 👏
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- View Title Bar -->
+      <div class="flex items-center justify-between px-1">
+        <h2 id="view-title" class="font-bold text-lg text-slate-800 dark:text-slate-100">Slaps Recientes</h2>
+        <span id="slaps-count-badge" class="text-xs bg-slate-200 dark:bg-zinc-800 px-2.5 py-1 rounded-full text-slate-600 dark:text-slate-400 font-medium">
+          Cargando...
+        </span>
+      </div>
+
+      <!-- Feed / Content Container -->
+      <div id="slap-feed-list" class="space-y-4">
+        <!-- Slaps rendered here -->
+      </div>
+    </main>
+
+    <!-- Right Sidebar -->
+    <aside class="lg:col-span-3 space-y-4 hidden lg:block">
+      <div class="bg-white dark:bg-zinc-900 rounded-2xl p-5 border border-slate-200/80 dark:border-zinc-800/80 shadow-sm">
+        <h3 class="font-bold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-2 mb-3">
+          <i class="fa-solid fa-fire text-slap-500"></i> Tendencias en Hollywood Arts
+        </h3>
+        <div class="space-y-3">
+          <div class="cursor-pointer hover:bg-slate-50 dark:hover:bg-zinc-800/50 p-2 rounded-lg transition" onclick="app.filterHashtag('#SikowitzMonologues')">
+            <p class="text-xs text-slate-400 font-medium">1 · Teatro & Actuación</p>
+            <p class="text-sm font-bold text-slate-800 dark:text-slate-200">#SikowitzMonologues</p>
+            <p class="text-[11px] text-slate-400">12.4k Slaps</p>
+          </div>
+          <div class="cursor-pointer hover:bg-slate-50 dark:hover:bg-zinc-800/50 p-2 rounded-lg transition" onclick="app.filterHashtag('#NoHayRival')">
+            <p class="text-xs text-slate-400 font-medium">2 · Música</p>
+            <p class="text-sm font-bold text-slate-800 dark:text-slate-200">#MakeItShine</p>
+            <p class="text-[11px] text-slate-400">8.9k Slaps</p>
+          </div>
+          <div class="cursor-pointer hover:bg-slate-50 dark:hover:bg-zinc-800/50 p-2 rounded-lg transition" onclick="app.filterHashtag('#TheSlapNextGen')">
+            <p class="text-xs text-slate-400 font-medium">3 · Tendencia General</p>
+            <p class="text-sm font-bold text-slate-800 dark:text-slate-200">#TheSlapNextGen</p>
+            <p class="text-[11px] text-slate-400">6.1k Slaps</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="px-2 text-xs text-slate-400 space-y-2">
+        <p>© 2026 The Slap NextGen · Hollywood Arts 👏</p>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- Modal Auth (Login/Register) -->
+  <div id="auth-modal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl relative animate-in fade-in zoom-in duration-200">
+      <button onclick="app.closeAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-2">
+        <i class="fa-solid fa-xmark text-xl"></i>
+      </button>
+
+      <div class="flex border-b border-slate-200 dark:border-zinc-800 mb-6">
+        <button id="tab-login-btn" onclick="app.switchAuthTab('login')" class="flex-1 pb-3 text-center font-bold text-sm border-b-2 border-slap-500 text-slap-600 dark:text-slap-400">
+          Iniciar Sesión
+        </button>
+        <button id="tab-register-btn" onclick="app.switchAuthTab('register')" class="flex-1 pb-3 text-center font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+          Registrarse 👏
+        </button>
+      </div>
+
+      <!-- Login Form -->
+      <form id="login-form" onsubmit="app.handleLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Nombre de usuario</label>
+          <input type="text" id="login-username" required placeholder="ej: tori_vega" 
+            class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slap-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Contraseña</label>
+          <input type="password" id="login-password" required placeholder="••••••••" 
+            class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slap-500">
+        </div>
+        <button type="submit" class="w-full slap-gradient text-white font-bold py-3 rounded-xl shadow-md hover:brightness-105 active:scale-95 transition">
+          Entrar a The Slap 👏
+        </button>
+      </form>
+
+      <!-- Register Form -->
+      <form id="register-form" onsubmit="app.handleRegister(event)" class="space-y-4 hidden">
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Nombre Completo</label>
+          <input type="text" id="reg-fullname" required placeholder="ej: Cat Valentine" 
+            class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slap-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Usuario (@username)</label>
+          <input type="text" id="reg-username" required placeholder="ej: cat_v" 
+            class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slap-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Biografía</label>
+          <input type="text" id="reg-bio" placeholder="¿Qué te apasiona en Hollywood Arts?" 
+            class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slap-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Color de Avatar</label>
+          <select id="reg-avatar-color" class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slap-500">
+            <option value="f43f5e">Rosa Slap 👏</option>
+            <option value="ec4899">Rosa Chicle Cat 🌸</option>
+            <option value="8b5cf6">Violeta Jade 💜</option>
+            <option value="3b82f6">Azul Beck 💙</option>
+            <option value="f59e0b">Naranja Robbie 🍊</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Contraseña</label>
+          <input type="password" id="reg-password" required placeholder="Crea tu clave secreta" 
+            class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slap-500">
+        </div>
+
+        <div class="p-3 bg-slap-50 dark:bg-slap-950/40 rounded-xl border border-slap-200 dark:border-slap-800/50 text-xs text-slap-800 dark:text-slap-300">
+          <i class="fa-solid fa-shield-check mr-1"></i>
+          Tu perfil comenzará con 0 seguidores, 0 seguidos y 0 slaps. ¡Inicia tu camino a la fama!
+        </div>
+
+        <button type="submit" class="w-full slap-gradient text-white font-bold py-3 rounded-xl shadow-md hover:brightness-105 active:scale-95 transition">
+          Crear mi cuenta en The Slap 👏
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Edit Profile -->
+  <div id="edit-profile-modal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl relative animate-in fade-in zoom-in duration-200 space-y-4">
+      <button onclick="app.closeEditProfileModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-2">
+        <i class="fa-solid fa-xmark text-xl"></i>
+      </button>
+
+      <h3 class="font-extrabold text-lg text-slate-800 dark:text-slate-100 flex items-center gap-2">
+        <i class="fa-solid fa-user-pen text-slap-500"></i> Editar Mi Perfil
+      </h3>
+
+      <form onsubmit="app.saveProfile(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Nombre Completo</label>
+          <input type="text" id="edit-fullname" required
+            class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slap-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Nombre de Usuario (@)</label>
+          <input type="text" id="edit-username" required
+            class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slap-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Biografía</label>
+          <textarea id="edit-bio" rows="3"
+            class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slap-500 resize-none"></textarea>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">URL del Avatar (Opcional)</label>
+          <input type="url" id="edit-avatar-url" placeholder="https://..."
+            class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slap-500">
+        </div>
+
+        <button type="submit" class="w-full slap-gradient text-white font-bold py-3 rounded-xl shadow-md hover:brightness-105 active:scale-95 transition">
+          Guardar Cambios 👏
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- JavaScript Logic -->
+  <script>
+    const DEFAULT_SLAPS = [
+      {
+        id: 'slap-101',
+        author: {
+          name: 'Tori Vega',
+          username: 'tori_vega',
+          avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+          verified: true
+        },
+        mood: '🎤 Cantando',
+        content: '¡Ensayando para el gran showcase de mañana! Si ven a Sikowitz con un coco, avísenme antes de que me lo lance 🥥🎶 #HollywoodArts #MakeItShine',
+        media: null,
+        likes: 342,
+        liked: false,
+        timestamp: 'Hace 15 minutos',
+        comments: [
+          {
+            id: 'comment-201',
+            author: { name: 'Jade West', username: 'jade_w', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&q=80' },
+            text: 'No prometo nada sobre los cocos Vega. 🔪🏼',
+            timestamp: 'Hace 10 min'
+          },
+          {
+            id: 'comment-202',
+            author: { name: 'Cat Valentine', username: 'cat_v', avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=150&q=80' },
+            text: '¡Una vez mi hermano se comió un coco con cáscara y habló en alemán por 3 días! 🌸✨',
+            timestamp: 'Hace 5 min'
+          }
+        ]
+      },
+      {
+        id: 'slap-102',
+        author: {
+          name: 'Beck Oliver',
+          username: 'beck_o',
+          avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=150&q=80',
+          verified: true
+        },
+        mood: '🎭 Dramático',
+        content: 'Acabo de salir de una sesión intensiva de improvisación. Recuerden siempre aplaudir el talento. 👏🎬',
+        media: null,
+        likes: 512,
+        liked: true,
+        timestamp: 'Hace 1 hora',
+        comments: [
+          {
+            id: 'comment-203',
+            author: { name: 'Robbie Shapiro', username: 'robbie_s', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80' },
+            text: 'Rex dice que esa frase merece un aplauso. 🤖👏',
+            timestamp: 'Hace 45 min'
+          }
+        ]
+      }
+    ];
+
+    class TheSlapApp {
+      constructor() {
+        this.currentUser = JSON.parse(localStorage.getItem('theslap_current_user')) || null;
+        this.users = JSON.parse(localStorage.getItem('theslap_users')) || [];
+        this.slaps = JSON.parse(localStorage.getItem('theslap_slaps')) || DEFAULT_SLAPS;
+        this.settings = JSON.parse(localStorage.getItem('theslap_settings')) || {
+          soundEffects: true,
+          notifications: true,
+          privacyMode: false,
+          theme: 'dark'
+        };
+
+        this.currentMediaAttachment = null; // { type: 'video' | 'audio', url: string, name: string }
+        this.currentView = 'feed';
+
+        this.init();
+      }
+
+      init() {
+        this.renderAuthNav();
+        this.renderSidebarProfile();
+        this.renderComposerAvatar();
+        this.renderFeed();
+
+        const searchInput = document.getElementById('search-input');
+        if (searchInput) {
+          searchInput.addEventListener('input', (e) => {
+            this.filterFeed(e.target.value);
+          });
+        }
+      }
+
+      showToast(message, type = 'success') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl shadow-xl text-white font-medium text-sm transition-all transform translate-y-2 opacity-0 duration-300 ${
+          type === 'error' ? 'bg-red-600' : 'bg-zinc-900 border border-slap-500/50'
+        }`;
+        
+        toast.innerHTML = `
+          <span class="text-xl">👏</span>
+          <span class="flex-1">${message}</span>
+        `;
+
+        container.appendChild(toast);
+
+        setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
+        setTimeout(() => {
+          toast.classList.add('opacity-0', '-translate-y-2');
+          setTimeout(() => toast.remove(), 300);
+        }, 3200);
+      }
+
+      playSoundEffect() {
+        if (!this.settings.soundEffects) return;
+        try {
+          const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1);
+          
+          gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+          
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.15);
+        } catch (e) {
+          // Fallback silence
+        }
+      }
+
+      copyToClipboard(text, successMessage) {
+        try {
+          const textarea = document.createElement('textarea');
+          textarea.value = text;
+          textarea.style.position = 'fixed';
+          textarea.style.opacity = '0';
+          document.body.appendChild(textarea);
+          textarea.select();
+          
+          const successful = document.execCommand('copy');
+          document.body.removeChild(textarea);
+
+          if (successful) {
+            this.showToast(successMessage || '¡Copiado al portapapeles!');
+          } else if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(() => {
+              this.showToast(successMessage || '¡Copiado al portapapeles!');
+            });
+          } else {
+            this.showToast('No se pudo copiar el enlace', 'error');
+          }
+        } catch (err) {
+          this.showToast('Error al intentar copiar el enlace', 'error');
+        }
+      }
+
+      copyCommentLink(slapId, commentId) {
+        const url = `${window.location.origin}${window.location.pathname}#slap-${slapId}-comment-${commentId}`;
+        this.copyToClipboard(url, '¡Enlace del comentario copiado al portapapeles! 👏');
+      }
+
+      copySlapLink(slapId) {
+        const url = `${window.location.origin}${window.location.pathname}#slap-${slapId}`;
+        this.copyToClipboard(url, '¡Enlace del Slap copiado al portapapeles! 👏');
+      }
+
+      switchAuthTab(tab) {
+        const loginForm = document.getElementById('login-form');
+        const regForm = document.getElementById('register-form');
+        const loginBtn = document.getElementById('tab-login-btn');
+        const regBtn = document.getElementById('tab-register-btn');
+
+        if (tab === 'login') {
+          loginForm.classList.remove('hidden');
+          regForm.classList.add('hidden');
+          loginBtn.className = "flex-1 pb-3 text-center font-bold text-sm border-b-2 border-slap-500 text-slap-600 dark:text-slap-400";
+          regBtn.className = "flex-1 pb-3 text-center font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-200";
+        } else {
+          loginForm.classList.add('hidden');
+          regForm.classList.remove('hidden');
+          regBtn.className = "flex-1 pb-3 text-center font-bold text-sm border-b-2 border-slap-500 text-slap-600 dark:text-slap-400";
+          loginBtn.className = "flex-1 pb-3 text-center font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-200";
+        }
+      }
+
+      openAuthModal(tab = 'login') {
+        this.switchAuthTab(tab);
+        document.getElementById('auth-modal').classList.remove('hidden');
+      }
+
+      closeAuthModal() {
+        document.getElementById('auth-modal').classList.add('hidden');
+      }
+
+      openEditProfileModal() {
+        if (!this.currentUser) {
+          this.showToast('Debes iniciar sesión para editar tu perfil', 'error');
+          this.openAuthModal('login');
+          return;
+        }
+
+        document.getElementById('edit-fullname').value = this.currentUser.name || '';
+        document.getElementById('edit-username').value = this.currentUser.username || '';
+        document.getElementById('edit-bio').value = this.currentUser.bio || '';
+        document.getElementById('edit-avatar-url').value = this.currentUser.avatar || '';
+
+        document.getElementById('edit-profile-modal').classList.remove('hidden');
+      }
+
+      closeEditProfileModal() {
+        document.getElementById('edit-profile-modal').classList.add('hidden');
+      }
+
+      saveProfile(e) {
+        e.preventDefault();
+        if (!this.currentUser) return;
+
+        const fullName = document.getElementById('edit-fullname').value.trim();
+        const username = document.getElementById('edit-username').value.trim().replace(/^@/, '').toLowerCase();
+        const bio = document.getElementById('edit-bio').value.trim();
+        const avatarUrl = document.getElementById('edit-avatar-url').value.trim();
+
+        if (!fullName || !username) {
+          this.showToast('Por favor completa el nombre y usuario', 'error');
+          return;
+        }
+
+        this.currentUser.name = fullName;
+        this.currentUser.username = username;
+        this.currentUser.bio = bio;
+        if (avatarUrl) {
+          this.currentUser.avatar = avatarUrl;
+        }
+
+        // Save state
+        localStorage.setItem('theslap_current_user', JSON.stringify(this.currentUser));
+        
+        // Update user in users list if exists
+        const idx = this.users.findIndex(u => u.id === this.currentUser.id);
+        if (idx !== -1) {
+          this.users[idx] = { ...this.currentUser };
+          localStorage.setItem('theslap_users', JSON.stringify(this.users));
+        }
+
+        this.closeEditProfileModal();
+        this.showToast('¡Perfil actualizado con éxito! 👏');
+        this.init();
+      }
+
+      handleRegister(e) {
+        e.preventDefault();
+        const fullName = document.getElementById('reg-fullname').value.trim();
+        const rawUsername = document.getElementById('reg-username').value.trim().replace(/^@/, '');
+        const bio = document.getElementById('reg-bio').value.trim();
+        const avatarColor = document.getElementById('reg-avatar-color').value;
+        const password = document.getElementById('reg-password').value;
+
+        if (!fullName || !rawUsername || !password) {
+          this.showToast('Por favor completa todos los campos requeridos', 'error');
+          return;
+        }
+
+        const username = rawUsername.toLowerCase();
+        const existingUser = this.users.find(u => u.username.toLowerCase() === username);
+        if (existingUser) {
+          this.showToast('El nombre de usuario ya está registrado', 'error');
+          return;
+        }
+
+        // Absolute requirement: 0 followers, 0 following, 0 slaps for new registrations
+        const newUser = {
+          id: 'usr_' + Date.now(),
+          name: fullName,
+          username: username,
+          bio: bio || '¡Nuevo estudiante en Hollywood Arts! 👏',
+          avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=${avatarColor}&color=fff&bold=true`,
+          followers: 0,
+          following: 0,
+          slapsCount: 0,
+          password: password,
+          verified: false
+        };
+
+        this.users.push(newUser);
+        localStorage.setItem('theslap_users', JSON.stringify(this.users));
+
+        this.currentUser = newUser;
+        localStorage.setItem('theslap_current_user', JSON.stringify(this.currentUser));
+
+        this.closeAuthModal();
+        this.playSoundEffect();
+        this.showToast(`¡Bienvenido a The Slap, ${fullName}! Tu cuenta ha iniciado con 0 seguidores.`);
+        this.init();
+      }
+
+      handleLogin(e) {
+        e.preventDefault();
+        const username = document.getElementById('login-username').value.trim().replace(/^@/, '').toLowerCase();
+        
+        let user = this.users.find(u => u.username.toLowerCase() === username);
+
+        if (!user && (username === 'tori_vega' || username === 'tori')) {
+          user = {
+            id: 'usr_tori',
+            name: 'Tori Vega',
+            username: 'tori_vega',
+            bio: 'Cantante, actriz y estudiante de Hollywood Arts 🎤',
+            avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+            followers: 1240,
+            following: 180,
+            slapsCount: 89,
+            verified: true
+          };
+        }
+
+        if (user) {
+          this.currentUser = user;
+          localStorage.setItem('theslap_current_user', JSON.stringify(this.currentUser));
+          this.closeAuthModal();
+          this.playSoundEffect();
+          this.showToast(`¡Hola de nuevo, ${user.name}! 👏`);
+          this.init();
+        } else {
+          this.showToast('Usuario no encontrado. Intenta registrarte.', 'error');
+        }
+      }
+
+      logout() {
+        this.currentUser = null;
+        localStorage.removeItem('theslap_current_user');
+        this.showToast('Has cerrado sesión en The Slap');
+        this.init();
+      }
+
+      handleMediaUpload(event, type) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const objectUrl = URL.createObjectURL(file);
+        this.currentMediaAttachment = {
+          type: type, // 'video' or 'audio'
+          url: objectUrl,
+          name: file.name
+        };
+
+        const box = document.getElementById('media-preview-box');
+        const content = document.getElementById('media-preview-content');
+
+        box.classList.remove('hidden');
+
+        if (type === 'video') {
+          content.innerHTML = `
+            <video src="${objectUrl}" controls class="w-full max-h-48 rounded-lg object-contain bg-black"></video>
+          `;
+        } else if (type === 'audio') {
+          content.innerHTML = `
+            <div class="w-full p-4 bg-slate-200 dark:bg-zinc-700 rounded-lg flex flex-col gap-2">
+              <span class="text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2">
+                <i class="fa-solid fa-file-audio text-pink-500"></i> ${file.name}
+              </span>
+              <audio src="${objectUrl}" controls class="w-full h-10"></audio>
+            </div>
+          `;
+        }
+      }
+
+      clearComposerMedia() {
+        this.currentMediaAttachment = null;
+        document.getElementById('video-file-input').value = '';
+        document.getElementById('audio-file-input').value = '';
+        document.getElementById('media-preview-box').classList.add('hidden');
+        document.getElementById('media-preview-content').innerHTML = '';
+      }
+
+      renderAuthNav() {
+        const container = document.getElementById('auth-nav-container');
+        if (this.currentUser) {
+          container.innerHTML = `
+            <div class="flex items-center gap-2 cursor-pointer p-1 rounded-xl hover:bg-slate-100 dark:hover:bg-zinc-800 transition" onclick="app.navigate('my-profile')">
+              <img src="${this.currentUser.avatar}" class="w-9 h-9 rounded-full object-cover border-2 border-slap-500">
+              <span class="text-sm font-semibold hidden sm:inline">${this.currentUser.name}</span>
+            </div>
+            <button onclick="app.openEditProfileModal()" class="p-2 text-slate-400 hover:text-slap-500 transition" title="Editar Perfil">
+              <i class="fa-solid fa-pen-to-square"></i>
+            </button>
+            <button onclick="app.logout()" class="p-2 text-slate-400 hover:text-red-500 transition" title="Cerrar Sesión">
+              <i class="fa-solid fa-right-from-bracket"></i>
+            </button>
+          `;
+        } else {
+          container.innerHTML = `
+            <button onclick="app.openAuthModal('login')" class="text-xs font-bold px-3.5 py-2 rounded-xl border border-slate-300 dark:border-zinc-700 hover:bg-slate-100 dark:hover:bg-zinc-800 transition">
+              Entrar
+            </button>
+            <button onclick="app.openAuthModal('register')" class="text-xs font-bold px-3.5 py-2 rounded-xl slap-gradient text-white shadow hover:brightness-105 transition">
+              Registrarse
+            </button>
+          `;
+        }
+      }
+
+      renderSidebarProfile() {
+        const card = document.getElementById('sidebar-profile-card');
+        if (this.currentUser) {
+          card.innerHTML = `
+            <div class="text-center relative">
+              <div class="w-20 h-20 mx-auto mb-3 rounded-full p-1 slap-gradient shadow-md">
+                <img src="${this.currentUser.avatar}" class="w-full h-full rounded-full object-cover border-2 border-white dark:border-zinc-900">
+              </div>
+              <h2 class="font-extrabold text-base text-slate-800 dark:text-slate-100 flex items-center justify-center gap-1">
+                ${this.currentUser.name}
+                ${this.currentUser.verified ? '<i class="fa-solid fa-circle-check text-slap-500 text-xs"></i>' : ''}
+              </h2>
+              <p class="text-xs text-slate-400">@${this.currentUser.username}</p>
+              <p class="text-xs text-slate-600 dark:text-slate-300 mt-2 italic max-w-xs mx-auto">"${this.currentUser.bio}"</p>
+
+              <!-- Profile Stats -->
+              <div class="grid grid-cols-3 gap-2 border-t border-slate-100 dark:border-zinc-800 pt-3 mt-4 text-center">
+                <div>
+                  <span class="block font-black text-sm text-slate-800 dark:text-slate-100">${this.currentUser.slapsCount || 0}</span>
+                  <span class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Slaps</span>
+                </div>
+                <div>
+                  <span class="block font-black text-sm text-slate-800 dark:text-slate-100">${this.currentUser.followers || 0}</span>
+                  <span class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Seguidores</span>
+                </div>
+                <div>
+                  <span class="block font-black text-sm text-slate-800 dark:text-slate-100">${this.currentUser.following || 0}</span>
+                  <span class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Seguidos</span>
+                </div>
+              </div>
+
+              <button onclick="app.openEditProfileModal()" class="w-full mt-4 text-xs font-bold py-2 px-3 rounded-xl border border-slate-200 dark:border-zinc-700 hover:bg-slate-100 dark:hover:bg-zinc-800 transition flex items-center justify-center gap-2">
+                <i class="fa-solid fa-user-pen"></i> Editar Mi Perfil
+              </button>
+            </div>
+          `;
+        } else {
+          card.innerHTML = `
+            <div class="text-center py-2 space-y-3">
+              <div class="text-4xl">👏</div>
+              <h3 class="font-bold text-sm">¡Bienvenido a Hollywood Arts!</h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400">Crea tu cuenta en The Slap. Inicia con 0 seguidores y construye tu audiencia.</p>
+              <button onclick="app.openAuthModal('register')" class="w-full slap-gradient text-white font-bold py-2 rounded-xl text-xs shadow hover:brightness-105 transition">
+                Registrarme Ahora
+              </button>
+            </div>
+          `;
+        }
+      }
+
+      renderComposerAvatar() {
+        const img = document.getElementById('composer-user-avatar');
+        if (img) {
+          img.src = this.currentUser ? this.currentUser.avatar : 'https://ui-avatars.com/api/?name=Invitado&background=f43f5e&color=fff';
+        }
+      }
+
+      addComposerEmoji(emoji) {
+        const txt = document.getElementById('composer-text');
+        if (txt) {
+          txt.value += ' ' + emoji;
+          txt.focus();
+        }
+      }
+
+      publishSlap() {
+        if (!this.currentUser) {
+          this.showToast('Debes iniciar sesión para publicar un Slap', 'error');
+          this.openAuthModal('login');
+          return;
+        }
+
+        const textEl = document.getElementById('composer-text');
+        const moodEl = document.getElementById('composer-mood-select');
+        const content = textEl.value.trim();
+
+        if (!content && !this.currentMediaAttachment) {
+          this.showToast('Escribe algo o adjunta un archivo antes de publicar tu Slap', 'error');
+          return;
+        }
+
+        const newSlap = {
+          id: 'slap-' + Date.now(),
+          author: {
+            name: this.currentUser.name,
+            username: this.currentUser.username,
+            avatar: this.currentUser.avatar,
+            verified: !!this.currentUser.verified
+          },
+          mood: moodEl.value,
+          content: content,
+          media: this.currentMediaAttachment ? { ...this.currentMediaAttachment } : null,
+          likes: 0,
+          liked: false,
+          timestamp: 'Ahora mismo',
+          comments: []
+        };
+
+        this.slaps.unshift(newSlap);
+        this.currentUser.slapsCount = (this.currentUser.slapsCount || 0) + 1;
+
+        localStorage.setItem('theslap_slaps', JSON.stringify(this.slaps));
+        localStorage.setItem('theslap_current_user', JSON.stringify(this.currentUser));
+
+        textEl.value = '';
+        this.clearComposerMedia();
+        this.playSoundEffect();
+        this.showToast('¡Tu Slap ha sido publicado! 👏');
+        this.renderSidebarProfile();
+        this.renderFeed();
+      }
+
+      toggleLike(slapId) {
+        const slap = this.slaps.find(s => s.id === slapId);
+        if (slap) {
+          slap.liked = !slap.liked;
+          slap.likes += slap.liked ? 1 : -1;
+          localStorage.setItem('theslap_slaps', JSON.stringify(this.slaps));
+          this.renderFeed();
+        }
+      }
+
+      addComment(slapId, inputId) {
+        if (!this.currentUser) {
+          this.showToast('Inicia sesión para comentar', 'error');
+          this.openAuthModal('login');
+          return;
+        }
+
+        const input = document.getElementById(inputId);
+        const text = input ? input.value.trim() : '';
+
+        if (!text) return;
+
+        const slap = this.slaps.find(s => s.id === slapId);
+        if (slap) {
+          const newComment = {
+            id: 'comment-' + Date.now(),
+            author: {
+              name: this.currentUser.name,
+              username: this.currentUser.username,
+              avatar: this.currentUser.avatar
+            },
+            text: text,
+            timestamp: 'Ahora'
+          };
+
+          slap.comments.push(newComment);
+          localStorage.setItem('theslap_slaps', JSON.stringify(this.slaps));
+          input.value = '';
+          this.showToast('Comentario publicado 👏');
+          this.renderFeed();
+        }
+      }
+
+      renderSettingsView() {
+        const list = document.getElementById('slap-feed-list');
+        const badge = document.getElementById('slaps-count-badge');
+        if (badge) badge.innerText = 'Ajustes de la App';
+
+        list.innerHTML = `
+          <div class="bg-white dark:bg-zinc-900 rounded-2xl p-6 border border-slate-200/80 dark:border-zinc-800/80 shadow-sm space-y-6">
+            <h3 class="font-extrabold text-lg text-slate-800 dark:text-slate-100 flex items-center gap-2">
+              <i class="fa-solid fa-sliders text-slap-500"></i> Configuración de la Página
+            </h3>
+
+            <!-- Sound Effects Toggle -->
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-zinc-800">
+              <div>
+                <h4 class="font-bold text-sm text-slate-800 dark:text-slate-200">Efectos de Sonido</h4>
+                <p class="text-xs text-slate-400">Reproduce un todo al publicar slaps o interactuar.</p>
+              </div>
+              <input type="checkbox" id="setting-sounds" ${this.settings.soundEffects ? 'checked' : ''} 
+                onchange="app.updateSetting('soundEffects', this.checked)"
+                class="w-5 h-5 accent-slap-500 cursor-pointer">
+            </div>
+
+            <!-- Notifications Toggle -->
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-zinc-800">
+              <div>
+                <h4 class="font-bold text-sm text-slate-800 dark:text-slate-200">Notificaciones</h4>
+                <p class="text-xs text-slate-400">Recibe alertas sobre me gustas y nuevos comentarios.</p>
+              </div>
+              <input type="checkbox" id="setting-notes" ${this.settings.notifications ? 'checked' : ''} 
+                onchange="app.updateSetting('notifications', this.checked)"
+                class="w-5 h-5 accent-slap-500 cursor-pointer">
+            </div>
+
+            <!-- Privacy Toggle -->
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-zinc-800">
+              <div>
+                <h4 class="font-bold text-sm text-slate-800 dark:text-slate-200">Perfil Privado</h4>
+                <p class="text-xs text-slate-400">Oculta tus estadísticas para visitantes no registrados.</p>
+              </div>
+              <input type="checkbox" id="setting-privacy" ${this.settings.privacyMode ? 'checked' : ''} 
+                onchange="app.updateSetting('privacyMode', this.checked)"
+                class="w-5 h-5 accent-slap-500 cursor-pointer">
+            </div>
+
+            <!-- Quick Theme Switcher -->
+            <div class="pt-2">
+              <h4 class="font-bold text-sm text-slate-800 dark:text-slate-200 mb-2">Tema Visual</h4>
+              <div class="flex gap-3">
+                <button onclick="app.setThemeMode(false)" class="flex-1 py-2 rounded-xl border border-slate-300 dark:border-zinc-700 font-bold text-xs hover:bg-slate-100 dark:hover:bg-zinc-800 transition">
+                  ☀️ Claro
+                </button>
+                <button onclick="app.setThemeMode(true)" class="flex-1 py-2 rounded-xl bg-zinc-800 text-white font-bold text-xs hover:bg-zinc-700 transition">
+                  🌙 Oscuro
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      updateSetting(key, val) {
+        this.settings[key] = val;
+        localStorage.setItem('theslap_settings', JSON.stringify(this.settings));
+        this.showToast('Configuración actualizada 👏');
+      }
+
+      setThemeMode(isDark) {
+        if (isDark) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+        const icon = document.getElementById('theme-icon');
+        if (icon) {
+          icon.className = isDark ? 'fa-solid fa-sun text-yellow-400' : 'fa-solid fa-moon';
+        }
+        this.showToast(`Modo ${isDark ? 'Oscuro' : 'Claro'} activado`);
+      }
+
+      renderFeed(filteredSlaps = null) {
+        if (this.currentView === 'settings') {
+          this.renderSettingsView();
+          return;
+        }
+
+        const list = document.getElementById('slap-feed-list');
+        const badge = document.getElementById('slaps-count-badge');
+        const slapsToRender = filteredSlaps || this.slaps;
+
+        if (badge) badge.innerText = `${slapsToRender.length} Slaps`;
+
+        if (slapsToRender.length === 0) {
+          list.innerHTML = `
+            <div class="bg-white dark:bg-zinc-900 rounded-2xl p-8 text-center border border-slate-200 dark:border-zinc-800 space-y-3">
+              <div class="text-4xl">👏</div>
+              <h3 class="font-bold text-slate-700 dark:text-slate-200">No hay Slaps disponibles</h3>
+              <p class="text-xs text-slate-400">¡Sé el primero en publicar un estado o cambiar los términos de búsqueda!</p>
+            </div>
+          `;
+          return;
+        }
+
+        list.innerHTML = slapsToRender.map(slap => `
+          <div id="${slap.id}" class="bg-white dark:bg-zinc-900 rounded-2xl p-5 border border-slate-200/80 dark:border-zinc-800/80 shadow-sm space-y-3 transition-all hover:border-slate-300 dark:hover:border-zinc-700">
+            <!-- Header -->
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <img src="${slap.author.avatar}" class="w-10 h-10 rounded-full object-cover border border-slate-200 dark:border-zinc-700">
+                <div>
+                  <h4 class="font-bold text-sm text-slate-800 dark:text-slate-100 flex items-center gap-1">
+                    ${slap.author.name}
+                    ${slap.author.verified ? '<i class="fa-solid fa-circle-check text-slap-500 text-xs"></i>' : ''}
+                  </h4>
+                  <p class="text-xs text-slate-400">@${slap.author.username} · ${slap.timestamp}</p>
+                </div>
+              </div>
+              
+              <span class="text-xs font-semibold px-3 py-1 rounded-full bg-slap-100 dark:bg-slap-950/70 text-slap-700 dark:text-slap-300">
+                ${slap.mood}
+              </span>
+            </div>
+
+            <!-- Content text -->
+            ${slap.content ? `<p class="text-sm text-slate-700 dark:text-slate-200 whitespace-pre-line leading-relaxed">${slap.content}</p>` : ''}
+
+            <!-- Render Media if attached -->
+            ${slap.media ? `
+              <div class="mt-3 rounded-xl overflow-hidden bg-black/5 dark:bg-zinc-800 p-2">
+                ${slap.media.type === 'video' ? `
+                  <video src="${slap.media.url}" controls class="w-full max-h-80 rounded-lg object-contain bg-black"></video>
+                ` : slap.media.type === 'audio' ? `
+                  <div class="p-3 bg-slate-200 dark:bg-zinc-800 rounded-lg space-y-2">
+                    <p class="text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2">
+                      <i class="fa-solid fa-music text-pink-500"></i> Archivo de Audio
+                    </p>
+                    <audio src="${slap.media.url}" controls class="w-full h-10"></audio>
+                  </div>
+                ` : ''}
+              </div>
+            ` : ''}
+
+            <!-- Slap Actions -->
+            <div class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-zinc-800 text-xs font-medium text-slate-500 dark:text-slate-400">
+              <button onclick="app.toggleLike('${slap.id}')" class="flex items-center gap-1.5 hover:text-red-500 transition ${slap.liked ? 'text-red-500 font-bold' : ''}">
+                <i class="${slap.liked ? 'fa-solid' : 'fa-regular'} fa-heart text-sm"></i>
+                <span>${slap.likes} Me gusta</span>
+              </button>
+
+              <div class="flex items-center gap-1.5">
+                <i class="fa-regular fa-comment text-sm"></i>
+                <span>${slap.comments.length} Comentarios</span>
+              </div>
+
+              <button onclick="app.copySlapLink('${slap.id}')" class="flex items-center gap-1.5 hover:text-slap-500 transition">
+                <i class="fa-solid fa-share-nodes text-sm"></i>
+                <span>Compartir</span>
+              </button>
+            </div>
+
+            <!-- Comments Section -->
+            <div class="pt-3 border-t border-slate-100 dark:border-zinc-800 space-y-3">
+              <div class="flex items-center gap-2">
+                <input type="text" id="input-${slap.id}" placeholder="Escribe un comentario..." 
+                  onkeydown="if(event.key==='Enter') app.addComment('${slap.id}', 'input-${slap.id}')"
+                  class="flex-1 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-slap-500">
+                <button onclick="app.addComment('${slap.id}', 'input-${slap.id}')" class="p-2 rounded-xl bg-slate-200 dark:bg-zinc-700 hover:bg-slap-500 hover:text-white transition text-xs font-bold">
+                  <i class="fa-solid fa-paper-plane"></i>
+                </button>
+              </div>
+
+              <div class="space-y-2">
+                ${slap.comments.map(comment => `
+                  <div id="${slap.id}-${comment.id}" class="bg-slate-50 dark:bg-zinc-800/50 p-3 rounded-xl space-y-1 text-xs">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2">
+                        <img src="${comment.author.avatar}" class="w-5 h-5 rounded-full object-cover">
+                        <span class="font-bold text-slate-800 dark:text-slate-200">${comment.author.name}</span>
+                        <span class="text-[10px] text-slate-400">@${comment.author.username}</span>
+                      </div>
+                      
+                      <button onclick="app.copyCommentLink('${slap.id}', '${comment.id}')" 
+                        title="Copiar enlace del comentario"
+                        class="text-slate-400 hover:text-slap-500 transition px-2 py-0.5 rounded hover:bg-slate-200 dark:hover:bg-zinc-700 flex items-center gap-1 text-[11px]">
+                        <i class="fa-solid fa-link"></i>
+                        <span class="hidden sm:inline">Copiar enlace</span>
+                      </button>
+                    </div>
+                    <p class="text-slate-700 dark:text-slate-300 pl-7">${comment.text}</p>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      filterFeed(query) {
+        if (!query) {
+          this.renderFeed();
+          return;
+        }
+        const q = query.toLowerCase();
+        const filtered = this.slaps.filter(s => 
+          s.content.toLowerCase().includes(q) || 
+          s.author.name.toLowerCase().includes(q) ||
+          s.author.username.toLowerCase().includes(q) ||
+          s.mood.toLowerCase().includes(q)
+        );
+        this.renderFeed(filtered);
+      }
+
+      filterHashtag(tag) {
+        document.getElementById('search-input').value = tag;
+        this.filterFeed(tag);
+      }
+
+      updateNavStyle(activeId) {
+        const navIds = ['nav-feed', 'nav-explore', 'nav-profile', 'nav-settings'];
+        navIds.forEach(id => {
+          const btn = document.getElementById(id);
+          if (!btn) return;
+          if (id === activeId) {
+            btn.className = "w-full flex items-center gap-3.5 px-4 py-3 rounded-xl font-medium text-sm transition-colors text-slap-600 dark:text-slap-400 bg-slap-50 dark:bg-slap-950/40";
+          } else {
+            btn.className = "w-full flex items-center gap-3.5 px-4 py-3 rounded-xl font-medium text-sm transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800/60";
+          }
+        });
+      }
+
+      navigate(view) {
+        this.currentView = view;
+        const titleEl = document.getElementById('view-title');
+        const composer = document.getElementById('slap-composer-container');
+
+        if (view === 'feed') {
+          if (composer) composer.classList.remove('hidden');
+          if (titleEl) titleEl.innerText = 'Slaps Recientes';
+          this.updateNavStyle('nav-feed');
+          this.renderFeed();
+        } else if (view === 'explore') {
+          if (composer) composer.classList.add('hidden');
+          if (titleEl) titleEl.innerText = 'Explorar Tendencias Slap';
+          this.updateNavStyle('nav-explore');
+          this.filterFeed('#');
+        } else if (view === 'my-profile') {
+          if (!this.currentUser) {
+            this.showToast('Debes iniciar sesión para ver tu perfil', 'error');
+            this.openAuthModal('login');
+            return;
+          }
+          if (composer) composer.classList.remove('hidden');
+          if (titleEl) titleEl.innerText = `Slaps de ${this.currentUser.name}`;
+          this.updateNavStyle('nav-profile');
+          const mySlaps = this.slaps.filter(s => s.author.username.toLowerCase() === this.currentUser.username.toLowerCase());
+          this.renderFeed(mySlaps);
+        } else if (view === 'settings') {
+          if (composer) composer.classList.add('hidden');
+          if (titleEl) titleEl.innerText = 'Configuración';
+          this.updateNavStyle('nav-settings');
+          this.renderSettingsView();
+        }
+      }
+
+      toggleDarkMode() {
+        const isDark = document.documentElement.classList.toggle('dark');
+        const icon = document.getElementById('theme-icon');
+        if (icon) {
+          icon.className = isDark ? 'fa-solid fa-sun text-yellow-400' : 'fa-solid fa-moon';
+        }
+      }
+    }
+
+    window.onload = function() {
+      window.app = new TheSlapApp();
+    };
+  </script>
+</body>
+</html>
