@@ -1,1207 +1,1294 @@
 <!DOCTYPE html>
-<html lang="es" class="h-full dark">
+<html lang="es" class="h-full">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>The Slap NextGen 👏</title>
-  
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FontAwesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Google Fonts Inter -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            slap: {
-              50: '#fff1f2',
-              100: '#ffe4e6',
-              200: '#fecdd3',
-              300: '#fda4af',
-              400: '#fb7185',
-              500: '#f43f5e',
-              600: '#e11d48',
-              700: '#be123c',
-              800: '#9f1239',
-              900: '#881337',
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Slap NextGen</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        slap: {
+                            50: '#f7fee7',
+                            100: '#ecfccb',
+                            400: '#a3e635',
+                            500: '#84cc16',
+                            600: '#65a30d',
+                            700: '#4d7c0f',
+                        },
+                        hollywood: {
+                            pink: '#ff2a85',
+                            purple: '#9333ea',
+                            cyan: '#06b6d4',
+                            yellow: '#facc15'
+                        }
+                    },
+                    fontFamily: {
+                        fredoka: ['Fredoka', 'sans-serif'],
+                        outfit: ['Outfit', 'sans-serif'],
+                        inter: ['Inter', 'sans-serif']
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(12px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        popIn: {
+                            '0%': { transform: 'scale(0.85)', opacity: '0' },
+                            '100%': { transform: 'scale(1)', opacity: '1' }
+                        },
+                        pulseGlow: {
+                            '0%, 100%': { boxShadow: '0 0 15px rgba(132, 204, 22, 0.4)' },
+                            '50%': { boxShadow: '0 0 25px rgba(255, 42, 133, 0.6)' }
+                        }
+                    },
+                    animation: {
+                        fadeUp: 'fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        pop: 'popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+                        glow: 'pulseGlow 3s infinite ease-in-out'
+                    }
+                }
             }
-          },
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-          }
         }
-      }
-    }
-  </script>
+    </script>
 
-  <style>
-    .slap-gradient {
-      background: linear-gradient(135deg, #f43f5e 0%, #a855f7 100%);
-    }
-    .slap-glow {
-      box-shadow: 0 0 20px rgba(244, 63, 94, 0.35);
-    }
-    .glass-panel {
-      background: rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(12px);
-    }
-    .dark .glass-panel {
-      background: rgba(24, 24, 27, 0.85);
-      backdrop-filter: blur(12px);
-    }
-    /* Custom scrollbar */
-    ::-webkit-scrollbar {
-      width: 8px;
-    }
-    ::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #f43f5e;
-      border-radius: 9999px;
-    }
-  </style>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tone.js for Sound FX -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+
+    <style>
+        body {
+            font-family: 'Outfit', 'Inter', sans-serif;
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar {
+            width: 7px;
+            height: 7px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.05);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(132, 204, 22, 0.5);
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(132, 204, 22, 0.8);
+        }
+
+        /* Wallpapers */
+        .theme-dark-slap {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+            color: #f8fafc;
+        }
+        .theme-light-slap {
+            background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 50%, #faf5ff 100%);
+            color: #0f172a;
+        }
+        .theme-neon {
+            background: radial-gradient(circle at 50% 50%, #2e0249 0%, #10002b 60%, #000000 100%);
+            color: #f3e8ff;
+        }
+        .theme-sunset {
+            background: linear-gradient(135deg, #2d0b32 0%, #5a1846 40%, #900c3f 70%, #c70039 100%);
+            color: #fff5f5;
+        }
+        .theme-hollywood {
+            background: linear-gradient(135deg, #111827 0%, #831843 50%, #312e81 100%);
+            color: #f8fafc;
+        }
+
+        /* Glassmorphism card utility */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+        .light .glass-card {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+    </style>
 </head>
-<body class="bg-slate-100 dark:bg-zinc-950 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col font-sans transition-colors duration-200">
+<body class="theme-dark-slap min-h-screen flex flex-col antialiased selection:bg-slap-500 selection:text-black">
 
-  <!-- Toast Container -->
-  <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+    <script>
+        const SoundFX = {
+            enabled: true,
+            init() {
+                this.synth = new Tone.Synth({
+                    oscillator: { type: 'sine' },
+                    envelope: { attack: 0.005, decay: 0.1, sustain: 0, release: 0.1 }
+                }).toDestination();
+                this.synth.volume.value = -12;
 
-  <!-- Header -->
-  <header class="sticky top-0 z-40 glass-panel border-b border-slate-200 dark:border-zinc-800 transition-colors">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-      <!-- Logo & Brand -->
-      <div class="flex items-center gap-3 cursor-pointer" onclick="app.navigate('feed')">
-        <div class="w-10 h-10 slap-gradient rounded-2xl flex items-center justify-center text-2xl shadow-lg transform hover:scale-105 transition-transform text-white">
-          👏
+                this.popSynth = new Tone.MembraneSynth().toDestination();
+                this.popSynth.volume.value = -10;
+            },
+            click() {
+                if (!this.enabled) return;
+                try {
+                    Tone.start();
+                    if (!this.synth) this.init();
+                    this.synth.triggerAttackRelease("C5", "16n");
+                } catch(e){}
+            },
+            slap() {
+                if (!this.enabled) return;
+                try {
+                    Tone.start();
+                    if (!this.synth) this.init();
+                    this.synth.triggerAttackRelease("G5", "16n", "+0.01");
+                    this.synth.triggerAttackRelease("E6", "16n", "+0.08");
+                } catch(e){}
+            },
+            chat() {
+                if (!this.enabled) return;
+                try {
+                    Tone.start();
+                    if (!this.synth) this.init();
+                    this.synth.triggerAttackRelease("A5", "16n");
+                    this.synth.triggerAttackRelease("E6", "16n", "+0.09");
+                } catch(e){}
+            },
+            pop() {
+                if (!this.enabled) return;
+                try {
+                    Tone.start();
+                    if (!this.popSynth) this.init();
+                    this.popSynth.triggerAttackRelease("C2", "8n");
+                } catch(e){}
+            }
+        };
+    </script>
+
+    <header class="sticky top-0 z-40 glass-card border-b border-white/10 shadow-lg px-4 lg:px-8 py-3 transition-all">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <!-- Logo Slap -->
+            <div onclick="switchTab('feed')" class="flex items-center gap-3 cursor-pointer group">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-slap-500 to-hollywood-pink p-0.5 shadow-md transform group-hover:scale-105 transition-all flex items-center justify-center">
+                    <div class="w-full h-full bg-slate-900 rounded-[14px] flex items-center justify-center">
+                        <span class="text-xl group-hover:scale-125 transition-transform">👏</span>
+                    </div>
+                </div>
+                <div>
+                    <h1 class="font-fredoka text-2xl font-bold tracking-wide bg-gradient-to-r from-slap-400 via-hollywood-pink to-hollywood-purple bg-clip-text text-transparent">
+                        The Slap <span class="text-xs px-2 py-0.5 rounded-full bg-slap-500/20 text-slap-400 font-sans tracking-normal border border-slap-500/30">NextGen</span>
+                    </h1>
+                    <p class="text-[10px] text-slate-400 -mt-1 font-mono">Hollywood Arts High • Slap OS v14.0</p>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="hidden md:flex items-center gap-2 bg-black/20 p-1.5 rounded-2xl border border-white/10 backdrop-blur-md">
+                <button onclick="switchTab('feed')" id="nav-feed" class="nav-btn active text-sm font-medium px-4 py-2 rounded-xl transition-all flex items-center gap-2 bg-slap-500 text-black shadow-md shadow-slap-500/20">
+                    <i class="fa-solid fa-house"></i> Feed
+                </button>
+                <button onclick="switchTab('explore')" id="nav-explore" class="nav-btn text-sm font-medium px-4 py-2 rounded-xl transition-all flex items-center gap-2 text-slate-300 hover:text-white hover:bg-white/10">
+                    <i class="fa-solid fa-compass"></i> Explorar
+                </button>
+                <button onclick="switchTab('chat')" id="nav-chat" class="nav-btn text-sm font-medium px-4 py-2 rounded-xl transition-all flex items-center gap-2 text-slate-300 hover:text-white hover:bg-white/10 relative">
+                    <i class="fa-solid fa-comments"></i> SlapChat
+                    <span id="chat-badge" class="hidden absolute -top-1 -right-1 w-3 h-3 bg-hollywood-pink rounded-full animate-ping"></span>
+                </button>
+                <button onclick="switchTab('profile')" id="nav-profile" class="nav-btn text-sm font-medium px-4 py-2 rounded-xl transition-all flex items-center gap-2 text-slate-300 hover:text-white hover:bg-white/10">
+                    <i class="fa-solid fa-user"></i> Mi Perfil
+                </button>
+                <button onclick="switchTab('settings')" id="nav-settings" class="nav-btn text-sm font-medium px-4 py-2 rounded-xl transition-all flex items-center gap-2 text-slate-300 hover:text-white hover:bg-white/10">
+                    <i class="fa-solid fa-gear"></i>
+                </button>
+            </nav>
+
+            <!-- User Quick Status / Action -->
+            <div class="flex items-center gap-3">
+                <div id="user-pill" class="hidden sm:flex items-center gap-2.5 bg-white/5 border border-white/10 px-3 py-1.5 rounded-full">
+                    <img id="header-avatar" src="" alt="Avatar" class="w-7 h-7 rounded-full object-cover border border-slap-400">
+                    <span id="header-username" class="text-xs font-semibold text-slate-200">@usuario</span>
+                    <span id="header-mood" class="text-[10px] px-2 py-0.5 rounded-full bg-hollywood-purple/30 text-purple-300 font-medium">😊 Normal</span>
+                </div>
+                
+                <button onclick="openModal('create-slap-modal')" class="bg-gradient-to-r from-slap-500 to-slap-600 hover:from-slap-400 hover:to-slap-500 text-slate-950 font-bold px-4 py-2 rounded-xl text-sm shadow-lg shadow-slap-500/20 active:scale-95 transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-plus-circle text-base"></i> <span class="hidden sm:inline">Nuevo</span> Slap!
+                </button>
+            </div>
         </div>
-        <div>
-          <h1 class="font-black text-xl tracking-tight bg-gradient-to-r from-slap-600 via-pink-500 to-purple-600 bg-clip-text text-transparent">
-            The Slap <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-slap-100 dark:bg-slap-950/70 text-slap-700 dark:text-slap-300 ml-1">NextGen</span>
-          </h1>
-          <p class="text-[10px] text-slate-500 dark:text-slate-400 font-medium tracking-wide">WHAT'S YOUR MOOD TODAY?</p>
+    </header>
+
+    <div id="auth-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl animate-fadeUp">
+        <div class="glass-card max-w-md w-full rounded-3xl p-6 sm:p-8 border border-white/20 shadow-2xl relative overflow-hidden">
+            <!-- Ambient Glow Effect -->
+            <div class="absolute -top-24 -right-24 w-48 h-48 bg-slap-500/30 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -bottom-24 -left-24 w-48 h-48 bg-hollywood-pink/30 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="text-center mb-6">
+                <div class="inline-flex p-3 rounded-2xl bg-slap-500/20 border border-slap-500/30 text-slap-400 mb-3 animate-bounce">
+                    <span class="text-4xl">👏</span>
+                </div>
+                <h2 class="font-fredoka text-3xl font-bold text-white tracking-wide">¡Bienvenido a The Slap!</h2>
+                <p class="text-xs text-slate-300 mt-1">Crea tu perfil oficial de Hollywood Arts o entra como invitado</p>
+            </div>
+
+            <!-- Registration Form -->
+            <form id="auth-form" onsubmit="handleRegister(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Tu Nombre Completo</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-id-card absolute left-3.5 top-3 text-slate-400 text-sm"></i>
+                        <input type="text" id="reg-name" required placeholder="Ej. Rex Powers" class="w-full bg-black/40 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-slap-400 transition-colors">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Nombre de Usuario (@handle)</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-at absolute left-3.5 top-3 text-slate-400 text-sm"></i>
+                        <input type="text" id="reg-handle" required placeholder="rex_dummy" class="w-full bg-black/40 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-slap-400 transition-colors">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Estado / Mood Actual</label>
+                        <select id="reg-mood" class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-slap-400 transition-colors">
+                            <option value="😎 Emocionado">😎 Emocionado</option>
+                            <option value="😏 Sarcástico">😏 Sarcástico</option>
+                            <option value="🎨 Creativo">🎨 Creativo</option>
+                            <option value="🎭 Dramático">🎭 Dramático</option>
+                            <option value="😴 Cansado">😴 Cansado</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Foto de Perfil</label>
+                        <label for="reg-avatar-file" class="w-full bg-black/40 border border-white/10 hover:border-slap-400 rounded-xl px-3 py-2.5 text-xs text-slate-300 cursor-pointer flex items-center justify-center gap-1.5 transition-colors">
+                            <i class="fa-solid fa-upload text-slap-400"></i>
+                            <span id="avatar-filename-label" class="truncate">Subir Foto</span>
+                        </label>
+                        <input type="file" id="reg-avatar-file" accept="image/*" class="hidden" onchange="previewAvatarName(this)">
+                    </div>
+                </div>
+
+                <button type="submit" onclick="SoundFX.click()" class="w-full bg-gradient-to-r from-slap-500 to-slap-600 hover:from-slap-400 hover:to-slap-500 text-slate-950 font-bold py-3 rounded-xl shadow-lg shadow-slap-500/25 active:scale-98 transition-all text-sm uppercase tracking-wider">
+                    <i class="fa-solid fa-bolt mr-1"></i> Unirme a Hollywood Arts
+                </button>
+            </form>
+
+            <div class="relative my-5 flex items-center justify-center">
+                <div class="border-t border-white/10 w-full"></div>
+                <span class="bg-slate-900 px-3 text-[11px] text-slate-400 font-mono absolute">O TAMBIÉN</span>
+            </div>
+
+            <!-- Guest Access Button -->
+            <button onclick="handleGuestAccess()" class="w-full bg-white/5 hover:bg-white/10 border border-white/15 text-slate-200 font-medium py-2.5 rounded-xl transition-all text-sm flex items-center justify-center gap-2 group">
+                <i class="fa-solid fa-user-secret text-slate-400 group-hover:text-slap-400 transition-colors"></i> Acceso como Invitado (Limpio)
+            </button>
         </div>
-      </div>
-
-      <!-- Search Bar -->
-      <div class="hidden md:flex flex-1 max-w-md relative">
-        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
-        <input type="text" id="search-input" placeholder="Buscar en The Slap, personas o #hashtags..." 
-          class="w-full pl-10 pr-4 py-2 rounded-full bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 focus:outline-none focus:ring-2 focus:ring-slap-500 text-sm transition-all">
-      </div>
-
-      <!-- Header Actions -->
-      <div class="flex items-center gap-3">
-        <button onclick="app.toggleDarkMode()" class="p-2.5 rounded-full bg-slate-200/60 dark:bg-zinc-800 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-zinc-700 transition" title="Cambiar tema">
-          <i id="theme-icon" class="fa-solid fa-moon"></i>
-        </button>
-
-        <div id="auth-nav-container" class="flex items-center gap-2">
-          <!-- Populated dynamically -->
-        </div>
-      </div>
     </div>
-  </header>
 
-  <!-- Main Container -->
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 relative">
+        
+        <!-- Left Sidebar: Profile Summary & Trending -->
+        <aside class="hidden lg:block lg:col-span-3 space-y-5">
+            <!-- User Mini Card -->
+            <div class="glass-card rounded-2xl p-5 border border-white/10 shadow-lg text-center relative overflow-hidden">
+                <div class="h-16 bg-gradient-to-r from-slap-500/30 to-hollywood-purple/30 -m-5 mb-0 border-b border-white/10"></div>
+                <div class="relative -mt-8 mb-3">
+                    <img id="side-avatar" src="https://placehold.co/100x100/84cc16/ffffff?text=Guest" class="w-16 h-16 rounded-2xl mx-auto object-cover border-2 border-slap-400 shadow-md">
+                </div>
+                <h3 id="side-name" class="font-fredoka text-lg font-bold text-white">Invitado Slap</h3>
+                <p id="side-handle" class="text-xs text-slap-400 font-mono mb-2">@invitado</p>
+                <span id="side-mood" class="inline-block px-3 py-1 rounded-full text-xs bg-white/10 text-slate-200 font-medium">😎 Emocionado</span>
 
-    <!-- Left Sidebar -->
-    <aside class="lg:col-span-3 space-y-4">
-      <!-- Profile Summary Card -->
-      <div id="sidebar-profile-card" class="bg-white dark:bg-zinc-900 rounded-2xl p-5 border border-slate-200/80 dark:border-zinc-800/80 shadow-sm">
-        <!-- JS Populated -->
-      </div>
-
-      <!-- Quick Navigation Menu -->
-      <nav class="bg-white dark:bg-zinc-900 rounded-2xl p-3 border border-slate-200/80 dark:border-zinc-800/80 shadow-sm space-y-1">
-        <button onclick="app.navigate('feed')" id="nav-feed" class="w-full flex items-center gap-3.5 px-4 py-3 rounded-xl font-medium text-sm transition-colors text-slap-600 dark:text-slap-400 bg-slap-50 dark:bg-slap-950/40">
-          <i class="fa-solid fa-hands-clapping text-lg"></i>
-          <span>Feed Principal</span>
-        </button>
-        <button onclick="app.navigate('explore')" id="nav-explore" class="w-full flex items-center gap-3.5 px-4 py-3 rounded-xl font-medium text-sm transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800/60">
-          <i class="fa-solid fa-compass text-lg"></i>
-          <span>Explorar Tendencias</span>
-        </button>
-        <button onclick="app.navigate('my-profile')" id="nav-profile" class="w-full flex items-center gap-3.5 px-4 py-3 rounded-xl font-medium text-sm transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800/60">
-          <i class="fa-solid fa-user text-lg"></i>
-          <span>Mi Perfil Slap</span>
-        </button>
-        <button onclick="app.navigate('settings')" id="nav-settings" class="w-full flex items-center gap-3.5 px-4 py-3 rounded-xl font-medium text-sm transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800/60">
-          <i class="fa-solid fa-gear text-lg"></i>
-          <span>Configuración</span>
-        </button>
-      </nav>
-    </aside>
-
-    <!-- Main Content Area -->
-    <main class="lg:col-span-6 space-y-5">
-      
-      <!-- Slap Creator Composer -->
-      <div id="slap-composer-container" class="bg-white dark:bg-zinc-900 rounded-2xl p-4 border border-slate-200/80 dark:border-zinc-800/80 shadow-sm space-y-3">
-        <div class="flex items-start gap-3">
-          <img id="composer-user-avatar" src="" alt="Avatar" class="w-11 h-11 rounded-full object-cover border-2 border-slap-500">
-          <div class="flex-1 space-y-3">
-            
-            <!-- Mood Selector -->
-            <div class="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
-              <span>Estado de Ánimo:</span>
-              <select id="composer-mood-select" class="bg-slate-100 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg px-2.5 py-1 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-slap-500">
-                <option value="😊 Épico">😊 Épico</option>
-                <option value="🎭 Dramático">🎭 Dramático</option>
-                <option value="🎤 Cantando">🎤 Cantando</option>
-                <option value="🎬 Actuando">🎬 Actuando</option>
-                <option value="🤯 Sorprendido">🤯 Sorprendido</option>
-                <option value="😴 Aburrido">😴 Aburrido</option>
-              </select>
-            </div>
-            
-            <!-- Text Area -->
-            <textarea id="composer-text" rows="3" placeholder="¿Qué está pasando en Hollywood Arts? Publica tu Slap..." 
-              class="w-full bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700/70 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-slap-500 resize-none transition"></textarea>
-            
-            <!-- Media Upload Preview Box -->
-            <div id="media-preview-box" class="hidden p-3 rounded-xl bg-slate-100 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 relative">
-              <button onclick="app.clearComposerMedia()" class="absolute top-2 right-2 p-1.5 rounded-full bg-red-500 text-white text-xs hover:bg-red-600 transition">
-                <i class="fa-solid fa-xmark"></i>
-              </button>
-              <div id="media-preview-content" class="max-h-52 overflow-hidden rounded-lg flex items-center justify-center">
-                <!-- Media preview rendered here -->
-              </div>
+                <div class="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-white/10 text-center">
+                    <div>
+                        <span id="side-followers" class="block text-lg font-bold text-white">0</span>
+                        <span class="text-[10px] uppercase font-mono text-slate-400">Seguidores</span>
+                    </div>
+                    <div>
+                        <span id="side-following" class="block text-lg font-bold text-white">0</span>
+                        <span class="text-[10px] uppercase font-mono text-slate-400">Siguiendo</span>
+                    </div>
+                </div>
             </div>
 
-            <!-- Upload File Inputs (Hidden) -->
-            <input type="file" id="video-file-input" accept="video/*" class="hidden" onchange="app.handleMediaUpload(event, 'video')">
-            <input type="file" id="audio-file-input" accept="audio/*" class="hidden" onchange="app.handleMediaUpload(event, 'audio')">
+            <!-- Hollywood Trending Topics -->
+            <div class="glass-card rounded-2xl p-4 border border-white/10 shadow-lg">
+                <h4 class="font-fredoka text-sm font-semibold text-slate-200 mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-fire text-hollywood-pink"></i> Tendencias en Hollywood Arts
+                </h4>
+                <div class="space-y-3 text-xs">
+                    <div class="p-2 rounded-xl hover:bg-white/5 transition-colors cursor-pointer" onclick="filterByTag('Sikowitz')">
+                        <p class="text-slate-400 text-[10px]">#1 Teatro Improv</p>
+                        <p class="font-bold text-white">#SikowitzCoconuts</p>
+                        <p class="text-slate-400 text-[10px]">1,240 Slaps</p>
+                    </div>
+                    <div class="p-2 rounded-xl hover:bg-white/5 transition-colors cursor-pointer" onclick="filterByTag('SlapPhone')">
+                        <p class="text-slate-400 text-[10px]">#2 Tecnología</p>
+                        <p class="font-bold text-white">#SlapPhoneXT</p>
+                        <p class="text-slate-400 text-[10px]">890 Slaps</p>
+                    </div>
+                    <div class="p-2 rounded-xl hover:bg-white/5 transition-colors cursor-pointer" onclick="filterByTag('NoSkape')">
+                        <p class="text-slate-400 text-[10px]">#3 Música</p>
+                        <p class="font-bold text-white">#ConciertoNoSkape</p>
+                        <p class="text-slate-400 text-[10px]">650 Slaps</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
 
-            <!-- Actions Bar -->
-            <div class="flex items-center justify-between pt-1 flex-wrap gap-2">
-              <div class="flex items-center gap-1.5">
-                <button type="button" onclick="document.getElementById('video-file-input').click()" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 transition">
-                  <i class="fa-solid fa-video text-purple-500"></i>
-                  <span>Vídeo</span>
-                </button>
-                <button type="button" onclick="document.getElementById('audio-file-input').click()" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 transition">
-                  <i class="fa-solid fa-music text-pink-500"></i>
-                  <span>Audio</span>
-                </button>
-                <button type="button" onclick="app.addComposerEmoji('👏')" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 text-base" title="Aplauso">👏</button>
-                <button type="button" onclick="app.addComposerEmoji('🎬')" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 text-base" title="Claqueta">🎬</button>
-              </div>
+        <!-- Center Main Content Feed / Tabs -->
+        <section class="lg:col-span-6 space-y-5 min-h-[70vh]">
+            
+            <!-- TAB 1: FEED -->
+            <div id="tab-feed" class="tab-content space-y-5">
+                <!-- Create Slap Box -->
+                <div class="glass-card rounded-2xl p-4 border border-white/10 shadow-lg relative">
+                    <div class="flex items-start gap-3">
+                        <img id="feed-user-avatar" src="https://placehold.co/80x80/84cc16/ffffff?text=U" class="w-10 h-10 rounded-full object-cover border border-slap-400">
+                        <div class="flex-1">
+                            <textarea id="new-slap-text" rows="2" placeholder="¿Qué está pasando en Hollywood Arts?" class="w-full bg-black/30 border border-white/10 rounded-xl p-3 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-slap-400 transition-all resize-none"></textarea>
+                            
+                            <!-- Attachment Preview Area -->
+                            <div id="media-preview-container" class="hidden mt-2 relative rounded-xl overflow-hidden bg-black/50 border border-white/10 p-2">
+                                <button onclick="clearMediaPreview()" class="absolute top-2 right-2 bg-black/70 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs hover:bg-red-500 transition-colors z-10"><i class="fa-solid fa-xmark"></i></button>
+                                <img id="img-preview" class="hidden max-h-48 rounded-lg mx-auto object-cover">
+                                <audio id="audio-preview" controls class="hidden w-full mt-1"></audio>
+                            </div>
 
-              <button onclick="app.publishSlap()" class="slap-gradient text-white font-bold px-5 py-2 rounded-xl text-sm shadow-md hover:brightness-105 active:scale-95 transition transform flex items-center gap-2">
-                <span>Slap it!</span> 👏
-              </button>
+                            <div class="flex items-center justify-between mt-3">
+                                <div class="flex items-center gap-2 text-slate-400">
+                                    <label class="p-2 rounded-lg hover:bg-white/10 hover:text-slap-400 cursor-pointer transition-colors" title="Adjuntar Imagen">
+                                        <i class="fa-solid fa-image text-base"></i>
+                                        <input type="file" id="slap-image-input" accept="image/*" class="hidden" onchange="handleMediaSelect(this, 'image')">
+                                    </label>
+                                    <label class="p-2 rounded-lg hover:bg-white/10 hover:text-hollywood-pink cursor-pointer transition-colors" title="Adjuntar Audio">
+                                        <i class="fa-solid fa-music text-base"></i>
+                                        <input type="file" id="slap-audio-input" accept="audio/*" class="hidden" onchange="handleMediaSelect(this, 'audio')">
+                                    </label>
+                                </div>
+                                <button onclick="publishSlap()" class="bg-slap-500 hover:bg-slap-400 text-slate-950 font-bold px-5 py-2 rounded-xl text-xs uppercase tracking-wider shadow-md shadow-slap-500/20 active:scale-95 transition-all flex items-center gap-1.5">
+                                    <i class="fa-solid fa-paper-plane"></i> Slap It!
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slaps Feed Container -->
+                <div id="slaps-container" class="space-y-4">
+                    <!-- Dynamic Slaps Rendered Here -->
+                </div>
             </div>
 
-          </div>
-        </div>
-      </div>
+            <!-- TAB 2: EXPLORE / SEARCH -->
+            <div id="tab-explore" class="tab-content hidden space-y-5">
+                <div class="glass-card rounded-2xl p-4 border border-white/10 shadow-lg">
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400"></i>
+                        <input type="text" id="explore-search-input" oninput="handleSearch()" placeholder="Buscar publicaciones, temas o estudiantes..." class="w-full bg-black/40 border border-white/10 rounded-xl pl-11 pr-4 py-3 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-slap-400 transition-all">
+                    </div>
+                </div>
 
-      <!-- View Title Bar -->
-      <div class="flex items-center justify-between px-1">
-        <h2 id="view-title" class="font-bold text-lg text-slate-800 dark:text-slate-100">Slaps Recientes</h2>
-        <span id="slaps-count-badge" class="text-xs bg-slate-200 dark:bg-zinc-800 px-2.5 py-1 rounded-full text-slate-600 dark:text-slate-400 font-medium">
-          Cargando...
-        </span>
-      </div>
+                <!-- Suggested Users to Follow -->
+                <div class="glass-card rounded-2xl p-5 border border-white/10 shadow-lg">
+                    <h3 class="font-fredoka text-base font-bold text-white mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-users text-slap-400"></i> Estudiantes de Hollywood Arts
+                    </h3>
+                    <div id="users-directory" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <!-- Dynamic Characters list -->
+                    </div>
+                </div>
 
-      <!-- Feed / Content Container -->
-      <div id="slap-feed-list" class="space-y-4">
-        <!-- Slaps rendered here -->
-      </div>
+                <!-- Search Results Feed -->
+                <div id="search-results-container" class="space-y-4">
+                    <!-- Filtered Posts -->
+                </div>
+            </div>
+
+            <!-- TAB 3: SLAPCHAT SYSTEM -->
+            <div id="tab-chat" class="tab-content hidden space-y-4">
+                <div class="glass-card rounded-2xl border border-white/10 shadow-2xl h-[650px] flex flex-col sm:flex-row overflow-hidden">
+                    
+                    <!-- Contacts List Left Column -->
+                    <div class="w-full sm:w-1/3 border-b sm:border-b-0 sm:border-r border-white/10 flex flex-col bg-black/20">
+                        <div class="p-3.5 border-b border-white/10 font-fredoka text-sm font-bold text-white flex items-center justify-between">
+                            <span><i class="fa-solid fa-comments text-slap-400 mr-2"></i>Contactos</span>
+                            <span id="chat-count-tag" class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slap-500/20 text-slap-400">0</span>
+                        </div>
+                        <div id="chat-contacts-list" class="flex-1 overflow-y-auto divide-y divide-white/5">
+                            <!-- Populated with characters you follow -->
+                        </div>
+                    </div>
+
+                    <!-- Chat Active Conversation Column -->
+                    <div class="w-full sm:w-2/3 flex flex-col bg-black/40 relative">
+                        <!-- Active Chat Header -->
+                        <div id="chat-header" class="p-3.5 border-b border-white/10 flex items-center gap-3 bg-white/5">
+                            <img id="chat-active-avatar" src="https://placehold.co/100" class="w-9 h-9 rounded-full object-cover border border-slap-400">
+                            <div>
+                                <h4 id="chat-active-name" class="font-bold text-sm text-white">Selecciona un chat</h4>
+                                <p id="chat-active-status" class="text-[10px] text-slate-400">En línea en Slap OS</p>
+                            </div>
+                        </div>
+
+                        <!-- Chat Messages Container -->
+                        <div id="chat-messages-container" class="flex-1 p-4 overflow-y-auto space-y-3">
+                            <div class="text-center text-xs text-slate-500 py-10">
+                                Sigue a tus compañeros de Hollywood Arts para iniciar un SlapChat.
+                            </div>
+                        </div>
+
+                        <!-- Chat Input Box -->
+                        <div class="p-3 border-t border-white/10 bg-black/30 flex items-center gap-2">
+                            <input type="text" id="chat-message-input" onkeypress="if(event.key==='Enter') sendChatMessage()" placeholder="Escribe un mensaje..." class="flex-1 bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-slap-400 transition-colors">
+                            <button onclick="sendChatMessage()" class="bg-slap-500 hover:bg-slap-400 text-slate-950 p-2.5 rounded-xl transition-all shadow-md active:scale-95">
+                                <i class="fa-solid fa-paper-plane text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: PROFILE & EDIT PROFILE -->
+            <div id="tab-profile" class="tab-content hidden space-y-5">
+                <div class="glass-card rounded-3xl border border-white/10 shadow-xl overflow-hidden">
+                    <!-- Banner -->
+                    <div class="h-32 bg-gradient-to-r from-slap-600 via-hollywood-purple to-hollywood-pink relative">
+                        <label for="profile-banner-input" class="absolute top-3 right-3 bg-black/50 hover:bg-black/70 text-white text-xs px-3 py-1.5 rounded-lg cursor-pointer transition-colors backdrop-blur-sm">
+                            <i class="fa-solid fa-camera mr-1"></i> Cambiar Banner
+                        </label>
+                        <input type="file" id="profile-banner-input" accept="image/*" class="hidden" onchange="updateBanner(this)">
+                        <img id="profile-banner-img" class="w-full h-full object-cover hidden">
+                    </div>
+
+                    <!-- Profile Header Details -->
+                    <div class="px-6 pb-6 relative">
+                        <div class="flex flex-col sm:flex-row items-center sm:items-end justify-between -mt-12 mb-4 gap-4">
+                            <div class="relative group">
+                                <img id="profile-page-avatar" src="https://placehold.co/120" class="w-24 h-24 rounded-2xl object-cover border-4 border-slate-900 shadow-xl">
+                                <label for="profile-avatar-input" class="absolute inset-0 bg-black/50 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                                    <i class="fa-solid fa-camera text-white text-xl"></i>
+                                </label>
+                                <input type="file" id="profile-avatar-input" accept="image/*" class="hidden" onchange="updateProfileAvatar(this)">
+                            </div>
+
+                            <button onclick="openModal('edit-profile-modal')" class="bg-white/10 hover:bg-white/20 border border-white/20 text-white font-medium px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-2">
+                                <i class="fa-solid fa-pen-to-square"></i> Editar Perfil
+                            </button>
+                        </div>
+
+                        <div>
+                            <h2 id="profile-page-name" class="font-fredoka text-2xl font-bold text-white">Nombre de Usuario</h2>
+                            <p id="profile-page-handle" class="text-sm text-slap-400 font-mono">@usuario</p>
+                            <p id="profile-page-bio" class="text-xs text-slate-300 mt-2">Estudiante en Hollywood Arts High School.</p>
+                            
+                            <div class="flex items-center gap-4 mt-4 text-xs">
+                                <div><strong id="profile-count-slaps" class="text-white text-sm">0</strong> <span class="text-slate-400">Slaps</span></div>
+                                <div><strong id="profile-count-followers" class="text-white text-sm">0</strong> <span class="text-slate-400">Seguidores</span></div>
+                                <div><strong id="profile-count-following" class="text-white text-sm">0</strong> <span class="text-slate-400">Siguiendo</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Personal Posts Section -->
+                <div>
+                    <h3 class="font-fredoka text-base font-bold text-white mb-3">Mis Publicaciones</h3>
+                    <div id="profile-slaps-container" class="space-y-4">
+                        <!-- User's own slaps -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 5: SETTINGS & THEMES -->
+            <div id="tab-settings" class="tab-content hidden space-y-5">
+                <div class="glass-card rounded-2xl p-6 border border-white/10 shadow-lg space-y-6">
+                    <h3 class="font-fredoka text-xl font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-palette text-slap-400"></i> Personalización de Slap OS
+                    </h3>
+
+                    <!-- Theme Wallpaper Selector -->
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-3">Fondo de Pantalla & Tema</label>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            <button onclick="setTheme('theme-dark-slap')" class="p-3 rounded-xl border border-white/20 bg-slate-900 text-white text-xs text-left hover:border-slap-400 transition-all flex flex-col gap-1">
+                                <span class="w-full h-8 rounded-lg bg-gradient-to-r from-slate-950 to-slate-800"></span>
+                                <span class="font-bold">Dark Slap</span>
+                            </button>
+                            <button onclick="setTheme('theme-light-slap')" class="p-3 rounded-xl border border-white/20 bg-slate-100 text-slate-900 text-xs text-left hover:border-slap-400 transition-all flex flex-col gap-1">
+                                <span class="w-full h-8 rounded-lg bg-gradient-to-r from-green-100 to-blue-100"></span>
+                                <span class="font-bold">Light Slap</span>
+                            </button>
+                            <button onclick="setTheme('theme-neon')" class="p-3 rounded-xl border border-white/20 bg-purple-950 text-purple-200 text-xs text-left hover:border-slap-400 transition-all flex flex-col gap-1">
+                                <span class="w-full h-8 rounded-lg bg-gradient-to-r from-purple-900 to-black"></span>
+                                <span class="font-bold">Neon Vibes</span>
+                            </button>
+                            <button onclick="setTheme('theme-sunset')" class="p-3 rounded-xl border border-white/20 bg-rose-950 text-rose-200 text-xs text-left hover:border-slap-400 transition-all flex flex-col gap-1">
+                                <span class="w-full h-8 rounded-lg bg-gradient-to-r from-rose-900 to-red-600"></span>
+                                <span class="font-bold">Sunset Arts</span>
+                            </button>
+                            <button onclick="setTheme('theme-hollywood')" class="p-3 rounded-xl border border-white/20 bg-slate-900 text-white text-xs text-left hover:border-slap-400 transition-all flex flex-col gap-1">
+                                <span class="w-full h-8 rounded-lg bg-gradient-to-r from-pink-900 to-indigo-900"></span>
+                                <span class="font-bold">Hollywood Stage</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Audio Sound Effects Switch -->
+                    <div class="flex items-center justify-between pt-4 border-t border-white/10">
+                        <div>
+                            <h4 class="text-sm font-bold text-white">Efectos de Sonido SFX</h4>
+                            <p class="text-xs text-slate-400">Sonidos táctiles e interacciones Tone.js</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="sound-toggle" checked onchange="SoundFX.enabled = this.checked" class="sr-only peer">
+                            <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-slap-500"></div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Right Sidebar: Suggested Friends & Quick Slap Rules -->
+        <aside class="hidden lg:block lg:col-span-3 space-y-5">
+            <!-- Quick Chat Preview -->
+            <div class="glass-card rounded-2xl p-4 border border-white/10 shadow-lg">
+                <h4 class="font-fredoka text-sm font-semibold text-slate-200 mb-3 flex items-center justify-between">
+                    <span><i class="fa-solid fa-user-plus text-slap-400 mr-1.5"></i> Sugerencias</span>
+                </h4>
+                <div id="side-suggestions-list" class="space-y-3">
+                    <!-- Dynamic suggestions -->
+                </div>
+            </div>
+
+            <!-- Footer info -->
+            <div class="text-center text-[11px] text-slate-400 px-2 space-y-1 font-mono">
+                <p>The Slap NextGen © 2026 SlapOS</p>
+                <p>Inspired by Hollywood Arts & Victorious</p>
+            </div>
+        </aside>
+
     </main>
 
-    <!-- Right Sidebar -->
-    <aside class="lg:col-span-3 space-y-4 hidden lg:block">
-      <div class="bg-white dark:bg-zinc-900 rounded-2xl p-5 border border-slate-200/80 dark:border-zinc-800/80 shadow-sm">
-        <h3 class="font-bold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-2 mb-3">
-          <i class="fa-solid fa-fire text-slap-500"></i> Tendencias en Hollywood Arts
-        </h3>
-        <div class="space-y-3">
-          <div class="cursor-pointer hover:bg-slate-50 dark:hover:bg-zinc-800/50 p-2 rounded-lg transition" onclick="app.filterHashtag('#SikowitzMonologues')">
-            <p class="text-xs text-slate-400 font-medium">1 · Teatro & Actuación</p>
-            <p class="text-sm font-bold text-slate-800 dark:text-slate-200">#SikowitzMonologues</p>
-            <p class="text-[11px] text-slate-400">12.4k Slaps</p>
-          </div>
-          <div class="cursor-pointer hover:bg-slate-50 dark:hover:bg-zinc-800/50 p-2 rounded-lg transition" onclick="app.filterHashtag('#NoHayRival')">
-            <p class="text-xs text-slate-400 font-medium">2 · Música</p>
-            <p class="text-sm font-bold text-slate-800 dark:text-slate-200">#MakeItShine</p>
-            <p class="text-[11px] text-slate-400">8.9k Slaps</p>
-          </div>
-          <div class="cursor-pointer hover:bg-slate-50 dark:hover:bg-zinc-800/50 p-2 rounded-lg transition" onclick="app.filterHashtag('#TheSlapNextGen')">
-            <p class="text-xs text-slate-400 font-medium">3 · Tendencia General</p>
-            <p class="text-sm font-bold text-slate-800 dark:text-slate-200">#TheSlapNextGen</p>
-            <p class="text-[11px] text-slate-400">6.1k Slaps</p>
-          </div>
+    <!-- Edit Profile Modal -->
+    <div id="edit-profile-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+        <div class="glass-card max-w-md w-full rounded-2xl p-6 border border-white/20 shadow-2xl relative">
+            <button onclick="closeModal('edit-profile-modal')" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            <h3 class="font-fredoka text-xl font-bold text-white mb-4">Editar Perfil</h3>
+            <form onsubmit="saveProfileChanges(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Nombre</label>
+                    <input type="text" id="edit-name-input" class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-slap-400">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Bio / Estado</label>
+                    <textarea id="edit-bio-input" rows="2" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-slap-400"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Estado / Mood</label>
+                    <select id="edit-mood-input" class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-slap-400">
+                        <option value="😎 Emocionado">😎 Emocionado</option>
+                        <option value="😏 Sarcástico">😏 Sarcástico</option>
+                        <option value="🎨 Creativo">🎨 Creativo</option>
+                        <option value="🎭 Dramático">🎭 Dramático</option>
+                    </select>
+                </div>
+                <button type="submit" class="w-full bg-slap-500 hover:bg-slap-400 text-slate-950 font-bold py-2.5 rounded-xl text-sm transition-all shadow-md">
+                    Guardar Cambios
+                </button>
+            </form>
         </div>
-      </div>
-
-      <div class="px-2 text-xs text-slate-400 space-y-2">
-        <p>© 2026 The Slap NextGen · Hollywood Arts 👏</p>
-      </div>
-    </aside>
-
-  </div>
-
-  <!-- Modal Auth (Login/Register) -->
-  <div id="auth-modal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-    <div class="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl relative animate-in fade-in zoom-in duration-200">
-      <button onclick="app.closeAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-2">
-        <i class="fa-solid fa-xmark text-xl"></i>
-      </button>
-
-      <div class="flex border-b border-slate-200 dark:border-zinc-800 mb-6">
-        <button id="tab-login-btn" onclick="app.switchAuthTab('login')" class="flex-1 pb-3 text-center font-bold text-sm border-b-2 border-slap-500 text-slap-600 dark:text-slap-400">
-          Iniciar Sesión
-        </button>
-        <button id="tab-register-btn" onclick="app.switchAuthTab('register')" class="flex-1 pb-3 text-center font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-          Registrarse 👏
-        </button>
-      </div>
-
-      <!-- Login Form -->
-      <form id="login-form" onsubmit="app.handleLogin(event)" class="space-y-4">
-        <div>
-          <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Nombre de usuario</label>
-          <input type="text" id="login-username" required placeholder="ej: tori_vega" 
-            class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slap-500">
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Contraseña</label>
-          <input type="password" id="login-password" required placeholder="••••••••" 
-            class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slap-500">
-        </div>
-        <button type="submit" class="w-full slap-gradient text-white font-bold py-3 rounded-xl shadow-md hover:brightness-105 active:scale-95 transition">
-          Entrar a The Slap 👏
-        </button>
-      </form>
-
-      <!-- Register Form -->
-      <form id="register-form" onsubmit="app.handleRegister(event)" class="space-y-4 hidden">
-        <div>
-          <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Nombre Completo</label>
-          <input type="text" id="reg-fullname" required placeholder="ej: Cat Valentine" 
-            class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slap-500">
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Usuario (@username)</label>
-          <input type="text" id="reg-username" required placeholder="ej: cat_v" 
-            class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slap-500">
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Biografía</label>
-          <input type="text" id="reg-bio" placeholder="¿Qué te apasiona en Hollywood Arts?" 
-            class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slap-500">
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Color de Avatar</label>
-          <select id="reg-avatar-color" class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slap-500">
-            <option value="f43f5e">Rosa Slap 👏</option>
-            <option value="ec4899">Rosa Chicle Cat 🌸</option>
-            <option value="8b5cf6">Violeta Jade 💜</option>
-            <option value="3b82f6">Azul Beck 💙</option>
-            <option value="f59e0b">Naranja Robbie 🍊</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Contraseña</label>
-          <input type="password" id="reg-password" required placeholder="Crea tu clave secreta" 
-            class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slap-500">
-        </div>
-
-        <div class="p-3 bg-slap-50 dark:bg-slap-950/40 rounded-xl border border-slap-200 dark:border-slap-800/50 text-xs text-slap-800 dark:text-slap-300">
-          <i class="fa-solid fa-shield-check mr-1"></i>
-          Tu perfil comenzará con 0 seguidores, 0 seguidos y 0 slaps. ¡Inicia tu camino a la fama!
-        </div>
-
-        <button type="submit" class="w-full slap-gradient text-white font-bold py-3 rounded-xl shadow-md hover:brightness-105 active:scale-95 transition">
-          Crear mi cuenta en The Slap 👏
-        </button>
-      </form>
     </div>
-  </div>
 
-  <!-- Modal Edit Profile -->
-  <div id="edit-profile-modal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-    <div class="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl relative animate-in fade-in zoom-in duration-200 space-y-4">
-      <button onclick="app.closeEditProfileModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-2">
-        <i class="fa-solid fa-xmark text-xl"></i>
-      </button>
-
-      <h3 class="font-extrabold text-lg text-slate-800 dark:text-slate-100 flex items-center gap-2">
-        <i class="fa-solid fa-user-pen text-slap-500"></i> Editar Mi Perfil
-      </h3>
-
-      <form onsubmit="app.saveProfile(event)" class="space-y-4">
-        <div>
-          <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Nombre Completo</label>
-          <input type="text" id="edit-fullname" required
-            class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slap-500">
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Nombre de Usuario (@)</label>
-          <input type="text" id="edit-username" required
-            class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slap-500">
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Biografía</label>
-          <textarea id="edit-bio" rows="3"
-            class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slap-500 resize-none"></textarea>
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">URL del Avatar (Opcional)</label>
-          <input type="url" id="edit-avatar-url" placeholder="https://..."
-            class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slap-500">
-        </div>
-
-        <button type="submit" class="w-full slap-gradient text-white font-bold py-3 rounded-xl shadow-md hover:brightness-105 active:scale-95 transition">
-          Guardar Cambios 👏
-        </button>
-      </form>
-    </div>
-  </div>
-
-  <!-- JavaScript Logic -->
-  <script>
-    const DEFAULT_SLAPS = [
-      {
-        id: 'slap-101',
-        author: {
-          name: 'Tori Vega',
-          username: 'tori_vega',
-          avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
-          verified: true
-        },
-        mood: '🎤 Cantando',
-        content: '¡Ensayando para el gran showcase de mañana! Si ven a Sikowitz con un coco, avísenme antes de que me lo lance 🥥🎶 #HollywoodArts #MakeItShine',
-        media: null,
-        likes: 342,
-        liked: false,
-        timestamp: 'Hace 15 minutos',
-        comments: [
-          {
-            id: 'comment-201',
-            author: { name: 'Jade West', username: 'jade_w', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&q=80' },
-            text: 'No prometo nada sobre los cocos Vega. 🔪🏼',
-            timestamp: 'Hace 10 min'
-          },
-          {
-            id: 'comment-202',
-            author: { name: 'Cat Valentine', username: 'cat_v', avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=150&q=80' },
-            text: '¡Una vez mi hermano se comió un coco con cáscara y habló en alemán por 3 días! 🌸✨',
-            timestamp: 'Hace 5 min'
-          }
-        ]
-      },
-      {
-        id: 'slap-102',
-        author: {
-          name: 'Beck Oliver',
-          username: 'beck_o',
-          avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=150&q=80',
-          verified: true
-        },
-        mood: '🎭 Dramático',
-        content: 'Acabo de salir de una sesión intensiva de improvisación. Recuerden siempre aplaudir el talento. 👏🎬',
-        media: null,
-        likes: 512,
-        liked: true,
-        timestamp: 'Hace 1 hora',
-        comments: [
-          {
-            id: 'comment-203',
-            author: { name: 'Robbie Shapiro', username: 'robbie_s', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80' },
-            text: 'Rex dice que esa frase merece un aplauso. 🤖👏',
-            timestamp: 'Hace 45 min'
-          }
-        ]
-      }
-    ];
-
-    class TheSlapApp {
-      constructor() {
-        this.currentUser = JSON.parse(localStorage.getItem('theslap_current_user')) || null;
-        this.users = JSON.parse(localStorage.getItem('theslap_users')) || [];
-        this.slaps = JSON.parse(localStorage.getItem('theslap_slaps')) || DEFAULT_SLAPS;
-        this.settings = JSON.parse(localStorage.getItem('theslap_settings')) || {
-          soundEffects: true,
-          notifications: true,
-          privacyMode: false,
-          theme: 'dark'
-        };
-
-        this.currentMediaAttachment = null; // { type: 'video' | 'audio', url: string, name: string }
-        this.currentView = 'feed';
-
-        this.init();
-      }
-
-      init() {
-        this.renderAuthNav();
-        this.renderSidebarProfile();
-        this.renderComposerAvatar();
-        this.renderFeed();
-
-        const searchInput = document.getElementById('search-input');
-        if (searchInput) {
-          searchInput.addEventListener('input', (e) => {
-            this.filterFeed(e.target.value);
-          });
-        }
-      }
-
-      showToast(message, type = 'success') {
-        const container = document.getElementById('toast-container');
-        const toast = document.createElement('div');
-        toast.className = `pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl shadow-xl text-white font-medium text-sm transition-all transform translate-y-2 opacity-0 duration-300 ${
-          type === 'error' ? 'bg-red-600' : 'bg-zinc-900 border border-slap-500/50'
-        }`;
-        
-        toast.innerHTML = `
-          <span class="text-xl">👏</span>
-          <span class="flex-1">${message}</span>
-        `;
-
-        container.appendChild(toast);
-
-        setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
-        setTimeout(() => {
-          toast.classList.add('opacity-0', '-translate-y-2');
-          setTimeout(() => toast.remove(), 300);
-        }, 3200);
-      }
-
-      playSoundEffect() {
-        if (!this.settings.soundEffects) return;
-        try {
-          const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-          const osc = audioCtx.createOscillator();
-          const gain = audioCtx.createGain();
-          
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(300, audioCtx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1);
-          
-          gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-          
-          osc.connect(gain);
-          gain.connect(audioCtx.destination);
-          
-          osc.start();
-          osc.stop(audioCtx.currentTime + 0.15);
-        } catch (e) {
-          // Fallback silence
-        }
-      }
-
-      copyToClipboard(text, successMessage) {
-        try {
-          const textarea = document.createElement('textarea');
-          textarea.value = text;
-          textarea.style.position = 'fixed';
-          textarea.style.opacity = '0';
-          document.body.appendChild(textarea);
-          textarea.select();
-          
-          const successful = document.execCommand('copy');
-          document.body.removeChild(textarea);
-
-          if (successful) {
-            this.showToast(successMessage || '¡Copiado al portapapeles!');
-          } else if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(text).then(() => {
-              this.showToast(successMessage || '¡Copiado al portapapeles!');
-            });
-          } else {
-            this.showToast('No se pudo copiar el enlace', 'error');
-          }
-        } catch (err) {
-          this.showToast('Error al intentar copiar el enlace', 'error');
-        }
-      }
-
-      copyCommentLink(slapId, commentId) {
-        const url = `${window.location.origin}${window.location.pathname}#slap-${slapId}-comment-${commentId}`;
-        this.copyToClipboard(url, '¡Enlace del comentario copiado al portapapeles! 👏');
-      }
-
-      copySlapLink(slapId) {
-        const url = `${window.location.origin}${window.location.pathname}#slap-${slapId}`;
-        this.copyToClipboard(url, '¡Enlace del Slap copiado al portapapeles! 👏');
-      }
-
-      switchAuthTab(tab) {
-        const loginForm = document.getElementById('login-form');
-        const regForm = document.getElementById('register-form');
-        const loginBtn = document.getElementById('tab-login-btn');
-        const regBtn = document.getElementById('tab-register-btn');
-
-        if (tab === 'login') {
-          loginForm.classList.remove('hidden');
-          regForm.classList.add('hidden');
-          loginBtn.className = "flex-1 pb-3 text-center font-bold text-sm border-b-2 border-slap-500 text-slap-600 dark:text-slap-400";
-          regBtn.className = "flex-1 pb-3 text-center font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-200";
-        } else {
-          loginForm.classList.add('hidden');
-          regForm.classList.remove('hidden');
-          regBtn.className = "flex-1 pb-3 text-center font-bold text-sm border-b-2 border-slap-500 text-slap-600 dark:text-slap-400";
-          loginBtn.className = "flex-1 pb-3 text-center font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-200";
-        }
-      }
-
-      openAuthModal(tab = 'login') {
-        this.switchAuthTab(tab);
-        document.getElementById('auth-modal').classList.remove('hidden');
-      }
-
-      closeAuthModal() {
-        document.getElementById('auth-modal').classList.add('hidden');
-      }
-
-      openEditProfileModal() {
-        if (!this.currentUser) {
-          this.showToast('Debes iniciar sesión para editar tu perfil', 'error');
-          this.openAuthModal('login');
-          return;
-        }
-
-        document.getElementById('edit-fullname').value = this.currentUser.name || '';
-        document.getElementById('edit-username').value = this.currentUser.username || '';
-        document.getElementById('edit-bio').value = this.currentUser.bio || '';
-        document.getElementById('edit-avatar-url').value = this.currentUser.avatar || '';
-
-        document.getElementById('edit-profile-modal').classList.remove('hidden');
-      }
-
-      closeEditProfileModal() {
-        document.getElementById('edit-profile-modal').classList.add('hidden');
-      }
-
-      saveProfile(e) {
-        e.preventDefault();
-        if (!this.currentUser) return;
-
-        const fullName = document.getElementById('edit-fullname').value.trim();
-        const username = document.getElementById('edit-username').value.trim().replace(/^@/, '').toLowerCase();
-        const bio = document.getElementById('edit-bio').value.trim();
-        const avatarUrl = document.getElementById('edit-avatar-url').value.trim();
-
-        if (!fullName || !username) {
-          this.showToast('Por favor completa el nombre y usuario', 'error');
-          return;
-        }
-
-        this.currentUser.name = fullName;
-        this.currentUser.username = username;
-        this.currentUser.bio = bio;
-        if (avatarUrl) {
-          this.currentUser.avatar = avatarUrl;
-        }
-
-        // Save state
-        localStorage.setItem('theslap_current_user', JSON.stringify(this.currentUser));
-        
-        // Update user in users list if exists
-        const idx = this.users.findIndex(u => u.id === this.currentUser.id);
-        if (idx !== -1) {
-          this.users[idx] = { ...this.currentUser };
-          localStorage.setItem('theslap_users', JSON.stringify(this.users));
-        }
-
-        this.closeEditProfileModal();
-        this.showToast('¡Perfil actualizado con éxito! 👏');
-        this.init();
-      }
-
-      handleRegister(e) {
-        e.preventDefault();
-        const fullName = document.getElementById('reg-fullname').value.trim();
-        const rawUsername = document.getElementById('reg-username').value.trim().replace(/^@/, '');
-        const bio = document.getElementById('reg-bio').value.trim();
-        const avatarColor = document.getElementById('reg-avatar-color').value;
-        const password = document.getElementById('reg-password').value;
-
-        if (!fullName || !rawUsername || !password) {
-          this.showToast('Por favor completa todos los campos requeridos', 'error');
-          return;
-        }
-
-        const username = rawUsername.toLowerCase();
-        const existingUser = this.users.find(u => u.username.toLowerCase() === username);
-        if (existingUser) {
-          this.showToast('El nombre de usuario ya está registrado', 'error');
-          return;
-        }
-
-        // Absolute requirement: 0 followers, 0 following, 0 slaps for new registrations
-        const newUser = {
-          id: 'usr_' + Date.now(),
-          name: fullName,
-          username: username,
-          bio: bio || '¡Nuevo estudiante en Hollywood Arts! 👏',
-          avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=${avatarColor}&color=fff&bold=true`,
-          followers: 0,
-          following: 0,
-          slapsCount: 0,
-          password: password,
-          verified: false
-        };
-
-        this.users.push(newUser);
-        localStorage.setItem('theslap_users', JSON.stringify(this.users));
-
-        this.currentUser = newUser;
-        localStorage.setItem('theslap_current_user', JSON.stringify(this.currentUser));
-
-        this.closeAuthModal();
-        this.playSoundEffect();
-        this.showToast(`¡Bienvenido a The Slap, ${fullName}! Tu cuenta ha iniciado con 0 seguidores.`);
-        this.init();
-      }
-
-      handleLogin(e) {
-        e.preventDefault();
-        const username = document.getElementById('login-username').value.trim().replace(/^@/, '').toLowerCase();
-        
-        let user = this.users.find(u => u.username.toLowerCase() === username);
-
-        if (!user && (username === 'tori_vega' || username === 'tori')) {
-          user = {
-            id: 'usr_tori',
-            name: 'Tori Vega',
-            username: 'tori_vega',
-            bio: 'Cantante, actriz y estudiante de Hollywood Arts 🎤',
-            avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
-            followers: 1240,
-            following: 180,
-            slapsCount: 89,
-            verified: true
-          };
-        }
-
-        if (user) {
-          this.currentUser = user;
-          localStorage.setItem('theslap_current_user', JSON.stringify(this.currentUser));
-          this.closeAuthModal();
-          this.playSoundEffect();
-          this.showToast(`¡Hola de nuevo, ${user.name}! 👏`);
-          this.init();
-        } else {
-          this.showToast('Usuario no encontrado. Intenta registrarte.', 'error');
-        }
-      }
-
-      logout() {
-        this.currentUser = null;
-        localStorage.removeItem('theslap_current_user');
-        this.showToast('Has cerrado sesión en The Slap');
-        this.init();
-      }
-
-      handleMediaUpload(event, type) {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        const objectUrl = URL.createObjectURL(file);
-        this.currentMediaAttachment = {
-          type: type, // 'video' or 'audio'
-          url: objectUrl,
-          name: file.name
-        };
-
-        const box = document.getElementById('media-preview-box');
-        const content = document.getElementById('media-preview-content');
-
-        box.classList.remove('hidden');
-
-        if (type === 'video') {
-          content.innerHTML = `
-            <video src="${objectUrl}" controls class="w-full max-h-48 rounded-lg object-contain bg-black"></video>
-          `;
-        } else if (type === 'audio') {
-          content.innerHTML = `
-            <div class="w-full p-4 bg-slate-200 dark:bg-zinc-700 rounded-lg flex flex-col gap-2">
-              <span class="text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2">
-                <i class="fa-solid fa-file-audio text-pink-500"></i> ${file.name}
-              </span>
-              <audio src="${objectUrl}" controls class="w-full h-10"></audio>
-            </div>
-          `;
-        }
-      }
-
-      clearComposerMedia() {
-        this.currentMediaAttachment = null;
-        document.getElementById('video-file-input').value = '';
-        document.getElementById('audio-file-input').value = '';
-        document.getElementById('media-preview-box').classList.add('hidden');
-        document.getElementById('media-preview-content').innerHTML = '';
-      }
-
-      renderAuthNav() {
-        const container = document.getElementById('auth-nav-container');
-        if (this.currentUser) {
-          container.innerHTML = `
-            <div class="flex items-center gap-2 cursor-pointer p-1 rounded-xl hover:bg-slate-100 dark:hover:bg-zinc-800 transition" onclick="app.navigate('my-profile')">
-              <img src="${this.currentUser.avatar}" class="w-9 h-9 rounded-full object-cover border-2 border-slap-500">
-              <span class="text-sm font-semibold hidden sm:inline">${this.currentUser.name}</span>
-            </div>
-            <button onclick="app.openEditProfileModal()" class="p-2 text-slate-400 hover:text-slap-500 transition" title="Editar Perfil">
-              <i class="fa-solid fa-pen-to-square"></i>
-            </button>
-            <button onclick="app.logout()" class="p-2 text-slate-400 hover:text-red-500 transition" title="Cerrar Sesión">
-              <i class="fa-solid fa-right-from-bracket"></i>
-            </button>
-          `;
-        } else {
-          container.innerHTML = `
-            <button onclick="app.openAuthModal('login')" class="text-xs font-bold px-3.5 py-2 rounded-xl border border-slate-300 dark:border-zinc-700 hover:bg-slate-100 dark:hover:bg-zinc-800 transition">
-              Entrar
-            </button>
-            <button onclick="app.openAuthModal('register')" class="text-xs font-bold px-3.5 py-2 rounded-xl slap-gradient text-white shadow hover:brightness-105 transition">
-              Registrarse
-            </button>
-          `;
-        }
-      }
-
-      renderSidebarProfile() {
-        const card = document.getElementById('sidebar-profile-card');
-        if (this.currentUser) {
-          card.innerHTML = `
-            <div class="text-center relative">
-              <div class="w-20 h-20 mx-auto mb-3 rounded-full p-1 slap-gradient shadow-md">
-                <img src="${this.currentUser.avatar}" class="w-full h-full rounded-full object-cover border-2 border-white dark:border-zinc-900">
-              </div>
-              <h2 class="font-extrabold text-base text-slate-800 dark:text-slate-100 flex items-center justify-center gap-1">
-                ${this.currentUser.name}
-                ${this.currentUser.verified ? '<i class="fa-solid fa-circle-check text-slap-500 text-xs"></i>' : ''}
-              </h2>
-              <p class="text-xs text-slate-400">@${this.currentUser.username}</p>
-              <p class="text-xs text-slate-600 dark:text-slate-300 mt-2 italic max-w-xs mx-auto">"${this.currentUser.bio}"</p>
-
-              <!-- Profile Stats -->
-              <div class="grid grid-cols-3 gap-2 border-t border-slate-100 dark:border-zinc-800 pt-3 mt-4 text-center">
-                <div>
-                  <span class="block font-black text-sm text-slate-800 dark:text-slate-100">${this.currentUser.slapsCount || 0}</span>
-                  <span class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Slaps</span>
-                </div>
-                <div>
-                  <span class="block font-black text-sm text-slate-800 dark:text-slate-100">${this.currentUser.followers || 0}</span>
-                  <span class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Seguidores</span>
-                </div>
-                <div>
-                  <span class="block font-black text-sm text-slate-800 dark:text-slate-100">${this.currentUser.following || 0}</span>
-                  <span class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Seguidos</span>
-                </div>
-              </div>
-
-              <button onclick="app.openEditProfileModal()" class="w-full mt-4 text-xs font-bold py-2 px-3 rounded-xl border border-slate-200 dark:border-zinc-700 hover:bg-slate-100 dark:hover:bg-zinc-800 transition flex items-center justify-center gap-2">
-                <i class="fa-solid fa-user-pen"></i> Editar Mi Perfil
-              </button>
-            </div>
-          `;
-        } else {
-          card.innerHTML = `
-            <div class="text-center py-2 space-y-3">
-              <div class="text-4xl">👏</div>
-              <h3 class="font-bold text-sm">¡Bienvenido a Hollywood Arts!</h3>
-              <p class="text-xs text-slate-500 dark:text-slate-400">Crea tu cuenta en The Slap. Inicia con 0 seguidores y construye tu audiencia.</p>
-              <button onclick="app.openAuthModal('register')" class="w-full slap-gradient text-white font-bold py-2 rounded-xl text-xs shadow hover:brightness-105 transition">
-                Registrarme Ahora
-              </button>
-            </div>
-          `;
-        }
-      }
-
-      renderComposerAvatar() {
-        const img = document.getElementById('composer-user-avatar');
-        if (img) {
-          img.src = this.currentUser ? this.currentUser.avatar : 'https://ui-avatars.com/api/?name=Invitado&background=f43f5e&color=fff';
-        }
-      }
-
-      addComposerEmoji(emoji) {
-        const txt = document.getElementById('composer-text');
-        if (txt) {
-          txt.value += ' ' + emoji;
-          txt.focus();
-        }
-      }
-
-      publishSlap() {
-        if (!this.currentUser) {
-          this.showToast('Debes iniciar sesión para publicar un Slap', 'error');
-          this.openAuthModal('login');
-          return;
-        }
-
-        const textEl = document.getElementById('composer-text');
-        const moodEl = document.getElementById('composer-mood-select');
-        const content = textEl.value.trim();
-
-        if (!content && !this.currentMediaAttachment) {
-          this.showToast('Escribe algo o adjunta un archivo antes de publicar tu Slap', 'error');
-          return;
-        }
-
-        const newSlap = {
-          id: 'slap-' + Date.now(),
-          author: {
-            name: this.currentUser.name,
-            username: this.currentUser.username,
-            avatar: this.currentUser.avatar,
-            verified: !!this.currentUser.verified
-          },
-          mood: moodEl.value,
-          content: content,
-          media: this.currentMediaAttachment ? { ...this.currentMediaAttachment } : null,
-          likes: 0,
-          liked: false,
-          timestamp: 'Ahora mismo',
-          comments: []
-        };
-
-        this.slaps.unshift(newSlap);
-        this.currentUser.slapsCount = (this.currentUser.slapsCount || 0) + 1;
-
-        localStorage.setItem('theslap_slaps', JSON.stringify(this.slaps));
-        localStorage.setItem('theslap_current_user', JSON.stringify(this.currentUser));
-
-        textEl.value = '';
-        this.clearComposerMedia();
-        this.playSoundEffect();
-        this.showToast('¡Tu Slap ha sido publicado! 👏');
-        this.renderSidebarProfile();
-        this.renderFeed();
-      }
-
-      toggleLike(slapId) {
-        const slap = this.slaps.find(s => s.id === slapId);
-        if (slap) {
-          slap.liked = !slap.liked;
-          slap.likes += slap.liked ? 1 : -1;
-          localStorage.setItem('theslap_slaps', JSON.stringify(this.slaps));
-          this.renderFeed();
-        }
-      }
-
-      addComment(slapId, inputId) {
-        if (!this.currentUser) {
-          this.showToast('Inicia sesión para comentar', 'error');
-          this.openAuthModal('login');
-          return;
-        }
-
-        const input = document.getElementById(inputId);
-        const text = input ? input.value.trim() : '';
-
-        if (!text) return;
-
-        const slap = this.slaps.find(s => s.id === slapId);
-        if (slap) {
-          const newComment = {
-            id: 'comment-' + Date.now(),
-            author: {
-              name: this.currentUser.name,
-              username: this.currentUser.username,
-              avatar: this.currentUser.avatar
-            },
-            text: text,
-            timestamp: 'Ahora'
-          };
-
-          slap.comments.push(newComment);
-          localStorage.setItem('theslap_slaps', JSON.stringify(this.slaps));
-          input.value = '';
-          this.showToast('Comentario publicado 👏');
-          this.renderFeed();
-        }
-      }
-
-      renderSettingsView() {
-        const list = document.getElementById('slap-feed-list');
-        const badge = document.getElementById('slaps-count-badge');
-        if (badge) badge.innerText = 'Ajustes de la App';
-
-        list.innerHTML = `
-          <div class="bg-white dark:bg-zinc-900 rounded-2xl p-6 border border-slate-200/80 dark:border-zinc-800/80 shadow-sm space-y-6">
-            <h3 class="font-extrabold text-lg text-slate-800 dark:text-slate-100 flex items-center gap-2">
-              <i class="fa-solid fa-sliders text-slap-500"></i> Configuración de la Página
+    <!-- Create Slap Modal -->
+    <div id="create-slap-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+        <div class="glass-card max-w-lg w-full rounded-2xl p-6 border border-white/20 shadow-2xl relative">
+            <button onclick="closeModal('create-slap-modal')" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            <h3 class="font-fredoka text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <span>👏</span> Publicar nuevo Slap
             </h3>
-
-            <!-- Sound Effects Toggle -->
-            <div class="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-zinc-800">
-              <div>
-                <h4 class="font-bold text-sm text-slate-800 dark:text-slate-200">Efectos de Sonido</h4>
-                <p class="text-xs text-slate-400">Reproduce un todo al publicar slaps o interactuar.</p>
-              </div>
-              <input type="checkbox" id="setting-sounds" ${this.settings.soundEffects ? 'checked' : ''} 
-                onchange="app.updateSetting('soundEffects', this.checked)"
-                class="w-5 h-5 accent-slap-500 cursor-pointer">
-            </div>
-
-            <!-- Notifications Toggle -->
-            <div class="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-zinc-800">
-              <div>
-                <h4 class="font-bold text-sm text-slate-800 dark:text-slate-200">Notificaciones</h4>
-                <p class="text-xs text-slate-400">Recibe alertas sobre me gustas y nuevos comentarios.</p>
-              </div>
-              <input type="checkbox" id="setting-notes" ${this.settings.notifications ? 'checked' : ''} 
-                onchange="app.updateSetting('notifications', this.checked)"
-                class="w-5 h-5 accent-slap-500 cursor-pointer">
-            </div>
-
-            <!-- Privacy Toggle -->
-            <div class="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-zinc-800">
-              <div>
-                <h4 class="font-bold text-sm text-slate-800 dark:text-slate-200">Perfil Privado</h4>
-                <p class="text-xs text-slate-400">Oculta tus estadísticas para visitantes no registrados.</p>
-              </div>
-              <input type="checkbox" id="setting-privacy" ${this.settings.privacyMode ? 'checked' : ''} 
-                onchange="app.updateSetting('privacyMode', this.checked)"
-                class="w-5 h-5 accent-slap-500 cursor-pointer">
-            </div>
-
-            <!-- Quick Theme Switcher -->
-            <div class="pt-2">
-              <h4 class="font-bold text-sm text-slate-800 dark:text-slate-200 mb-2">Tema Visual</h4>
-              <div class="flex gap-3">
-                <button onclick="app.setThemeMode(false)" class="flex-1 py-2 rounded-xl border border-slate-300 dark:border-zinc-700 font-bold text-xs hover:bg-slate-100 dark:hover:bg-zinc-800 transition">
-                  ☀️ Claro
-                </button>
-                <button onclick="app.setThemeMode(true)" class="flex-1 py-2 rounded-xl bg-zinc-800 text-white font-bold text-xs hover:bg-zinc-700 transition">
-                  🌙 Oscuro
-                </button>
-              </div>
-            </div>
-          </div>
-        `;
-      }
-
-      updateSetting(key, val) {
-        this.settings[key] = val;
-        localStorage.setItem('theslap_settings', JSON.stringify(this.settings));
-        this.showToast('Configuración actualizada 👏');
-      }
-
-      setThemeMode(isDark) {
-        if (isDark) {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
-        const icon = document.getElementById('theme-icon');
-        if (icon) {
-          icon.className = isDark ? 'fa-solid fa-sun text-yellow-400' : 'fa-solid fa-moon';
-        }
-        this.showToast(`Modo ${isDark ? 'Oscuro' : 'Claro'} activado`);
-      }
-
-      renderFeed(filteredSlaps = null) {
-        if (this.currentView === 'settings') {
-          this.renderSettingsView();
-          return;
-        }
-
-        const list = document.getElementById('slap-feed-list');
-        const badge = document.getElementById('slaps-count-badge');
-        const slapsToRender = filteredSlaps || this.slaps;
-
-        if (badge) badge.innerText = `${slapsToRender.length} Slaps`;
-
-        if (slapsToRender.length === 0) {
-          list.innerHTML = `
-            <div class="bg-white dark:bg-zinc-900 rounded-2xl p-8 text-center border border-slate-200 dark:border-zinc-800 space-y-3">
-              <div class="text-4xl">👏</div>
-              <h3 class="font-bold text-slate-700 dark:text-slate-200">No hay Slaps disponibles</h3>
-              <p class="text-xs text-slate-400">¡Sé el primero en publicar un estado o cambiar los términos de búsqueda!</p>
-            </div>
-          `;
-          return;
-        }
-
-        list.innerHTML = slapsToRender.map(slap => `
-          <div id="${slap.id}" class="bg-white dark:bg-zinc-900 rounded-2xl p-5 border border-slate-200/80 dark:border-zinc-800/80 shadow-sm space-y-3 transition-all hover:border-slate-300 dark:hover:border-zinc-700">
-            <!-- Header -->
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <img src="${slap.author.avatar}" class="w-10 h-10 rounded-full object-cover border border-slate-200 dark:border-zinc-700">
-                <div>
-                  <h4 class="font-bold text-sm text-slate-800 dark:text-slate-100 flex items-center gap-1">
-                    ${slap.author.name}
-                    ${slap.author.verified ? '<i class="fa-solid fa-circle-check text-slap-500 text-xs"></i>' : ''}
-                  </h4>
-                  <p class="text-xs text-slate-400">@${slap.author.username} · ${slap.timestamp}</p>
+            
+            <div class="space-y-4">
+                <textarea id="modal-slap-text" rows="3" placeholder="¿Qué está pasando en Hollywood Arts?" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-slap-400 transition-all resize-none"></textarea>
+                
+                <!-- Media Preview Area for Modal -->
+                <div id="modal-media-preview-container" class="hidden relative rounded-xl overflow-hidden bg-black/50 border border-white/10 p-2">
+                    <button onclick="clearModalMediaPreview()" class="absolute top-2 right-2 bg-black/70 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs hover:bg-red-500 transition-colors z-10"><i class="fa-solid fa-xmark"></i></button>
+                    <img id="modal-img-preview" class="hidden max-h-48 rounded-lg mx-auto object-cover">
+                    <audio id="modal-audio-preview" controls class="hidden w-full mt-1"></audio>
                 </div>
-              </div>
-              
-              <span class="text-xs font-semibold px-3 py-1 rounded-full bg-slap-100 dark:bg-slap-950/70 text-slap-700 dark:text-slap-300">
-                ${slap.mood}
-              </span>
-            </div>
 
-            <!-- Content text -->
-            ${slap.content ? `<p class="text-sm text-slate-700 dark:text-slate-200 whitespace-pre-line leading-relaxed">${slap.content}</p>` : ''}
-
-            <!-- Render Media if attached -->
-            ${slap.media ? `
-              <div class="mt-3 rounded-xl overflow-hidden bg-black/5 dark:bg-zinc-800 p-2">
-                ${slap.media.type === 'video' ? `
-                  <video src="${slap.media.url}" controls class="w-full max-h-80 rounded-lg object-contain bg-black"></video>
-                ` : slap.media.type === 'audio' ? `
-                  <div class="p-3 bg-slate-200 dark:bg-zinc-800 rounded-lg space-y-2">
-                    <p class="text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2">
-                      <i class="fa-solid fa-music text-pink-500"></i> Archivo de Audio
-                    </p>
-                    <audio src="${slap.media.url}" controls class="w-full h-10"></audio>
-                  </div>
-                ` : ''}
-              </div>
-            ` : ''}
-
-            <!-- Slap Actions -->
-            <div class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-zinc-800 text-xs font-medium text-slate-500 dark:text-slate-400">
-              <button onclick="app.toggleLike('${slap.id}')" class="flex items-center gap-1.5 hover:text-red-500 transition ${slap.liked ? 'text-red-500 font-bold' : ''}">
-                <i class="${slap.liked ? 'fa-solid' : 'fa-regular'} fa-heart text-sm"></i>
-                <span>${slap.likes} Me gusta</span>
-              </button>
-
-              <div class="flex items-center gap-1.5">
-                <i class="fa-regular fa-comment text-sm"></i>
-                <span>${slap.comments.length} Comentarios</span>
-              </div>
-
-              <button onclick="app.copySlapLink('${slap.id}')" class="flex items-center gap-1.5 hover:text-slap-500 transition">
-                <i class="fa-solid fa-share-nodes text-sm"></i>
-                <span>Compartir</span>
-              </button>
-            </div>
-
-            <!-- Comments Section -->
-            <div class="pt-3 border-t border-slate-100 dark:border-zinc-800 space-y-3">
-              <div class="flex items-center gap-2">
-                <input type="text" id="input-${slap.id}" placeholder="Escribe un comentario..." 
-                  onkeydown="if(event.key==='Enter') app.addComment('${slap.id}', 'input-${slap.id}')"
-                  class="flex-1 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-slap-500">
-                <button onclick="app.addComment('${slap.id}', 'input-${slap.id}')" class="p-2 rounded-xl bg-slate-200 dark:bg-zinc-700 hover:bg-slap-500 hover:text-white transition text-xs font-bold">
-                  <i class="fa-solid fa-paper-plane"></i>
-                </button>
-              </div>
-
-              <div class="space-y-2">
-                ${slap.comments.map(comment => `
-                  <div id="${slap.id}-${comment.id}" class="bg-slate-50 dark:bg-zinc-800/50 p-3 rounded-xl space-y-1 text-xs">
-                    <div class="flex items-center justify-between">
-                      <div class="flex items-center gap-2">
-                        <img src="${comment.author.avatar}" class="w-5 h-5 rounded-full object-cover">
-                        <span class="font-bold text-slate-800 dark:text-slate-200">${comment.author.name}</span>
-                        <span class="text-[10px] text-slate-400">@${comment.author.username}</span>
-                      </div>
-                      
-                      <button onclick="app.copyCommentLink('${slap.id}', '${comment.id}')" 
-                        title="Copiar enlace del comentario"
-                        class="text-slate-400 hover:text-slap-500 transition px-2 py-0.5 rounded hover:bg-slate-200 dark:hover:bg-zinc-700 flex items-center gap-1 text-[11px]">
-                        <i class="fa-solid fa-link"></i>
-                        <span class="hidden sm:inline">Copiar enlace</span>
-                      </button>
+                <div class="flex items-center justify-between pt-2">
+                    <div class="flex items-center gap-2 text-slate-400">
+                        <label class="p-2 rounded-lg hover:bg-white/10 hover:text-slap-400 cursor-pointer transition-colors" title="Adjuntar Imagen">
+                            <i class="fa-solid fa-image text-base"></i>
+                            <input type="file" id="modal-slap-image-input" accept="image/*" class="hidden" onchange="handleModalMediaSelect(this, 'image')">
+                        </label>
+                        <label class="p-2 rounded-lg hover:bg-white/10 hover:text-hollywood-pink cursor-pointer transition-colors" title="Adjuntar Audio">
+                            <i class="fa-solid fa-music text-base"></i>
+                            <input type="file" id="modal-slap-audio-input" accept="audio/*" class="hidden" onchange="handleModalMediaSelect(this, 'audio')">
+                        </label>
                     </div>
-                    <p class="text-slate-700 dark:text-slate-300 pl-7">${comment.text}</p>
-                  </div>
-                `).join('')}
-              </div>
+                    <button onclick="publishSlapFromModal()" class="bg-slap-500 hover:bg-slap-400 text-slate-950 font-bold px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider shadow-md shadow-slap-500/20 active:scale-95 transition-all flex items-center gap-1.5">
+                        <i class="fa-solid fa-paper-plane"></i> Slap It!
+                    </button>
+                </div>
             </div>
-          </div>
-        `).join('');
-      }
+        </div>
+    </div>
 
-      filterFeed(query) {
-        if (!query) {
-          this.renderFeed();
-          return;
+    <script>
+        // Default Characters Directory
+        const CHARACTERS = [
+            { id: 'tori', name: 'Tori Vega', handle: '@torivega', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80', bio: 'Cantante, actriz y estudiante en Hollywood Arts 🎤', mood: '😎 Emocionado' },
+            { id: 'jade', name: 'Jade West', handle: '@jadewest', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80', bio: 'Me gustan las tijeras. No me hables.', mood: '😏 Sarcástico' },
+            { id: 'cat', name: 'Cat Valentine', handle: '@catvalentine', avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=150&auto=format&fit=crop&q=80', bio: '¡Mi hermano trajo un pulpo a casa! 🐙✨', mood: '🎨 Creativo' },
+            { id: 'beck', name: 'Beck Oliver', handle: '@beckoliver', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80', bio: 'Actuando en mi RV. Relajado.', mood: '😎 Emocionado' },
+            { id: 'andre', name: 'Andre Harris', handle: '@andreharris', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80', bio: 'Escribiendo la próxima canción número 1 🎹', mood: '🎨 Creativo' },
+            { id: 'robbie', name: 'Robbie Shapiro', handle: '@robbieshapiro', avatar: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=150&auto=format&fit=crop&q=80', bio: '¡Rex no es un títere, es mi mejor amigo!', mood: '🎭 Dramático' }
+        ];
+
+        // Chat Preset Automated Responses
+        const AUTO_REPLIES = {
+            tori: ["¡Hola! ¿Viste la clase de Sikowitz hoy?", "¡Estoy ensayando para la nueva obra!", "¡The Slap es genial! 👏"],
+            jade: ["¿Por qué me estás escribiendo?", "Si no es sobre tijeras o café negro, no me interesa.", "Déjame en paz."],
+            cat: ["¡Holaaa! 🌸 ¿Quieres un pastelito de terciopelo rojo?", "¡Mi hermano hizo algo súper raro hoy!", "hehe yay!"],
+            beck: ["Hola, todo tranquilo por aquí.", "¿Has visto a Jade? Creo que perdió sus tijeras otra vez.", "Nos vemos en el almuerzo."],
+            andre: ["¡Oye! Encontré unos acordes increíbles para el piano.", "Trabajando en un nuevo ritmo 🎧", "Sikowitz nos dio coco otra vez..."],
+            robbie: ["¡Rex dice hola! (Bueno, en realidad dijo que consigas una vida, pero ignoralo)", "¿Quieres ver mi acto de ventriloquia?"]
+        };
+
+        // Application State Store
+        let currentUser = null;
+        let followedUserIds = new Set();
+        let slaps = [];
+        let messages = {}; // chatId -> array of msgs
+        let activeChatId = null;
+        let selectedMedia = { type: null, data: null };
+
+        // Initial Sample Posts
+        const SAMPLE_SLAPS = [
+            {
+                id: 's1',
+                author: CHARACTERS[1], // Jade
+                text: 'Sikowitz nos hizo actuar como delfines deprimidos por dos horas. Odio este colegio.',
+                likes: 42,
+                likedByMe: false,
+                comments: [{ author: 'Tori Vega', text: '¡A mí me pareció divertido!' }],
+                timestamp: 'Hace 10 min',
+                image: null,
+                audio: null
+            },
+            {
+                id: 's2',
+                author: CHARACTERS[2], // Cat
+                text: '¡Encontré un cupcake morado en mi casillero y tenía sabor a nube! 🧁✨',
+                likes: 89,
+                likedByMe: false,
+                comments: [{ author: 'Robbie Shapiro', text: 'Cat, ese cupcake era mío de la semana pasada...' }],
+                timestamp: 'Hace 25 min',
+                image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=600&auto=format&fit=crop&q=80',
+                audio: null
+            }
+        ];
+
+        // Initialization
+        window.onload = function() {
+            slaps = [...SAMPLE_SLAPS];
+            renderSlaps();
+            renderExploreUsers();
+            renderSideSuggestions();
+        };
+
+        // Register / Guest Handlers
+        function handleRegister(e) {
+            e.preventDefault();
+            const name = document.getElementById('reg-name').value;
+            let handle = document.getElementById('reg-handle').value;
+            if(!handle.startsWith('@')) handle = '@' + handle;
+            const mood = document.getElementById('reg-mood').value;
+            const avatarFile = document.getElementById('reg-avatar-file').files[0];
+
+            let avatarUrl = 'https://placehold.co/100x100/84cc16/ffffff?text=' + name.charAt(0);
+            
+            if (avatarFile) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    initUserSession(name, handle, mood, evt.target.result);
+                };
+                reader.readAsDataURL(avatarFile);
+            } else {
+                initUserSession(name, handle, mood, avatarUrl);
+            }
         }
-        const q = query.toLowerCase();
-        const filtered = this.slaps.filter(s => 
-          s.content.toLowerCase().includes(q) || 
-          s.author.name.toLowerCase().includes(q) ||
-          s.author.username.toLowerCase().includes(q) ||
-          s.mood.toLowerCase().includes(q)
-        );
-        this.renderFeed(filtered);
-      }
 
-      filterHashtag(tag) {
-        document.getElementById('search-input').value = tag;
-        this.filterFeed(tag);
-      }
-
-      updateNavStyle(activeId) {
-        const navIds = ['nav-feed', 'nav-explore', 'nav-profile', 'nav-settings'];
-        navIds.forEach(id => {
-          const btn = document.getElementById(id);
-          if (!btn) return;
-          if (id === activeId) {
-            btn.className = "w-full flex items-center gap-3.5 px-4 py-3 rounded-xl font-medium text-sm transition-colors text-slap-600 dark:text-slap-400 bg-slap-50 dark:bg-slap-950/40";
-          } else {
-            btn.className = "w-full flex items-center gap-3.5 px-4 py-3 rounded-xl font-medium text-sm transition-colors text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800/60";
-          }
-        });
-      }
-
-      navigate(view) {
-        this.currentView = view;
-        const titleEl = document.getElementById('view-title');
-        const composer = document.getElementById('slap-composer-container');
-
-        if (view === 'feed') {
-          if (composer) composer.classList.remove('hidden');
-          if (titleEl) titleEl.innerText = 'Slaps Recientes';
-          this.updateNavStyle('nav-feed');
-          this.renderFeed();
-        } else if (view === 'explore') {
-          if (composer) composer.classList.add('hidden');
-          if (titleEl) titleEl.innerText = 'Explorar Tendencias Slap';
-          this.updateNavStyle('nav-explore');
-          this.filterFeed('#');
-        } else if (view === 'my-profile') {
-          if (!this.currentUser) {
-            this.showToast('Debes iniciar sesión para ver tu perfil', 'error');
-            this.openAuthModal('login');
-            return;
-          }
-          if (composer) composer.classList.remove('hidden');
-          if (titleEl) titleEl.innerText = `Slaps de ${this.currentUser.name}`;
-          this.updateNavStyle('nav-profile');
-          const mySlaps = this.slaps.filter(s => s.author.username.toLowerCase() === this.currentUser.username.toLowerCase());
-          this.renderFeed(mySlaps);
-        } else if (view === 'settings') {
-          if (composer) composer.classList.add('hidden');
-          if (titleEl) titleEl.innerText = 'Configuración';
-          this.updateNavStyle('nav-settings');
-          this.renderSettingsView();
+        function handleGuestAccess() {
+            initUserSession('Invitado Slap', '@invitado', '😎 Emocionado', 'https://placehold.co/100x100/84cc16/ffffff?text=G');
         }
-      }
 
-      toggleDarkMode() {
-        const isDark = document.documentElement.classList.toggle('dark');
-        const icon = document.getElementById('theme-icon');
-        if (icon) {
-          icon.className = isDark ? 'fa-solid fa-sun text-yellow-400' : 'fa-solid fa-moon';
+        function initUserSession(name, handle, mood, avatar) {
+            currentUser = {
+                name: name,
+                handle: handle,
+                mood: mood,
+                avatar: avatar,
+                bio: 'Estudiante en Hollywood Arts High School.',
+                banner: null
+            };
+
+            document.getElementById('auth-modal').classList.add('hidden');
+            updateUserUI();
+            SoundFX.pop();
         }
-      }
-    }
 
-    window.onload = function() {
-      window.app = new TheSlapApp();
-    };
-  </script>
+        function previewAvatarName(input) {
+            if (input.files && input.files[0]) {
+                document.getElementById('avatar-filename-label').innerText = input.files[0].name;
+            }
+        }
+
+        function updateUserUI() {
+            if (!currentUser) return;
+
+            // Header Elements
+            document.getElementById('user-pill').classList.remove('hidden');
+            document.getElementById('header-avatar').src = currentUser.avatar;
+            document.getElementById('header-username').innerText = currentUser.handle;
+            document.getElementById('header-mood').innerText = currentUser.mood;
+
+            // Sidebar Elements
+            document.getElementById('side-avatar').src = currentUser.avatar;
+            document.getElementById('side-name').innerText = currentUser.name;
+            document.getElementById('side-handle').innerText = currentUser.handle;
+            document.getElementById('side-mood').innerText = currentUser.mood;
+            document.getElementById('side-followers').innerText = '0';
+            document.getElementById('side-following').innerText = followedUserIds.size;
+
+            // Feed Composer Avatar
+            document.getElementById('feed-user-avatar').src = currentUser.avatar;
+
+            // Profile Page
+            document.getElementById('profile-page-avatar').src = currentUser.avatar;
+            document.getElementById('profile-page-name').innerText = currentUser.name;
+            document.getElementById('profile-page-handle').innerText = currentUser.handle;
+            document.getElementById('profile-page-bio').innerText = currentUser.bio;
+            document.getElementById('profile-count-following').innerText = followedUserIds.size;
+
+            renderExploreUsers();
+            renderSideSuggestions();
+            renderChatContacts();
+        }
+
+        // Navigation Tabs
+        function switchTab(tabId) {
+            SoundFX.click();
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-slap-500', 'text-black', 'shadow-md', 'shadow-slap-500/20');
+                btn.classList.add('text-slate-300');
+            });
+
+            const activeTab = document.getElementById('tab-' + tabId);
+            if (activeTab) activeTab.classList.remove('hidden');
+
+            const activeBtn = document.getElementById('nav-' + tabId);
+            if (activeBtn) {
+                activeBtn.classList.add('bg-slap-500', 'text-black', 'shadow-md', 'shadow-slap-500/20');
+                activeBtn.classList.remove('text-slate-300');
+            }
+
+            if(tabId === 'profile') renderProfileSlaps();
+        }
+
+        function handleMediaSelect(input, type) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    selectedMedia = { type: type, data: e.target.result };
+                    const container = document.getElementById('media-preview-container');
+                    const img = document.getElementById('img-preview');
+                    const audio = document.getElementById('audio-preview');
+
+                    container.classList.remove('hidden');
+                    if (type === 'image') {
+                        img.src = e.target.result;
+                        img.classList.remove('hidden');
+                        audio.classList.add('hidden');
+                    } else {
+                        audio.src = e.target.result;
+                        audio.classList.remove('hidden');
+                        img.classList.add('hidden');
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function clearMediaPreview() {
+            selectedMedia = { type: null, data: null };
+            document.getElementById('media-preview-container').classList.add('hidden');
+            document.getElementById('slap-image-input').value = '';
+            document.getElementById('slap-audio-input').value = '';
+        }
+
+        function publishSlap() {
+            const textEl = document.getElementById('new-slap-text');
+            const text = textEl.value.trim();
+
+            if (!text && !selectedMedia.data) return;
+
+            const newSlap = {
+                id: 'slap_' + Date.now(),
+                author: {
+                    name: currentUser.name,
+                    handle: currentUser.handle,
+                    avatar: currentUser.avatar
+                },
+                text: text,
+                likes: 0,
+                likedByMe: false,
+                comments: [],
+                timestamp: 'Ahora mismo',
+                image: selectedMedia.type === 'image' ? selectedMedia.data : null,
+                audio: selectedMedia.type === 'audio' ? selectedMedia.data : null
+            };
+
+            slaps.unshift(newSlap);
+            textEl.value = '';
+            clearMediaPreview();
+            SoundFX.slap();
+            renderSlaps();
+        }
+
+        function toggleLike(slapId) {
+            const slap = slaps.find(s => s.id === slapId);
+            if (slap) {
+                slap.likedByMe = !slap.likedByMe;
+                slap.likes += slap.likedByMe ? 1 : -1;
+                SoundFX.slap();
+                renderSlaps();
+            }
+        }
+
+        function addComment(slapId, inputEl) {
+            const text = inputEl.value.trim();
+            if (!text) return;
+
+            const slap = slaps.find(s => s.id === slapId);
+            if (slap) {
+                if (!slap.comments) slap.comments = [];
+                slap.comments.push({
+                    author: currentUser ? currentUser.name : 'Invitado',
+                    text: text
+                });
+                inputEl.value = '';
+                SoundFX.pop();
+                renderSlaps();
+            }
+        }
+
+        function toggleComments(slapId) {
+            const container = document.getElementById('comments-' + slapId);
+            if (container) {
+                container.classList.toggle('hidden');
+            }
+        }
+
+        function renderSlaps() {
+            const container = document.getElementById('slaps-container');
+            container.innerHTML = slaps.map(slap => `
+                <div class="glass-card rounded-2xl p-4 sm:p-5 border border-white/10 shadow-md transition-all animate-fadeUp">
+                    <div class="flex items-center gap-3 mb-3">
+                        <img src="${slap.author.avatar}" class="w-10 h-10 rounded-full object-cover border border-slap-400">
+                        <div class="flex-1 min-w-0">
+                            <h4 class="font-bold text-sm text-white truncate">${slap.author.name}</h4>
+                            <p class="text-xs text-slap-400 font-mono truncate">${slap.author.handle} • ${slap.timestamp}</p>
+                        </div>
+                    </div>
+
+                    <p class="text-sm text-slate-100 mb-3 whitespace-pre-line">${escapeHTML(slap.text)}</p>
+
+                    ${slap.image ? `<div class="rounded-xl overflow-hidden mb-3 max-h-80 bg-black/40"><img src="${slap.image}" class="w-full h-full object-cover"></div>` : ''}
+                    ${slap.audio ? `<div class="bg-black/30 p-2 rounded-xl mb-3 border border-white/10"><audio controls src="${slap.audio}" class="w-full"></audio></div>` : ''}
+
+                    <div class="flex items-center gap-6 pt-3 border-t border-white/10 text-xs text-slate-300">
+                        <button onclick="toggleLike('${slap.id}')" class="flex items-center gap-1.5 hover:text-slap-400 transition-colors ${slap.likedByMe ? 'text-hollywood-pink font-bold' : ''}">
+                            <i class="fa-${slap.likedByMe ? 'solid' : 'regular'} fa-heart text-base"></i>
+                            <span>${slap.likes} Slaps</span>
+                        </button>
+                        <button onclick="toggleComments('${slap.id}')" class="flex items-center gap-1.5 hover:text-slap-400 transition-colors">
+                            <i class="fa-regular fa-comment text-base"></i>
+                            <span>${slap.comments.length} Comentarios</span>
+                        </button>
+                    </div>
+
+                    <!-- Collapsible Comment Section -->
+                    <div id="comments-${slap.id}" class="hidden mt-3 pt-3 border-t border-white/5 space-y-3">
+                        <div class="space-y-2 max-h-40 overflow-y-auto pr-1">
+                            ${slap.comments.map(c => `
+                                <div class="bg-black/30 rounded-xl p-2.5 text-xs">
+                                    <span class="font-bold text-slap-400">${escapeHTML(c.author)}:</span>
+                                    <span class="text-slate-200">${escapeHTML(c.text)}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input type="text" placeholder="Escribe un comentario..." onkeypress="if(event.key==='Enter') addComment('${slap.id}', this)" class="flex-1 bg-black/40 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-slap-400">
+                            <button onclick="addComment('${slap.id}', this.previousElementSibling)" class="bg-slap-500 text-black font-bold px-3 py-1.5 rounded-xl text-xs hover:bg-slap-400">Enviar</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function toggleFollow(userId) {
+            SoundFX.click();
+            if (followedUserIds.has(userId)) {
+                followedUserIds.delete(userId);
+            } else {
+                followedUserIds.add(userId);
+            }
+            updateUserUI();
+        }
+
+        function renderExploreUsers() {
+            const directory = document.getElementById('users-directory');
+            directory.innerHTML = CHARACTERS.map(char => {
+                const isFollowing = followedUserIds.has(char.id);
+                return `
+                    <div class="bg-black/30 rounded-xl p-3 border border-white/10 flex items-center justify-between">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <img src="${char.avatar}" class="w-9 h-9 rounded-full object-cover border border-slap-400">
+                            <div class="truncate">
+                                <h5 class="text-xs font-bold text-white truncate">${char.name}</h5>
+                                <p class="text-[10px] text-slap-400 font-mono truncate">${char.handle}</p>
+                            </div>
+                        </div>
+                        <button onclick="toggleFollow('${char.id}')" class="px-3 py-1 rounded-lg text-xs font-bold transition-all ${isFollowing ? 'bg-white/10 text-white hover:bg-red-500/20 hover:text-red-400' : 'bg-slap-500 text-black hover:bg-slap-400'}">
+                            ${isFollowing ? 'Siguiendo' : 'Seguir'}
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderSideSuggestions() {
+            const list = document.getElementById('side-suggestions-list');
+            const suggestions = CHARACTERS.filter(c => !followedUserIds.has(c.id)).slice(0, 3);
+            
+            if(suggestions.length === 0) {
+                list.innerHTML = `<p class="text-xs text-slate-400 text-center py-2">¡Ya sigues a todos los compañeros!</p>`;
+                return;
+            }
+
+            list.innerHTML = suggestions.map(char => `
+                <div class="flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <img src="${char.avatar}" class="w-8 h-8 rounded-full object-cover border border-slap-400">
+                        <div class="truncate">
+                            <h5 class="text-xs font-bold text-white truncate">${char.name}</h5>
+                            <p class="text-[10px] text-slate-400 font-mono truncate">${char.handle}</p>
+                        </div>
+                    </div>
+                    <button onclick="toggleFollow('${char.id}')" class="bg-slap-500/20 text-slap-400 hover:bg-slap-500 hover:text-black font-bold px-2.5 py-1 rounded-lg text-[11px] transition-all">
+                        Seguir
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function handleSearch() {
+            const query = document.getElementById('explore-search-input').value.toLowerCase().trim();
+            const resultsContainer = document.getElementById('search-results-container');
+
+            if (!query) {
+                resultsContainer.innerHTML = '';
+                return;
+            }
+
+            const matchedSlaps = slaps.filter(s => 
+                s.text.toLowerCase().includes(query) || 
+                s.author.name.toLowerCase().includes(query) ||
+                s.author.handle.toLowerCase().includes(query)
+            );
+
+            if (matchedSlaps.length === 0) {
+                resultsContainer.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">No se encontraron Slaps que coincidan con "${query}".</p>`;
+                return;
+            }
+
+            resultsContainer.innerHTML = matchedSlaps.map(slap => `
+                <div class="glass-card rounded-xl p-3 border border-white/10">
+                    <span class="text-[10px] text-slap-400 font-mono">${slap.author.name}</span>
+                    <p class="text-xs text-white mt-1">${escapeHTML(slap.text)}</p>
+                </div>
+            `).join('');
+        }
+
+        function filterByTag(tag) {
+            switchTab('explore');
+            document.getElementById('explore-search-input').value = tag;
+            handleSearch();
+        }
+
+        function renderChatContacts() {
+            const container = document.getElementById('chat-contacts-list');
+            const followedChars = CHARACTERS.filter(c => followedUserIds.has(c.id));
+
+            document.getElementById('chat-count-tag').innerText = followedChars.length;
+
+            if (followedChars.length === 0) {
+                container.innerHTML = `
+                    <div class="p-4 text-center text-xs text-slate-400">
+                        No sigues a nadie aún.<br>Sigue a estudiantes en <strong>Explorar</strong> para chatear.
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = followedChars.map(char => `
+                <div onclick="openChat('${char.id}')" class="p-3 hover:bg-white/10 cursor-pointer transition-colors flex items-center gap-3 ${activeChatId === char.id ? 'bg-white/15 border-l-4 border-slap-400' : ''}">
+                    <img src="${char.avatar}" class="w-8 h-8 rounded-full object-cover border border-slap-400">
+                    <div class="truncate">
+                        <h5 class="text-xs font-bold text-white truncate">${char.name}</h5>
+                        <p class="text-[10px] text-slap-400 font-mono truncate">${char.mood}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openChat(charId) {
+            activeChatId = charId;
+            const char = CHARACTERS.find(c => c.id === charId);
+            
+            document.getElementById('chat-active-name').innerText = char.name;
+            document.getElementById('chat-active-avatar').src = char.avatar;
+            document.getElementById('chat-active-status').innerText = 'En línea en Slap OS';
+
+            renderChatContacts();
+            renderChatMessages();
+            SoundFX.click();
+        }
+
+        function renderChatMessages() {
+            const container = document.getElementById('chat-messages-container');
+            if (!activeChatId) {
+                container.innerHTML = `<div class="text-center text-xs text-slate-400 py-10">Selecciona un contacto para chatear.</div>`;
+                return;
+            }
+
+            const chatList = messages[activeChatId] || [];
+            const char = CHARACTERS.find(c => c.id === activeChatId);
+
+            container.innerHTML = chatList.map(msg => `
+                <div class="flex flex-col ${msg.fromMe ? 'items-end' : 'items-start'} animate-fadeUp">
+                    <div class="max-w-[80%] rounded-2xl px-4 py-2 text-xs shadow-md ${msg.fromMe ? 'bg-slap-500 text-slate-950 rounded-br-none font-medium' : 'bg-white/10 text-white rounded-bl-none border border-white/10'}">
+                        ${escapeHTML(msg.text)}
+                    </div>
+                    <span class="text-[9px] text-slate-400 mt-1 font-mono">${msg.time}</span>
+                </div>
+            `).join('');
+
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('chat-message-input');
+            const text = input.value.trim();
+            if (!text || !activeChatId) return;
+
+            // Capture target chat ID in scope to prevent race condition if activeChatId changes during timeout
+            const targetChatId = activeChatId;
+
+            if (!messages[targetChatId]) messages[targetChatId] = [];
+
+            const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            messages[targetChatId].push({ text: text, fromMe: true, time: timeStr });
+            input.value = '';
+            renderChatMessages();
+            SoundFX.chat();
+
+            // Auto Reply from Character
+            setTimeout(() => {
+                if (!messages[targetChatId]) messages[targetChatId] = [];
+                const replies = AUTO_REPLIES[targetChatId] || ["¡The Slap es genial! 👏"];
+                const randomReply = replies[Math.floor(Math.random() * replies.length)];
+                
+                messages[targetChatId].push({
+                    text: randomReply,
+                    fromMe: false,
+                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                });
+                renderChatMessages();
+                SoundFX.chat();
+            }, 1200);
+        }
+
+        function renderProfileSlaps() {
+            const container = document.getElementById('profile-slaps-container');
+            const mySlaps = slaps.filter(s => s.author.handle === currentUser.handle);
+
+            document.getElementById('profile-count-slaps').innerText = mySlaps.length;
+
+            if (mySlaps.length === 0) {
+                container.innerHTML = `<div class="glass-card rounded-2xl p-6 text-center text-xs text-slate-400">Aún no has publicado ningún Slap.</div>`;
+                return;
+            }
+
+            container.innerHTML = mySlaps.map(slap => `
+                <div class="glass-card rounded-xl p-4 border border-white/10">
+                    <p class="text-sm text-white">${escapeHTML(slap.text)}</p>
+                    <div class="mt-2 text-xs text-slate-400 font-mono">${slap.timestamp} • ${slap.likes} Slaps</div>
+                </div>
+            `).join('');
+        }
+
+        function updateProfileAvatar(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    currentUser.avatar = e.target.result;
+                    updateUserUI();
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function updateBanner(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const bannerImg = document.getElementById('profile-banner-img');
+                    bannerImg.src = e.target.result;
+                    bannerImg.classList.remove('hidden');
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function saveProfileChanges(e) {
+            e.preventDefault();
+            currentUser.name = document.getElementById('edit-name-input').value || currentUser.name;
+            currentUser.bio = document.getElementById('edit-bio-input').value || currentUser.bio;
+            currentUser.mood = document.getElementById('edit-mood-input').value || currentUser.mood;
+
+            closeModal('edit-profile-modal');
+            updateUserUI();
+            SoundFX.pop();
+        }
+
+        function setTheme(themeName) {
+            document.body.className = `${themeName} min-h-screen flex flex-col antialiased selection:bg-slap-500 selection:text-black`;
+            SoundFX.click();
+        }
+
+        let selectedModalMedia = { type: null, data: null };
+
+        function handleModalMediaSelect(input, type) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    selectedModalMedia = { type: type, data: e.target.result };
+                    const container = document.getElementById('modal-media-preview-container');
+                    const img = document.getElementById('modal-img-preview');
+                    const audio = document.getElementById('modal-audio-preview');
+
+                    if (container) container.classList.remove('hidden');
+                    if (type === 'image' && img) {
+                        img.src = e.target.result;
+                        img.classList.remove('hidden');
+                        if (audio) audio.classList.add('hidden');
+                    } else if (audio) {
+                        audio.src = e.target.result;
+                        audio.classList.remove('hidden');
+                        if (img) img.classList.add('hidden');
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function clearModalMediaPreview() {
+            selectedModalMedia = { type: null, data: null };
+            const container = document.getElementById('modal-media-preview-container');
+            if (container) container.classList.add('hidden');
+            const imgInput = document.getElementById('modal-slap-image-input');
+            const audioInput = document.getElementById('modal-slap-audio-input');
+            if (imgInput) imgInput.value = '';
+            if (audioInput) audioInput.value = '';
+        }
+
+        function publishSlapFromModal() {
+            const textEl = document.getElementById('modal-slap-text');
+            const text = textEl ? textEl.value.trim() : '';
+
+            if (!text && !selectedModalMedia.data) return;
+
+            const newSlap = {
+                id: 'slap_' + Date.now(),
+                author: {
+                    name: currentUser ? currentUser.name : 'Invitado Slap',
+                    handle: currentUser ? currentUser.handle : '@invitado',
+                    avatar: currentUser ? currentUser.avatar : 'https://placehold.co/100'
+                },
+                text: text,
+                likes: 0,
+                likedByMe: false,
+                comments: [],
+                timestamp: 'Ahora mismo',
+                image: selectedModalMedia.type === 'image' ? selectedModalMedia.data : null,
+                audio: selectedModalMedia.type === 'audio' ? selectedModalMedia.data : null
+            };
+
+            slaps.unshift(newSlap);
+            if (textEl) textEl.value = '';
+            clearModalMediaPreview();
+            closeModal('create-slap-modal');
+            SoundFX.slap();
+            renderSlaps();
+        }
+
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('hidden');
+                SoundFX.click();
+            }
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('hidden');
+                SoundFX.click();
+            }
+        }
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
+        }
+    </script>
 </body>
 </html>
