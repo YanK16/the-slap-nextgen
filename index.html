@@ -195,7 +195,7 @@
                     <h1 class="font-fredoka text-2xl font-bold tracking-wide bg-gradient-to-r from-slap-400 via-hollywood-pink to-hollywood-purple bg-clip-text text-transparent">
                         The Slap <span class="text-xs px-2 py-0.5 rounded-full bg-slap-500/20 text-slap-400 font-sans tracking-normal border border-slap-500/30">NextGen</span>
                     </h1>
-                    <p class="text-[10px] text-slate-400 -mt-1 font-mono">Hollywood Arts High • Slap OS v14.1</p>
+                    <p class="text-[10px] text-slate-400 -mt-1 font-mono">Hollywood Arts High • Slap OS v14.2</p>
                 </div>
             </div>
 
@@ -405,19 +405,19 @@
                 <div id="search-results-container" class="space-y-4"></div>
             </div>
 
-            <!-- TAB 3: SLAPCHAT SYSTEM -->
+            <!-- TAB 3: SLAPCHAT SYSTEM (FIXED CONTAINER & SCROLLING) -->
             <div id="tab-chat" class="tab-content hidden space-y-4">
-                <div class="glass-card rounded-2xl border border-white/10 shadow-2xl h-[650px] flex flex-col sm:flex-row overflow-hidden">
-                    <div class="w-full sm:w-1/3 border-b sm:border-b-0 sm:border-r border-white/10 flex flex-col bg-black/20">
-                        <div class="p-3.5 border-b border-white/10 font-fredoka text-sm font-bold text-white flex items-center justify-between">
+                <div class="glass-card rounded-2xl border border-white/10 shadow-2xl h-[calc(100vh-160px)] min-h-[500px] max-h-[700px] flex flex-col sm:flex-row overflow-hidden">
+                    <div class="w-full sm:w-1/3 h-1/3 sm:h-full border-b sm:border-b-0 sm:border-r border-white/10 flex flex-col bg-black/20">
+                        <div class="p-3.5 border-b border-white/10 font-fredoka text-sm font-bold text-white flex items-center justify-between shrink-0">
                             <span><i class="fa-solid fa-comments text-slap-400 mr-2"></i>Contactos</span>
                             <span id="chat-count-tag" class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slap-500/20 text-slap-400">0</span>
                         </div>
                         <div id="chat-contacts-list" class="flex-1 overflow-y-auto divide-y divide-white/5"></div>
                     </div>
 
-                    <div class="w-full sm:w-2/3 flex flex-col bg-black/40 relative">
-                        <div id="chat-header" class="p-3.5 border-b border-white/10 flex items-center gap-3 bg-white/5">
+                    <div class="w-full sm:w-2/3 h-2/3 sm:h-full flex flex-col bg-black/40 relative">
+                        <div id="chat-header" class="p-3.5 border-b border-white/10 flex items-center gap-3 bg-white/5 shrink-0">
                             <img id="chat-active-avatar" src="https://placehold.co/100" class="w-9 h-9 rounded-full object-cover border border-slap-400">
                             <div>
                                 <h4 id="chat-active-name" class="font-bold text-sm text-white">Selecciona un chat</h4>
@@ -431,7 +431,7 @@
                             </div>
                         </div>
 
-                        <div class="p-3 border-t border-white/10 bg-black/30 flex items-center gap-2">
+                        <div class="p-3 border-t border-white/10 bg-black/30 flex items-center gap-2 shrink-0">
                             <input type="text" id="chat-message-input" onkeypress="if(event.key==='Enter') sendChatMessage()" placeholder="Escribe un mensaje..." class="flex-1 bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-slap-400 transition-colors">
                             <button onclick="sendChatMessage()" class="bg-slap-500 hover:bg-slap-400 text-slate-950 p-2.5 rounded-xl transition-all shadow-md active:scale-95">
                                 <i class="fa-solid fa-paper-plane text-sm"></i>
@@ -444,8 +444,8 @@
             <!-- TAB 4: PROFILE & EDIT PROFILE -->
             <div id="tab-profile" class="tab-content hidden space-y-5">
                 <div class="glass-card rounded-3xl border border-white/10 shadow-xl overflow-hidden">
-                    <div class="h-32 bg-gradient-to-r from-slap-600 via-hollywood-purple to-hollywood-pink relative">
-                        <label for="profile-banner-input" class="absolute top-3 right-3 bg-black/50 hover:bg-black/70 text-white text-xs px-3 py-1.5 rounded-lg cursor-pointer transition-colors backdrop-blur-sm">
+                    <div id="profile-banner-container" class="h-32 bg-gradient-to-r from-slap-600 via-hollywood-purple to-hollywood-pink relative">
+                        <label id="profile-banner-btn-label" for="profile-banner-input" class="absolute top-3 right-3 bg-black/50 hover:bg-black/70 text-white text-xs px-3 py-1.5 rounded-lg cursor-pointer transition-colors backdrop-blur-sm">
                             <i class="fa-solid fa-camera mr-1"></i> Cambiar Banner
                         </label>
                         <input type="file" id="profile-banner-input" accept="image/*" class="hidden" onchange="updateBanner(this)">
@@ -454,9 +454,9 @@
 
                     <div class="px-6 pb-6 relative">
                         <div class="flex flex-col sm:flex-row items-center sm:items-end justify-between -mt-12 mb-4 gap-4">
-                            <div class="relative group">
+                            <div id="profile-avatar-container" class="relative group">
                                 <img id="profile-page-avatar" src="https://placehold.co/120" class="w-24 h-24 rounded-2xl object-cover border-4 border-slate-900 shadow-xl">
-                                <label for="profile-avatar-input" class="absolute inset-0 bg-black/50 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                                <label id="profile-avatar-btn-label" for="profile-avatar-input" class="absolute inset-0 bg-black/50 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
                                     <i class="fa-solid fa-camera text-white text-xl"></i>
                                 </label>
                                 <input type="file" id="profile-avatar-input" accept="image/*" class="hidden" onchange="updateProfileAvatar(this)">
@@ -531,7 +531,6 @@
                         </label>
                     </div>
 
-                    <!-- Botones de Cerrar Sesión y Cambiar de Cuenta -->
                     <div class="pt-4 border-t border-white/10 flex flex-col sm:flex-row gap-3">
                         <button onclick="logoutUser()" class="flex-1 bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 text-red-300 font-bold py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-2">
                             <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión
@@ -677,13 +676,13 @@
         let messages = {};
         let activeChatId = null;
         let selectedMedia = { type: null, data: null };
-        let viewingProfileUser = null; // Para ver perfiles de otros usuarios
+        let viewingProfileUser = null; 
 
         const SAMPLE_SLAPS = [
             {
                 id: 's1',
                 author: CHARACTERS[1],
-                text: 'Sikowitz nos hizo actuar como delfines deprimidos por dois horas. Odio este colegio.',
+                text: 'Sikowitz nos hizo actuar como delfines deprimidos por dos horas. Odio este colegio.',
                 likes: 42,
                 likedByMe: false,
                 comments: [{ author: 'Tori Vega', text: '¡A mí me pareció divertido!' }],
@@ -791,7 +790,7 @@
 
         function switchTab(tabId) {
             SoundFX.click();
-            viewingProfileUser = null; // Reiniciar vista de perfil ajeno al cambiar de pestaña general
+            viewingProfileUser = null; 
             
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             
@@ -833,11 +832,23 @@
             document.getElementById('profile-page-bio').innerText = currentUser.bio;
             document.getElementById('profile-count-following').innerText = followedUserIds.size;
             document.getElementById('profile-section-title').innerText = "Mis Publicaciones";
+            
+            // Mostrar controles de edición y cambio de foto/banner por ser el perfil propio
             document.getElementById('edit-profile-btn').classList.remove('hidden');
+            document.getElementById('profile-banner-btn-label').classList.remove('hidden');
+            document.getElementById('profile-avatar-btn-label').classList.remove('hidden');
+
+            if (currentUser.banner) {
+                const bannerImg = document.getElementById('profile-banner-img');
+                bannerImg.src = currentUser.banner;
+                bannerImg.classList.remove('hidden');
+            } else {
+                document.getElementById('profile-banner-img').classList.add('hidden');
+            }
+
             renderProfileSlaps();
         }
 
-        // Ver perfil de otro usuario y corregir la pestaña activa a "Explorar"
         function viewUserProfile(handle) {
             SoundFX.click();
             let targetUser = null;
@@ -851,8 +862,6 @@
 
             viewingProfileUser = targetUser;
             switchTab('profile');
-
-            // Corrección solicitada: Resaltar Explorar en vez de Mi Perfil en la barra de navegación
             highlightExploreNav();
 
             // Rellenar datos del perfil ajeno
@@ -861,7 +870,12 @@
             document.getElementById('profile-page-handle').innerText = targetUser.handle;
             document.getElementById('profile-page-bio').innerText = targetUser.bio;
             document.getElementById('profile-section-title').innerText = `Publicaciones de ${targetUser.name}`;
+            
+            // Ocultar por completo los botones y triggers para cambiar foto de perfil y banner en perfiles ajenos
             document.getElementById('edit-profile-btn').classList.add('hidden');
+            document.getElementById('profile-banner-btn-label').classList.add('hidden');
+            document.getElementById('profile-avatar-btn-label').classList.add('hidden');
+            document.getElementById('profile-banner-img').classList.add('hidden'); // Ocultar banner personalizado ajeno
 
             renderExternalProfileSlaps(targetUser.handle);
         }
@@ -983,7 +997,6 @@
             }
         }
 
-        // Función para eliminar una publicación propia
         function deleteSlap(slapId) {
             if(confirm("¿Estás seguro de que deseas eliminar este Slap?")) {
                 slaps = slaps.filter(s => s.id !== slapId);
@@ -996,7 +1009,6 @@
             }
         }
 
-        // Función para bloquear un usuario
         function blockUser(handle) {
             if(confirm(`¿Estás seguro de bloquear al usuario ${handle}? Dejarás de ver sus publicaciones.`)) {
                 blockedUserHandles.add(handle);
@@ -1006,7 +1018,6 @@
             }
         }
 
-        // Función para denunciar/reportar contenido ofensivo
         function reportContent(slapId) {
             alert("¡Reporte enviado con éxito! El equipo de moderación de Hollywood Arts revisará este contenido ofensivo.");
             SoundFX.click();
@@ -1154,7 +1165,7 @@
             );
 
             if (matchedSlaps.length === 0) {
-                resultsContainer.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">No se encontraron Slaps que coincidan com "${query}".</p>`;
+                resultsContainer.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">No se encontraron Slaps que coincidan con "${query}".</p>`;
                 return;
             }
 
@@ -1310,6 +1321,7 @@
                 reader.onload = function(e) {
                     currentUser.avatar = e.target.result;
                     updateUserUI();
+                    document.getElementById('profile-page-avatar').src = currentUser.avatar;
                 };
                 reader.readAsDataURL(input.files[0]);
             }
@@ -1319,8 +1331,9 @@
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
+                    currentUser.banner = e.target.result;
                     const bannerImg = document.getElementById('profile-banner-img');
-                    bannerImg.src = e.target.result;
+                    bannerImg.src = currentUser.banner;
                     bannerImg.classList.remove('hidden');
                 };
                 reader.readAsDataURL(input.files[0]);
@@ -1335,6 +1348,7 @@
 
             closeModal('edit-profile-modal');
             updateUserUI();
+            loadMyProfileView();
             SoundFX.pop();
         }
 
