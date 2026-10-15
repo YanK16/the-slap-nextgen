@@ -927,14 +927,17 @@
         }
 
         async function eliminarSlapRemoto(slapId) {
+            // Nos aseguramos de manejar IDs tanto numéricos como de texto (UUID)
+            const idValue = isNaN(slapId) ? slapId : Number(slapId);
+            
             const { error } = await _supabase
                 .from('slaps')
                 .delete()
-                .or(`id.eq.${slapId},id.eq.${Number(slapId)}`);
+                .eq('id', idValue);
 
             if (error) {
-                console.error("Error al eliminar:", error);
-                alert("No se pudo eliminar el Slap de la base de datos.");
+                console.error("Error al eliminar de Supabase:", error);
+                alert("No se pudo eliminar el Slap de la base de datos: " + error.message);
             } else {
                 await cargarSlapsRemotos();
             }
