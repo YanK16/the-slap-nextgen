@@ -895,19 +895,20 @@
                     comments: [],
                     timestamp: new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                     image: item.image,
-                    audio: null
+                    audio: item.audio
                 }));
                 renderSlaps();
             }
         }
 
-        async function publicarEnNube(text, image) {
+        async function publicarEnNube(text, mediaType, mediaData) {
             const { error } = await _supabase.from('slaps').insert([{
                 author_name: currentUser.name,
                 author_handle: currentUser.handle,
                 author_avatar: currentUser.avatar,
                 text: text,
-                image: image,
+                image: mediaType === 'image' ? mediaData : null,
+                audio: mediaType === 'audio' ? mediaData : null,
                 likes: 0
             }]);
 
@@ -1114,6 +1115,9 @@
                 reader.readAsDataURL(file);
             }
         }
+                reader.readAsDataURL(file);
+            
+    
 
         function clearMediaPreview() {
             selectedMedia = { type: null, data: null };
@@ -1128,7 +1132,7 @@
 
             if (!text && !selectedMedia.data) return;
 
-            await publicarEnNube(text, selectedMedia.type === 'image' ? selectedMedia.data : null);
+            await publicarEnNube(text, selectedMedia.type, selectedMedia.data);
 
             textEl.value = '';
             clearMediaPreview();
@@ -1571,7 +1575,7 @@
 
             if (!text && !selectedModalMedia.data) return;
 
-            await publicarEnNube(text, selectedModalMedia.type === 'image' ? selectedModalMedia.data : null);
+            await publicarEnNube(text, selectedModalMedia.type, selectedModalMedia.data);
 
             if (textEl) textEl.value = '';
             clearModalMediaPreview();
