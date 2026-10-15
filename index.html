@@ -713,7 +713,6 @@
         let viewingProfileUser = null; 
 
         window.onload = async function() {
-            // Verificar si hay sesión activa en Supabase Auth
             const { data: { session } } = await _supabase.auth.getSession();
             if (session && session.user) {
                 const meta = session.user.user_metadata;
@@ -733,7 +732,6 @@
             renderExploreUsers();
             renderSideSuggestions();
 
-            // Tiempo real para sincronizar publicaciones
             _supabase
               .channel('public:slaps')
               .on('postgres_changes', { event: '*', schema: 'public', table: 'slaps' }, payload => {
@@ -929,11 +927,17 @@
         }
 
         async function eliminarSlapRemoto(slapId) {
-            await _supabase
+            const { error } = await _supabase
                 .from('slaps')
                 .delete()
-                .eq('id', slapId);
-            await cargarSlapsRemotos();
+                .or(`id.eq.${slapId},id.eq.${Number(slapId)}`);
+
+            if (error) {
+                console.error("Error al eliminar:", error);
+                alert("No se pudo eliminar el Slap de la base de datos.");
+            } else {
+                await cargarSlapsRemotos();
+            }
         }
 
         async function syncUserMetadata() {
@@ -1185,19 +1189,66 @@
         }
 
         function renderSlaps() {
-          async function eliminarSlapRemoto(slapId) {
-            // Intentamos borrar usando el id tal cual o convertido a número por si acaso
-            const { error } = await _supabase
-                .from('slaps')
-                .delete()
-                .or(`id.eq.${slapId},id.eq.${Number(slapId)}`);
+            const container = document.getElementById('slaps-container');
+            const filteredSlaps = slaps.filter(s => !blockedUserHandles.has(s.author.handle));
 
-            if (error) {
-                console.error("Error al eliminar:", error);
-                alert("No se pudo eliminar el Slap de la base de datos.");
-            } else {
-                await cargarSlapsRemotos();
+            if(filteredSlaps.length === 0) {
+                container.innerHTML = `<div class="glass-card rounded-2xl p-6 text-center text-xs text-slate-400">No hay publicaciones disponibles en este momento.</div>`;
+                return;
             }
+
+            container.innerHTML = filteredSlaps.map(slap => {
+                const isMySlap = currentUser && (slap.author.handle === currentUser.handle || slap.author.name === currentUser.name);
+                return `
+                    <div class="glass-card rounded-2xl p-4 sm:p-5 border border-white/10 shadow-md transition-all animate-fadeUp">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-3 cursor-pointer" onclick="viewUserProfile('${slap.author.handle}')">
+                                <img src="${slap.author.avatar}" class="w-10 h-10 rounded-full object-cover border border-slap-400">
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="font-bold text-sm text-white truncate hover:underline">${slap.author.name}</h4>
+                                    <p class="text-xs text-slap-400 font-mono truncate">${slap.author.handle} • ${slap.timestamp}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                ${isMySlap ? `<button onclick="deleteSlap('${slap.id}')" class="text-slate-400 hover:text-red-400 text-xs px-2 py-1 rounded-lg hover:bg-white/5 transition-colors" title="Eliminar Slap"><i class="fa-solid fa-trash"></i></button>` : ''}
+                                <button onclick="reportContent('${slap.id}')" class="text-slate-400 hover:text-yellow-400 text-xs px-2 py-1 rounded-lg hover:bg-white/5 transition-colors" title="Reportar contenido ofensivo"><i class="fa-solid fa-flag"></i></button>
+                                ${!isMySlap ? `<button onclick="blockUser('${slap.author.handle}')" class="text-slate-400 hover:text-red-400 text-xs px-2 py-1 rounded-lg hover:bg-white/5 transition-colors" title="Bloquear usuario"><i class="fa-solid fa-ban"></i></button>` : ''}
+                            </div>
+                        </div>
+
+                        <p class="text-sm text-slate-100 mb-3 whitespace-pre-line">${escapeHTML(slap.text)}</p>
+
+                        ${slap.image ? `<div class="rounded-xl overflow-hidden mb-3 max-h-[500px] bg-black/80 flex items-center justify-center"><img src="${slap.image}" class="w-full h-auto max-h-[500px] object-contain"></div>` : ''}
+                        ${slap.audio ? `<div class="bg-black/30 p-2 rounded-xl mb-3 border border-white/10"><audio controls src="${slap.audio}" class="w-full"></audio></div>` : ''}
+
+                        <div class="flex items-center gap-6 pt-3 border-t border-white/10 text-xs text-slate-300">
+                            <button onclick="toggleLike('${slap.id}')" class="flex items-center gap-1.5 hover:text-slap-400 transition-colors ${slap.likedByMe ? 'text-hollywood-pink font-bold' : ''}">
+                                <i class="fa-${slap.likedByMe ? 'solid' : 'regular'} fa-heart text-base"></i>
+                                <span>${slap.likes} Slaps</span>
+                            </button>
+                            <button onclick="toggleComments('${slap.id}')" class="flex items-center gap-1.5 hover:text-slap-400 transition-colors">
+                                <i class="fa-regular fa-comment text-base"></i>
+                                <span>${slap.comments.length} Comentarios</span>
+                            </button>
+                        </div>
+
+                        <div id="comments-${slap.id}" class="hidden mt-3 pt-3 border-t border-white/5 space-y-3">
+                            <div class="space-y-2 max-h-40 overflow-y-auto pr-1">
+                                ${slap.comments.map(c => `
+                                    <div class="bg-black/30 rounded-xl p-2.5 text-xs">
+                                        <span class="font-bold text-slap-400">${escapeHTML(c.author)}:</span>
+                                        <span class="text-slate-200">${escapeHTML(c.text)}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <input type="text" placeholder="Escribe un comentario..." onkeypress="if(event.key==='Enter') addComment('${slap.id}', this)" class="flex-1 bg-black/40 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-slap-400">
+                                <button onclick="addComment('${slap.id}', this.previousElementSibling)" class="bg-slap-500 text-black font-bold px-3 py-1.5 rounded-xl text-xs hover:bg-slap-400">Enviar</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
         function toggleFollow(userId) {
