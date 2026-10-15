@@ -1268,12 +1268,51 @@
             updateUserUI();
         }
 
+        function getCombinedUsers() {
+            // Empezamos con los personajes oficiales
+            const usersMap = new Map();
+            CHARACTERS.forEach(c => usersMap.set(c.handle, c));
+
+            // Extraemos los usuarios reales registrados que hayan publicado Slaps
+            slaps.forEach(s => {
+                if (s.author && s.author.handle && !usersMap.has(s.author.handle)) {
+                    usersMap.set(s.author.handle, {
+                        id: s.author.handle.replace('@', ''),
+                        name: s.author.name,
+                        handle: s.author.handle,
+                        avatar: s.author.avatar || 'https://placehold.co/100',
+                        bio: 'Estudiante registrado en Hollywood Arts.',
+                        mood: '😎 Activo'
+                    });
+                }
+            });
+
+            // Si el usuario actual está iniciado sesión, nos aseguramos de que esté
+            if (currentUser && currentUser.handle && !usersMap.has(currentUser.handle)) {
+                usersMap.set(currentUser.handle, {
+                    id: currentUser.handle.replace('@', ''),
+                    name: currentUser.name,
+                    handle: currentUser.handle,
+                    avatar: currentUser.avatar,
+                    bio: currentUser.bio || 'Estudiante en Hollywood Arts.',
+                    mood: currentUser.mood || '😎 Emocionado'
+                });
+            }
+
+            return Array.from(usersMap.values());
+        }
+
         function renderExploreUsers() {
             const directory = document.getElementById('users-directory');
-            const unblockedChars = CHARACTERS.filter(c => !blockedUserHandles.has(c.handle));
+            if (!directory) return;
 
-            directory.innerHTML = unblockedChars.map(char => {
+            const allUsers = getCombinedUsers();
+            const unblockedUsers = allUsers.filter(c => !blockedUserHandles.has(c.handle));
+
+            directory.innerHTML = unblockedUsers.map(char => {
                 const isFollowing = followedUserIds.has(char.id);
+                const isMe = currentUser && currentUser.handle === char.handle;
+
                 return `
                     <div class="bg-black/30 rounded-xl p-3 border border-white/10 flex items-center justify-between">
                         <div class="flex items-center gap-2.5 min-w-0 cursor-pointer" onclick="viewUserProfile('${char.handle}')">
@@ -1284,10 +1323,12 @@
                             </div>
                         </div>
                         <div class="flex items-center gap-1.5">
-                            <button onclick="toggleFollow('${char.id}')" class="px-3 py-1 rounded-lg text-xs font-bold transition-all ${isFollowing ? 'bg-white/10 text-white hover:bg-red-500/20 hover:text-red-400' : 'bg-slap-500 text-black hover:bg-slap-400'}">
-                                ${isFollowing ? 'Siguiendo' : 'Seguir'}
-                            </button>
-                            <button onclick="blockUser('${char.handle}')" class="text-slate-400 hover:text-red-400 text-xs p-1.5 rounded-lg hover:bg-white/5 transition-colors" title="Bloquear usuario"><i class="fa-solid fa-ban"></i></button>
+                            ${!isMe ? `
+                                <button onclick="toggleFollow('${char.id}')" class="px-3 py-1 rounded-lg text-xs font-bold transition-all ${isFollowing ? 'bg-white/10 text-white hover:bg-red-500/20 hover:text-red-400' : 'bg-slap-500 text-black hover:bg-slap-400'}">
+                                    ${isFollowing ? 'Siguiendo' : 'Seguir'}
+                                </button>
+                                <button onclick="blockUser('${char.handle}')" class="text-slate-400 hover:text-red-400 text-xs p-1.5 rounded-lg hover:bg-white/5 transition-colors" title="Bloquear usuario"><i class="fa-solid fa-ban"></i></button>
+                            ` : `<span class="text-[10px] text-slate-400 font-mono px-2 py-1 bg-white/5 rounded-lg">Tú</span>`}
                         </div>
                     </div>
                 `;
@@ -1328,6 +1369,7 @@
                 return;
             }
 
+            // Buscar en publicaciones
             const matchedSlaps = slaps.filter(s => 
                 !blockedUserHandles.has(s.author.handle) && (
                     s.text.toLowerCase().includes(query) || 
@@ -1336,17 +1378,48 @@
                 )
             );
 
-            if (matchedSlaps.length === 0) {
-                resultsContainer.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">No se encontraron Slaps que coincidan con "${query}".</p>`;
-                return;
+            // Buscar en usuarios
+            const allUsers = getCombinedUsers();
+            const matchedUsers = allUsers.filter(u => 
+                !blockedUserHandles.has(u.handle) && (
+                    u.name.toLowerCase().includes(query) || 
+                    u.handle.toLowerCase().includes(query)
+                )
+            );
+
+            let html = '';
+
+            if (matchedUsers.length > 0) {
+                html += `<h4 class="font-fredoka text-sm font-bold text-slate-300 mt-4 mb-2">Usuarios encontrados:</h4>`;
+                html += matchedUsers.map(u => `
+                    <div class="glass-card rounded-xl p-3 border border-white/10 flex items-center justify-between mb-2 cursor-pointer hover:bg-white/5" onclick="viewUserProfile('${u.handle}')">
+                        <div class="flex items-center gap-3">
+                            <img src="${u.avatar}" class="w-8 h-8 rounded-full object-cover border border-slap-400">
+                            <div>
+                                <p class="text-xs font-bold text-white">${u.name}</p>
+                                <p class="text-[10px] text-slap-400 font-mono">${u.handle}</p>
+                            </div>
+                        </div>
+                        <span class="text-xs text-slate-400"><i class="fa-solid fa-chevron-right"></i></span>
+                    </div>
+                `).join('');
             }
 
-            resultsContainer.innerHTML = matchedSlaps.map(slap => `
-                <div class="glass-card rounded-xl p-3 border border-white/10">
-                    <span class="text-[10px] text-slap-400 font-mono cursor-pointer hover:underline" onclick="viewUserProfile('${slap.author.handle}')">${slap.author.name}</span>
-                    <p class="text-xs text-white mt-1">${escapeHTML(slap.text)}</p>
-                </div>
-            `).join('');
+            if (matchedSlaps.length > 0) {
+                html += `<h4 class="font-fredoka text-sm font-bold text-slate-300 mt-4 mb-2">Publicaciones encontradas:</h4>`;
+                html += matchedSlaps.map(slap => `
+                    <div class="glass-card rounded-xl p-3 border border-white/10 mb-2">
+                        <span class="text-[10px] text-slap-400 font-mono cursor-pointer hover:underline" onclick="viewUserProfile('${slap.author.handle}')">${slap.author.name} (${slap.author.handle})</span>
+                        <p class="text-xs text-white mt-1">${escapeHTML(slap.text)}</p>
+                    </div>
+                `).join('');
+            }
+
+            if (matchedUsers.length === 0 && matchedSlaps.length === 0) {
+                html = `<p class="text-xs text-slate-400 text-center py-6">No se encontraron usuarios ni Slaps que coincidan con "${query}".</p>`;
+            }
+
+            resultsContainer.innerHTML = html;
         }
 
         function filterByTag(tag) {
