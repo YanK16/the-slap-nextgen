@@ -777,27 +777,14 @@
 
             const finishRegistration = async (finalAvatar) => {
                 const { data, error } = await _supabase.auth.signUp({
-    email: email,
-    password: password,
-    options: { data: { name: name, handle: handle, mood: mood, avatar: finalAvatar } }
-});
-
-if (!error && data.user) {
-    // Guardamos al usuario en la lista pública 'profiles'
-    await _supabase.from('profiles').insert([{
-        id: data.user.id,
-        name: name,
-        handle: handle,
-        avatar: finalAvatar,
-        bio: 'Estudiante en Hollywood Arts',
-        mood: mood
-    }]);
-}
+                    email: email,
+                    password: password,
+                    options: { data: { name: name, handle: handle, mood: mood, avatar: finalAvatar } }
+                });
 
                 if (error) {
                     alert("Error al registrarse: " + error.message);
                 } else {
-                    // GUARDAR TAMBIÉN EN LA TABLA PÚBLICA PROFILES
                     if (data.user) {
                         await _supabase.from('profiles').insert([{
                             id: data.user.id,
@@ -809,22 +796,6 @@ if (!error && data.user) {
                         }]);
                     }
 
-                    currentUser = {
-                        name: name,
-                        handle: handle,
-                        mood: mood,
-                        avatar: finalAvatar,
-                        bio: 'Estudiante en Hollywood Arts High School.',
-                        banner: null
-                    };
-                    document.getElementById('auth-modal').classList.add('hidden');
-                    updateUserUI();
-                    SoundFX.pop();
-                }
-
-                if (error) {
-                    alert("Error al registrarse: " + error.message);
-                } else {
                     currentUser = {
                         name: name,
                         handle: handle,
@@ -959,7 +930,6 @@ if (!error && data.user) {
         }
 
         async function eliminarSlapRemoto(slapId) {
-            // Nos aseguramos de manejar IDs tanto numéricos como de texto (UUID)
             const idValue = isNaN(slapId) ? slapId : Number(slapId);
             
             const { error } = await _supabase
@@ -1146,9 +1116,6 @@ if (!error && data.user) {
                 reader.readAsDataURL(file);
             }
         }
-                reader.readAsDataURL(file);
-            
-    
 
         function clearMediaPreview() {
             selectedMedia = { type: null, data: null };
@@ -1299,45 +1266,10 @@ if (!error && data.user) {
             updateUserUI();
         }
 
-        let registeredProfiles = [];
-
-async function cargarPerfilesRemotos() {
-    const { data } = await _supabase.from('profiles').select('*');
-    if (data) {
-        registeredProfiles = data;
-        renderExploreUsers();
-    }
-}
-
-        // 2. Esta función junta los personajes de la serie + los usuarios registrados
-        function getCombinedUsers() {
-            const usersMap = new Map();
-
-            // Agregar personajes oficiales (Tori, Jade, Cat...)
-            CHARACTERS.forEach(c => usersMap.set(c.handle, c));
-
-            // Agregar usuarios reales traídos de Supabase
-            registeredProfiles.forEach(p => {
-                if (p.handle) {
-                    usersMap.set(p.handle, {
-                        id: p.id || p.handle.replace('@', ''),
-                        name: p.name,
-                        handle: p.handle,
-                        avatar: p.avatar || 'https://placehold.co/100',
-                        bio: p.bio || 'Estudiante en Hollywood Arts.',
-                        mood: p.mood || '😎 Activo'
-                    });
-                }
-            });
-
-            return Array.from(usersMap.values());
-        }
-
         function renderExploreUsers() {
             const directory = document.getElementById('users-directory');
             if (!directory) return;
 
-            // En lugar de listar todos los usuarios fijos, mostramos un mensaje de invitación
             directory.innerHTML = `
                 <div class="text-center py-8 text-slate-400 text-xs">
                     <i class="fa-solid fa-magnifying-glass text-2xl mb-2 text-slap-400 block"></i>
@@ -1371,110 +1303,121 @@ async function cargarPerfilesRemotos() {
             `).join('');
         }
 
-        async function handleSearch() {
+        // ================= FUNCIÓN DE BÚSQUEDA OPTIMIZADA CON DEBOUNCE =================
+        let searchTimeout = null;
+
+        function handleSearch() {
             const queryInput = document.getElementById('explore-search-input');
             const resultsContainer = document.getElementById('search-results-container');
             const directory = document.getElementById('users-directory');
-            const query = queryInput ? queryInput.value.toLowerCase().trim() : '';
+            const query = queryInput ? queryInput.value.trim() : '';
 
-            // Si no hay nada escrito, mostramos el mensaje amigable y limpiamos resultados
+            clearTimeout(searchTimeout);
+
             if (!query) {
                 if (directory) directory.classList.remove('hidden');
-                resultsContainer.innerHTML = '';
+                if (resultsContainer) resultsContainer.innerHTML = '';
                 return;
             }
 
-            // Si el usuario empezó a escribir, ocultamos la tarjeta con la lupa estática
             if (directory) directory.classList.add('hidden');
 
-            // 1. Buscar en personajes de la serie
-            const matchedCharacters = CHARACTERS.filter(u => 
-                !blockedUserHandles.has(u.handle) && (
-                    u.name.toLowerCase().includes(query) || 
-                    u.handle.toLowerCase().includes(query)
-                )
-            );
+            searchTimeout = setTimeout(async () => {
+                const lowerQuery = query.toLowerCase();
 
-            // 2. Buscar en publicaciones (Slaps)
-            const matchedSlaps = slaps.filter(s => 
-                !blockedUserHandles.has(s.author.handle) && (
-                    s.text.toLowerCase().includes(query) || 
-                    s.author.name.toLowerCase().includes(query) ||
-                    s.author.handle.toLowerCase().includes(query)
-                )
-            );
+                // 1. Búsqueda local en personajes de la serie
+                const matchedCharacters = CHARACTERS.filter(u => 
+                    !blockedUserHandles.has(u.handle) && (
+                        (u.name && u.name.toLowerCase().includes(lowerQuery)) || 
+                        (u.handle && u.handle.toLowerCase().includes(lowerQuery))
+                    )
+                );
 
-            // 3. Buscar usuarios registrados en Supabase
-            let matchedRealUsers = [];
-            try {
-                const { data, error } = await _supabase
-                    .from('profiles')
-                    .select('*')
-                    .or(`name.ilike.%${query}%,handle.ilike.%${query}%`);
+                // 2. Búsqueda local en Slaps
+                const matchedSlaps = slaps.filter(s => 
+                    !blockedUserHandles.has(s.author.handle) && (
+                        (s.text && s.text.toLowerCase().includes(lowerQuery)) || 
+                        (s.author.name && s.author.name.toLowerCase().includes(lowerQuery)) ||
+                        (s.author.handle && s.author.handle.toLowerCase().includes(lowerQuery))
+                    )
+                );
 
-                if (!error && data) {
-                    matchedRealUsers = data.filter(u => !blockedUserHandles.has(u.handle));
+                // 3. Búsqueda remota en Supabase optimizada con índices GIN
+                let matchedRealUsers = [];
+                try {
+                    const { data, error } = await _supabase
+                        .from('profiles')
+                        .select('*')
+                        .or(`name.ilike.%${query}%,handle.ilike.%${query}%`)
+                        .limit(10);
+
+                    if (!error && data) {
+                        matchedRealUsers = data.filter(u => !blockedUserHandles.has(u.handle));
+                    }
+                } catch (err) {
+                    console.error("Error buscando en Supabase:", err);
                 }
-            } catch (err) {
-                console.error("Error buscando en Supabase:", err);
-            }
 
-            // Unificar usuarios sin duplicar
-            const usersMap = new Map();
-            matchedCharacters.forEach(u => usersMap.set(u.handle, u));
-            matchedRealUsers.forEach(u => {
-                usersMap.set(u.handle, {
-                    id: u.id || u.handle.replace('@', ''),
-                    name: u.name,
-                    handle: u.handle,
-                    avatar: u.avatar || 'https://placehold.co/100',
-                    bio: u.bio || 'Estudiante registrado en Hollywood Arts.',
-                    mood: u.mood || '😎 Activo'
+                // Unificar usuarios locales y remotos sin duplicar
+                const usersMap = new Map();
+                matchedCharacters.forEach(u => usersMap.set(u.handle, u));
+                matchedRealUsers.forEach(u => {
+                    usersMap.set(u.handle, {
+                        id: u.id || u.handle.replace('@', ''),
+                        name: u.name,
+                        handle: u.handle,
+                        avatar: u.avatar || 'https://placehold.co/100',
+                        bio: u.bio || 'Estudiante registrado en Hollywood Arts.',
+                        mood: u.mood || '😎 Activo'
+                    });
                 });
-            });
 
-            const allMatchedUsers = Array.from(usersMap.values());
+                const allMatchedUsers = Array.from(usersMap.values());
 
-            // 4. Renderizar el resultado limpio
-            let html = '';
+                // 4. Renderizar resultados limpios
+                let html = '';
 
-            if (allMatchedUsers.length > 0) {
-                html += `<h4 class="font-fredoka text-sm font-bold text-slate-300 mt-2 mb-3">Usuarios encontrados:</h4>`;
-                html += allMatchedUsers.map(u => `
-                    <div class="glass-card rounded-xl p-3 border border-white/10 flex items-center justify-between mb-2 cursor-pointer hover:bg-white/5 transition-all" onclick="viewUserProfile('${u.handle}')">
-                        <div class="flex items-center gap-3">
-                            <img src="${u.avatar}" class="w-9 h-9 rounded-full object-cover border border-slap-400">
-                            <div>
-                                <p class="text-xs font-bold text-white">${u.name}</p>
-                                <p class="text-[10px] text-slap-400 font-mono">${u.handle}</p>
+                if (allMatchedUsers.length > 0) {
+                    html += `<h4 class="font-fredoka text-sm font-bold text-slate-300 mt-2 mb-3">Usuarios encontrados:</h4>`;
+                    html += allMatchedUsers.map(u => `
+                        <div class="glass-card rounded-xl p-3 border border-white/10 flex items-center justify-between mb-2 cursor-pointer hover:bg-white/5 transition-all" onclick="viewUserProfile('${u.handle}')">
+                            <div class="flex items-center gap-3">
+                                <img src="${u.avatar}" class="w-9 h-9 rounded-full object-cover border border-slap-400">
+                                <div>
+                                    <p class="text-xs font-bold text-white">${escapeHTML(u.name)}</p>
+                                    <p class="text-[10px] text-slap-400 font-mono">${escapeHTML(u.handle)}</p>
+                                </div>
                             </div>
+                            <span class="text-xs text-slate-400"><i class="fa-solid fa-chevron-right"></i></span>
                         </div>
-                        <span class="text-xs text-slate-400"><i class="fa-solid fa-chevron-right"></i></span>
-                    </div>
-                `).join('');
-            }
+                    `).join('');
+                }
 
-            if (matchedSlaps.length > 0) {
-                html += `<h4 class="font-fredoka text-sm font-bold text-slate-300 mt-4 mb-3">Publicaciones encontradas:</h4>`;
-                html += matchedSlaps.map(slap => `
-                    <div class="glass-card rounded-xl p-3 border border-white/10 mb-2">
-                        <span class="text-[10px] text-slap-400 font-mono cursor-pointer hover:underline" onclick="viewUserProfile('${slap.author.handle}')">${slap.author.name} (${slap.author.handle})</span>
-                        <p class="text-xs text-white mt-1">${escapeHTML(slap.text)}</p>
-                    </div>
-                `).join('');
-            }
+                if (matchedSlaps.length > 0) {
+                    html += `<h4 class="font-fredoka text-sm font-bold text-slate-300 mt-4 mb-3">Publicaciones encontrados:</h4>`;
+                    html += matchedSlaps.map(slap => `
+                        <div class="glass-card rounded-xl p-3 border border-white/10 mb-2">
+                            <span class="text-[10px] text-slap-400 font-mono cursor-pointer hover:underline" onclick="viewUserProfile('${slap.author.handle}')">${escapeHTML(slap.author.name)} (${escapeHTML(slap.author.handle)})</span>
+                            <p class="text-xs text-white mt-1">${escapeHTML(slap.text)}</p>
+                        </div>
+                    `).join('');
+                }
 
-            if (allMatchedUsers.length === 0 && matchedSlaps.length === 0) {
-                html = `<p class="text-xs text-slate-400 text-center py-8">No se encontraron estudiantes ni Slaps que coincidan con "${query}".</p>`;
-            }
+                if (allMatchedUsers.length === 0 && matchedSlaps.length === 0) {
+                    html = `<p class="text-xs text-slate-400 text-center py-8">No se encontraron estudiantes ni Slaps que coincidan con "${escapeHTML(query)}".</p>`;
+                }
 
-            resultsContainer.innerHTML = html;
+                if (resultsContainer) resultsContainer.innerHTML = html;
+            }, 300);
         }
 
         function filterByTag(tag) {
             switchTab('explore');
-            document.getElementById('explore-search-input').value = tag;
-            handleSearch();
+            const searchInput = document.getElementById('explore-search-input');
+            if (searchInput) {
+                searchInput.value = tag;
+                handleSearch();
+            }
         }
 
         function renderChatContacts() {
