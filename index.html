@@ -1374,15 +1374,20 @@ async function cargarPerfilesRemotos() {
         async function handleSearch() {
             const queryInput = document.getElementById('explore-search-input');
             const resultsContainer = document.getElementById('search-results-container');
+            const directory = document.getElementById('users-directory');
             const query = queryInput ? queryInput.value.toLowerCase().trim() : '';
 
-            // Si la barra de búsqueda está vacía, limpiamos los resultados
+            // Si no hay nada escrito, mostramos el mensaje amigable y limpiamos resultados
             if (!query) {
+                if (directory) directory.classList.remove('hidden');
                 resultsContainer.innerHTML = '';
                 return;
             }
 
-            // 1. Buscar en los personajes de la serie (lista local)
+            // Si el usuario empezó a escribir, ocultamos la tarjeta con la lupa estática
+            if (directory) directory.classList.add('hidden');
+
+            // 1. Buscar en personajes de la serie
             const matchedCharacters = CHARACTERS.filter(u => 
                 !blockedUserHandles.has(u.handle) && (
                     u.name.toLowerCase().includes(query) || 
@@ -1390,7 +1395,7 @@ async function cargarPerfilesRemotos() {
                 )
             );
 
-            // 2. Buscar en las publicaciones (Slaps) locales
+            // 2. Buscar en publicaciones (Slaps)
             const matchedSlaps = slaps.filter(s => 
                 !blockedUserHandles.has(s.author.handle) && (
                     s.text.toLowerCase().includes(query) || 
@@ -1399,7 +1404,7 @@ async function cargarPerfilesRemotos() {
                 )
             );
 
-            // 3. Buscar usuarios reales en Supabase
+            // 3. Buscar usuarios registrados en Supabase
             let matchedRealUsers = [];
             try {
                 const { data, error } = await _supabase
@@ -1411,10 +1416,10 @@ async function cargarPerfilesRemotos() {
                     matchedRealUsers = data.filter(u => !blockedUserHandles.has(u.handle));
                 }
             } catch (err) {
-                console.error("Error buscando usuarios en Supabase:", err);
+                console.error("Error buscando en Supabase:", err);
             }
 
-            // Unificar resultados sin duplicar
+            // Unificar usuarios sin duplicar
             const usersMap = new Map();
             matchedCharacters.forEach(u => usersMap.set(u.handle, u));
             matchedRealUsers.forEach(u => {
@@ -1430,15 +1435,15 @@ async function cargarPerfilesRemotos() {
 
             const allMatchedUsers = Array.from(usersMap.values());
 
-            // 4. Mostrar los resultados en pantalla
+            // 4. Renderizar el resultado limpio
             let html = '';
 
             if (allMatchedUsers.length > 0) {
-                html += `<h4 class="font-fredoka text-sm font-bold text-slate-300 mt-4 mb-2">Usuarios encontrados:</h4>`;
+                html += `<h4 class="font-fredoka text-sm font-bold text-slate-300 mt-2 mb-3">Usuarios encontrados:</h4>`;
                 html += allMatchedUsers.map(u => `
-                    <div class="glass-card rounded-xl p-3 border border-white/10 flex items-center justify-between mb-2 cursor-pointer hover:bg-white/5" onclick="viewUserProfile('${u.handle}')">
+                    <div class="glass-card rounded-xl p-3 border border-white/10 flex items-center justify-between mb-2 cursor-pointer hover:bg-white/5 transition-all" onclick="viewUserProfile('${u.handle}')">
                         <div class="flex items-center gap-3">
-                            <img src="${u.avatar}" class="w-8 h-8 rounded-full object-cover border border-slap-400">
+                            <img src="${u.avatar}" class="w-9 h-9 rounded-full object-cover border border-slap-400">
                             <div>
                                 <p class="text-xs font-bold text-white">${u.name}</p>
                                 <p class="text-[10px] text-slap-400 font-mono">${u.handle}</p>
@@ -1450,7 +1455,7 @@ async function cargarPerfilesRemotos() {
             }
 
             if (matchedSlaps.length > 0) {
-                html += `<h4 class="font-fredoka text-sm font-bold text-slate-300 mt-4 mb-2">Publicaciones encontradas:</h4>`;
+                html += `<h4 class="font-fredoka text-sm font-bold text-slate-300 mt-4 mb-3">Publicaciones encontradas:</h4>`;
                 html += matchedSlaps.map(slap => `
                     <div class="glass-card rounded-xl p-3 border border-white/10 mb-2">
                         <span class="text-[10px] text-slap-400 font-mono cursor-pointer hover:underline" onclick="viewUserProfile('${slap.author.handle}')">${slap.author.name} (${slap.author.handle})</span>
@@ -1460,7 +1465,7 @@ async function cargarPerfilesRemotos() {
             }
 
             if (allMatchedUsers.length === 0 && matchedSlaps.length === 0) {
-                html = `<p class="text-xs text-slate-400 text-center py-6">No se encontraron usuarios ni Slaps que coincidan con "${query}".</p>`;
+                html = `<p class="text-xs text-slate-400 text-center py-8">No se encontraron estudiantes ni Slaps que coincidan con "${query}".</p>`;
             }
 
             resultsContainer.innerHTML = html;
