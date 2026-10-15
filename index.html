@@ -1337,33 +1337,13 @@ async function cargarPerfilesRemotos() {
             const directory = document.getElementById('users-directory');
             if (!directory) return;
 
-            const allUsers = getCombinedUsers();
-            const unblockedUsers = allUsers.filter(c => !blockedUserHandles.has(c.handle));
-
-            directory.innerHTML = unblockedUsers.map(char => {
-                const isFollowing = followedUserIds.has(char.id);
-                const isMe = currentUser && currentUser.handle === char.handle;
-
-                return `
-                    <div class="bg-black/30 rounded-xl p-3 border border-white/10 flex items-center justify-between">
-                        <div class="flex items-center gap-2.5 min-w-0 cursor-pointer" onclick="viewUserProfile('${char.handle}')">
-                            <img src="${char.avatar}" class="w-9 h-9 rounded-full object-cover border border-slap-400">
-                            <div class="truncate">
-                                <h5 class="text-xs font-bold text-white truncate hover:underline">${char.name}</h5>
-                                <p class="text-[10px] text-slap-400 font-mono truncate">${char.handle}</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-1.5">
-                            ${!isMe ? `
-                                <button onclick="toggleFollow('${char.id}')" class="px-3 py-1 rounded-lg text-xs font-bold transition-all ${isFollowing ? 'bg-white/10 text-white hover:bg-red-500/20 hover:text-red-400' : 'bg-slap-500 text-black hover:bg-slap-400'}">
-                                    ${isFollowing ? 'Siguiendo' : 'Seguir'}
-                                </button>
-                                <button onclick="blockUser('${char.handle}')" class="text-slate-400 hover:text-red-400 text-xs p-1.5 rounded-lg hover:bg-white/5 transition-colors" title="Bloquear usuario"><i class="fa-solid fa-ban"></i></button>
-                            ` : `<span class="text-[10px] text-slate-400 font-mono px-2 py-1 bg-white/5 rounded-lg">Tú</span>`}
-                        </div>
-                    </div>
-                `;
-            }).join('');
+            // En lugar de listar todos los usuarios fijos, mostramos un mensaje de invitación
+            directory.innerHTML = `
+                <div class="text-center py-8 text-slate-400 text-xs">
+                    <i class="fa-solid fa-magnifying-glass text-2xl mb-2 text-slap-400 block"></i>
+                    Usa la barra de búsqueda superior para encontrar estudiantes o publicaciones.
+                </div>
+            `;
         }
 
         function renderSideSuggestions() {
@@ -1391,16 +1371,26 @@ async function cargarPerfilesRemotos() {
             `).join('');
         }
 
-        function handleSearch() {
-            const query = document.getElementById('explore-search-input').value.toLowerCase().trim();
+        async function handleSearch() {
+            const queryInput = document.getElementById('explore-search-input');
             const resultsContainer = document.getElementById('search-results-container');
+            const query = queryInput ? queryInput.value.toLowerCase().trim() : '';
 
+            // Si la barra de búsqueda está vacía, limpiamos los resultados
             if (!query) {
                 resultsContainer.innerHTML = '';
                 return;
             }
 
-            // Buscar en publicaciones
+            // 1. Buscar en los personajes de la serie (lista local)
+            const matchedCharacters = CHARACTERS.filter(u => 
+                !blockedUserHandles.has(u.handle) && (
+                    u.name.toLowerCase().includes(query) || 
+                    u.handle.toLowerCase().includes(query)
+                )
+            );
+
+            // 2. Buscar en las publicaciones (Slaps) locales
             const matchedSlaps = slaps.filter(s => 
                 !blockedUserHandles.has(s.author.handle) && (
                     s.text.toLowerCase().includes(query) || 
@@ -1409,20 +1399,43 @@ async function cargarPerfilesRemotos() {
                 )
             );
 
-            // Buscar en usuarios
-            const allUsers = getCombinedUsers();
-            const matchedUsers = allUsers.filter(u => 
-                !blockedUserHandles.has(u.handle) && (
-                    u.name.toLowerCase().includes(query) || 
-                    u.handle.toLowerCase().includes(query)
-                )
-            );
+            // 3. Buscar usuarios reales en Supabase
+            let matchedRealUsers = [];
+            try {
+                const { data, error } = await _supabase
+                    .from('profiles')
+                    .select('*')
+                    .or(`name.ilike.%${query}%,handle.ilike.%${query}%`);
 
+                if (!error && data) {
+                    matchedRealUsers = data.filter(u => !blockedUserHandles.has(u.handle));
+                }
+            } catch (err) {
+                console.error("Error buscando usuarios en Supabase:", err);
+            }
+
+            // Unificar resultados sin duplicar
+            const usersMap = new Map();
+            matchedCharacters.forEach(u => usersMap.set(u.handle, u));
+            matchedRealUsers.forEach(u => {
+                usersMap.set(u.handle, {
+                    id: u.id || u.handle.replace('@', ''),
+                    name: u.name,
+                    handle: u.handle,
+                    avatar: u.avatar || 'https://placehold.co/100',
+                    bio: u.bio || 'Estudiante registrado en Hollywood Arts.',
+                    mood: u.mood || '😎 Activo'
+                });
+            });
+
+            const allMatchedUsers = Array.from(usersMap.values());
+
+            // 4. Mostrar los resultados en pantalla
             let html = '';
 
-            if (matchedUsers.length > 0) {
+            if (allMatchedUsers.length > 0) {
                 html += `<h4 class="font-fredoka text-sm font-bold text-slate-300 mt-4 mb-2">Usuarios encontrados:</h4>`;
-                html += matchedUsers.map(u => `
+                html += allMatchedUsers.map(u => `
                     <div class="glass-card rounded-xl p-3 border border-white/10 flex items-center justify-between mb-2 cursor-pointer hover:bg-white/5" onclick="viewUserProfile('${u.handle}')">
                         <div class="flex items-center gap-3">
                             <img src="${u.avatar}" class="w-8 h-8 rounded-full object-cover border border-slap-400">
@@ -1446,7 +1459,7 @@ async function cargarPerfilesRemotos() {
                 `).join('');
             }
 
-            if (matchedUsers.length === 0 && matchedSlaps.length === 0) {
+            if (allMatchedUsers.length === 0 && matchedSlaps.length === 0) {
                 html = `<p class="text-xs text-slate-400 text-center py-6">No se encontraron usuarios ni Slaps que coincidan con "${query}".</p>`;
             }
 
