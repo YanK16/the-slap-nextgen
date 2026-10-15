@@ -1117,6 +1117,10 @@
             }
         }
 
+                reader.readAsDataURL(file); // <-- ESTA LÍNEA REPETIDA ESTÁ DE MÁS Y ROMPE EL CÓDIGO
+    
+
+
         function clearMediaPreview() {
             selectedMedia = { type: null, data: null };
             document.getElementById('media-preview-container').classList.add('hidden');
