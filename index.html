@@ -198,7 +198,7 @@
                     <h1 class="font-fredoka text-2xl font-bold tracking-wide bg-gradient-to-r from-slap-400 via-hollywood-pink to-hollywood-purple bg-clip-text text-transparent">
                         The Slap <span class="text-xs px-2 py-0.5 rounded-full bg-slap-500/20 text-slap-400 font-sans tracking-normal border border-slap-500/30">NextGen</span>
                     </h1>
-                    <p class="text-[10px] text-slate-400 -mt-1 font-mono">Hollywood Arts High • Slap OS v14.3</p>
+                    <p class="text-[10px] text-slate-400 -mt-1 font-mono">Hollywood Arts High • Slap OS v14.4</p>
                 </div>
             </div>
 
@@ -713,7 +713,7 @@
         let viewingProfileUser = null; 
 
         window.onload = async function() {
-            // Verificar si ya hay una sesión guardada en Supabase Auth
+            // Verificar si hay sesión activa en Supabase Auth
             const { data: { session } } = await _supabase.auth.getSession();
             if (session && session.user) {
                 const meta = session.user.user_metadata;
@@ -787,7 +787,8 @@
                             handle: handle,
                             mood: mood,
                             avatar: finalAvatar,
-                            bio: 'Estudiante en Hollywood Arts High School.'
+                            bio: 'Estudiante en Hollywood Arts High School.',
+                            banner: null
                         }
                     }
                 });
@@ -831,7 +832,7 @@
             });
 
             if (error) {
-                alert("Error al iniciar sesión: Verifique su correo o contraseña.");
+                alert("Error al iniciar sesión: Verifique su correo, contraseña o confirme su cuenta en Supabase.");
                 console.error(error);
             } else if (data.user) {
                 const meta = data.user.user_metadata;
@@ -933,6 +934,20 @@
                 .delete()
                 .eq('id', slapId);
             await cargarSlapsRemotos();
+        }
+
+        async function syncUserMetadata() {
+            if (!currentUser) return;
+            await _supabase.auth.updateUser({
+                data: {
+                    name: currentUser.name,
+                    handle: currentUser.handle,
+                    mood: currentUser.mood,
+                    avatar: currentUser.avatar,
+                    bio: currentUser.bio,
+                    banner: currentUser.banner
+                }
+            });
         }
 
         function updateUserUI() {
@@ -1461,32 +1476,34 @@
             `).join('');
         }
 
-        function updateProfileAvatar(input) {
+        async function updateProfileAvatar(input) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = async function(e) {
                     currentUser.avatar = e.target.result;
                     updateUserUI();
                     document.getElementById('profile-page-avatar').src = currentUser.avatar;
+                    await syncUserMetadata();
                 };
                 reader.readAsDataURL(input.files[0]);
             }
         }
 
-        function updateBanner(input) {
+        async function updateBanner(input) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = async function(e) {
                     currentUser.banner = e.target.result;
                     const bannerImg = document.getElementById('profile-banner-img');
                     bannerImg.src = currentUser.banner;
                     bannerImg.classList.remove('hidden');
+                    await syncUserMetadata();
                 };
                 reader.readAsDataURL(input.files[0]);
             }
         }
 
-        function saveProfileChanges(e) {
+        async function saveProfileChanges(e) {
             e.preventDefault();
             currentUser.name = document.getElementById('edit-name-input').value || currentUser.name;
             currentUser.bio = document.getElementById('edit-bio-input').value || currentUser.bio;
@@ -1495,6 +1512,7 @@
             closeModal('edit-profile-modal');
             updateUserUI();
             loadMyProfileView();
+            await syncUserMetadata();
             SoundFX.pop();
         }
 
