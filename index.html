@@ -777,19 +777,50 @@
 
             const finishRegistration = async (finalAvatar) => {
                 const { data, error } = await _supabase.auth.signUp({
-                    email: email,
-                    password: password,
-                    options: {
-                        data: {
+    email: email,
+    password: password,
+    options: { data: { name: name, handle: handle, mood: mood, avatar: finalAvatar } }
+});
+
+if (!error && data.user) {
+    // Guardamos al usuario en la lista pública 'profiles'
+    await _supabase.from('profiles').insert([{
+        id: data.user.id,
+        name: name,
+        handle: handle,
+        avatar: finalAvatar,
+        bio: 'Estudiante en Hollywood Arts',
+        mood: mood
+    }]);
+}
+
+                if (error) {
+                    alert("Error al registrarse: " + error.message);
+                } else {
+                    // GUARDAR TAMBIÉN EN LA TABLA PÚBLICA PROFILES
+                    if (data.user) {
+                        await _supabase.from('profiles').insert([{
+                            id: data.user.id,
                             name: name,
                             handle: handle,
-                            mood: mood,
                             avatar: finalAvatar,
                             bio: 'Estudiante en Hollywood Arts High School.',
-                            banner: null
-                        }
+                            mood: mood
+                        }]);
                     }
-                });
+
+                    currentUser = {
+                        name: name,
+                        handle: handle,
+                        mood: mood,
+                        avatar: finalAvatar,
+                        bio: 'Estudiante en Hollywood Arts High School.',
+                        banner: null
+                    };
+                    document.getElementById('auth-modal').classList.add('hidden');
+                    updateUserUI();
+                    SoundFX.pop();
+                }
 
                 if (error) {
                     alert("Error al registrarse: " + error.message);
@@ -1268,36 +1299,36 @@
             updateUserUI();
         }
 
+        let registeredProfiles = [];
+
+async function cargarPerfilesRemotos() {
+    const { data } = await _supabase.from('profiles').select('*');
+    if (data) {
+        registeredProfiles = data;
+        renderExploreUsers();
+    }
+}
+
+        // 2. Esta función junta los personajes de la serie + los usuarios registrados
         function getCombinedUsers() {
-            // Empezamos con los personajes oficiales
             const usersMap = new Map();
+
+            // Agregar personajes oficiales (Tori, Jade, Cat...)
             CHARACTERS.forEach(c => usersMap.set(c.handle, c));
 
-            // Extraemos los usuarios reales registrados que hayan publicado Slaps
-            slaps.forEach(s => {
-                if (s.author && s.author.handle && !usersMap.has(s.author.handle)) {
-                    usersMap.set(s.author.handle, {
-                        id: s.author.handle.replace('@', ''),
-                        name: s.author.name,
-                        handle: s.author.handle,
-                        avatar: s.author.avatar || 'https://placehold.co/100',
-                        bio: 'Estudiante registrado en Hollywood Arts.',
-                        mood: '😎 Activo'
+            // Agregar usuarios reales traídos de Supabase
+            registeredProfiles.forEach(p => {
+                if (p.handle) {
+                    usersMap.set(p.handle, {
+                        id: p.id || p.handle.replace('@', ''),
+                        name: p.name,
+                        handle: p.handle,
+                        avatar: p.avatar || 'https://placehold.co/100',
+                        bio: p.bio || 'Estudiante en Hollywood Arts.',
+                        mood: p.mood || '😎 Activo'
                     });
                 }
             });
-
-            // Si el usuario actual está iniciado sesión, nos aseguramos de que esté
-            if (currentUser && currentUser.handle && !usersMap.has(currentUser.handle)) {
-                usersMap.set(currentUser.handle, {
-                    id: currentUser.handle.replace('@', ''),
-                    name: currentUser.name,
-                    handle: currentUser.handle,
-                    avatar: currentUser.avatar,
-                    bio: currentUser.bio || 'Estudiante en Hollywood Arts.',
-                    mood: currentUser.mood || '😎 Emocionado'
-                });
-            }
 
             return Array.from(usersMap.values());
         }
