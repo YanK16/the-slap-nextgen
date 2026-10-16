@@ -1270,16 +1270,30 @@
             updateUserUI();
         }
 
-        function renderExploreUsers() {
+        function renderExploreUsers(usersList = CHARACTERS) {
             const directory = document.getElementById('users-directory');
             if (!directory) return;
 
-            directory.innerHTML = `
-                <div class="text-center py-8 text-slate-400 text-xs">
-                    <i class="fa-solid fa-magnifying-glass text-2xl mb-2 text-slap-400 block"></i>
-                    Usa la barra de búsqueda superior para encontrar estudiantes o publicaciones.
+            const activeUsers = usersList.filter(u => !blockedUserHandles.has(u.handle));
+
+            if (activeUsers.length === 0) {
+                directory.innerHTML = `<p class="text-xs text-slate-400 text-center py-6 col-span-full">No hay estudiantes disponibles.</p>`;
+                return;
+            }
+
+            directory.innerHTML = activeUsers.map(u => `
+                <div class="glass-card rounded-xl p-3 border border-white/10 flex items-center justify-between cursor-pointer hover:bg-white/5 transition-all" onclick="viewUserProfile('${u.handle}')">
+                    <div class="flex items-center gap-3">
+                        <img src="${u.avatar}" class="w-10 h-10 rounded-full object-cover border border-slap-400">
+                        <div>
+                            <p class="text-xs font-bold text-white">${escapeHTML(u.name)}</p>
+                            <p class="text-[10px] text-slap-400 font-mono">${escapeHTML(u.handle)}</p>
+                            <p class="text-[10px] text-slate-300 truncate max-w-[150px]">${escapeHTML(u.bio || '')}</p>
+                        </div>
+                    </div>
+                    <span class="text-xs text-slate-400"><i class="fa-solid fa-chevron-right"></i></span>
                 </div>
-            `;
+            `).join('');
         }
 
         function renderSideSuggestions() {
@@ -1307,8 +1321,7 @@
             `).join('');
         }
 
-        // ================= FUNCIÓN DE BÚSQUEDA OPTIMIZADA CON DEBOUNCE =================
-        let searchTimeout = null;
+       let searchTimeout = null;
 
         function handleSearch() {
             const queryInput = document.getElementById('explore-search-input');
@@ -1318,18 +1331,17 @@
 
             clearTimeout(searchTimeout);
 
+            // Si el buscador está vacío, restauramos el directorio por defecto y limpiamos publicaciones extra
             if (!query) {
-                if (directory) directory.classList.remove('hidden');
+                renderExploreUsers(CHARACTERS); // Muestra todos los personajes por defecto
                 if (resultsContainer) resultsContainer.innerHTML = '';
                 return;
             }
 
-            if (directory) directory.classList.add('hidden');
-
             searchTimeout = setTimeout(async () => {
                 const lowerQuery = query.toLowerCase();
 
-                // 1. Búsqueda local en personajes de la serie
+                // 1. Buscar en personajes de la serie
                 const matchedCharacters = CHARACTERS.filter(u => 
                     !blockedUserHandles.has(u.handle) && (
                         (u.name && u.name.toLowerCase().includes(lowerQuery)) || 
@@ -1337,7 +1349,7 @@
                     )
                 );
 
-                // 2. Búsqueda local en Slaps
+                // 2. Buscar en publicaciones (Slaps)
                 const matchedSlaps = slaps.filter(s => 
                     !blockedUserHandles.has(s.author.handle) && (
                         (s.text && s.text.toLowerCase().includes(lowerQuery)) || 
@@ -1346,7 +1358,7 @@
                     )
                 );
 
-                // 3. Búsqueda remota en Supabase optimizada con índices GIN
+                // 3. Buscar usuarios registrados en Supabase
                 let matchedRealUsers = [];
                 try {
                     const { data, error } = await _supabase
@@ -1378,50 +1390,44 @@
 
                 const allMatchedUsers = Array.from(usersMap.values());
 
-                // 4. Renderizar resultados limpios
-                let html = '';
-
-                if (allMatchedUsers.length > 0) {
-                    html += `<h4 class="font-fredoka text-sm font-bold text-slate-300 mt-2 mb-3">Usuarios encontrados:</h4>`;
-                    html += allMatchedUsers.map(u => `
-                        <div class="glass-card rounded-xl p-3 border border-white/10 flex items-center justify-between mb-2 cursor-pointer hover:bg-white/5 transition-all" onclick="viewUserProfile('${u.handle}')">
-                            <div class="flex items-center gap-3">
-                                <img src="${u.avatar}" class="w-9 h-9 rounded-full object-cover border border-slap-400">
-                                <div>
-                                    <p class="text-xs font-bold text-white">${escapeHTML(u.name)}</p>
-                                    <p class="text-[10px] text-slap-400 font-mono">${escapeHTML(u.handle)}</p>
+                // 4. MOSTRAR USUARIOS EN EL RECUADRO DE ESTUDIANTES DE HOLLYWOOD ARTS
+                if (directory) {
+                    if (allMatchedUsers.length > 0) {
+                        directory.innerHTML = allMatchedUsers.map(u => `
+                            <div class="glass-card rounded-xl p-3 border border-white/10 flex items-center justify-between cursor-pointer hover:bg-white/5 transition-all" onclick="viewUserProfile('${u.handle}')">
+                                <div class="flex items-center gap-3">
+                                    <img src="${u.avatar}" class="w-10 h-10 rounded-full object-cover border border-slap-400">
+                                    <div>
+                                        <p class="text-xs font-bold text-white">${escapeHTML(u.name)}</p>
+                                        <p class="text-[10px] text-slap-400 font-mono">${escapeHTML(u.handle)}</p>
+                                        <p class="text-[10px] text-slate-300 truncate max-w-[150px]">${escapeHTML(u.bio || '')}</p>
+                                    </div>
                                 </div>
+                                <span class="text-xs text-slate-400"><i class="fa-solid fa-chevron-right"></i></span>
                             </div>
-                            <span class="text-xs text-slate-400"><i class="fa-solid fa-chevron-right"></i></span>
-                        </div>
-                    `).join('');
+                        `).join('');
+                    } else {
+                        directory.innerHTML = `<p class="text-xs text-slate-400 text-center py-6 col-span-full">No se encontraron estudiantes con "${escapeHTML(query)}".</p>`;
+                    }
                 }
 
-                if (matchedSlaps.length > 0) {
-                    html += `<h4 class="font-fredoka text-sm font-bold text-slate-300 mt-4 mb-3">Publicaciones encontrados:</h4>`;
-                    html += matchedSlaps.map(slap => `
-                        <div class="glass-card rounded-xl p-3 border border-white/10 mb-2">
-                            <span class="text-[10px] text-slap-400 font-mono cursor-pointer hover:underline" onclick="viewUserProfile('${slap.author.handle}')">${escapeHTML(slap.author.name)} (${escapeHTML(slap.author.handle)})</span>
-                            <p class="text-xs text-white mt-1">${escapeHTML(slap.text)}</p>
-                        </div>
-                    `).join('');
+                // 5. Renderizar publicaciones (Slaps) encontradas abajo de forma independiente
+                if (resultsContainer) {
+                    if (matchedSlaps.length > 0) {
+                        resultsContainer.innerHTML = `
+                            <h4 class="font-fredoka text-sm font-bold text-slate-300 mt-4 mb-3">Publicaciones encontradas:</h4>
+                            ${matchedSlaps.map(slap => `
+                                <div class="glass-card rounded-xl p-3 border border-white/10 mb-2">
+                                    <span class="text-[10px] text-slap-400 font-mono cursor-pointer hover:underline" onclick="viewUserProfile('${slap.author.handle}')">${escapeHTML(slap.author.name)} (${escapeHTML(slap.author.handle)})</span>
+                                    <p class="text-xs text-white mt-1">${escapeHTML(slap.text)}</p>
+                                </div>
+                            `).join('')}
+                        `;
+                    } else {
+                        resultsContainer.innerHTML = '';
+                    }
                 }
-
-                if (allMatchedUsers.length === 0 && matchedSlaps.length === 0) {
-                    html = `<p class="text-xs text-slate-400 text-center py-8">No se encontraron estudiantes ni Slaps que coincidan con "${escapeHTML(query)}".</p>`;
-                }
-
-                if (resultsContainer) resultsContainer.innerHTML = html;
             }, 300);
-        }
-
-        function filterByTag(tag) {
-            switchTab('explore');
-            const searchInput = document.getElementById('explore-search-input');
-            if (searchInput) {
-                searchInput.value = tag;
-                handleSearch();
-            }
         }
 
         function renderChatContacts() {
