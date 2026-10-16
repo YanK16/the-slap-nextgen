@@ -1150,7 +1150,7 @@
 
             const isFollowing = followedUserIds.has(targetUser.id);
             const followBtnHtml = `
-                <button id="profile-follow-action-btn" onclick="toggleFollow('${targetUser.id}')" class="${isFollowing ? 'bg-white/20 text-white' : 'bg-slap-500 text-slate-950'} font-bold px-4 py-2 rounded-xl text-xs transition-all shadow-md active:scale-95">
+                <button id="profile-follow-action-btn" onclick="toggleFollow('${targetUser.id}')" class="${isFollowing ? 'bg-white/20 hover:bg-white/30 text-white font-medium' : 'bg-slap-500 hover:bg-slap-400 text-slate-950 font-bold'} px-4 py-2 rounded-xl text-xs transition-all shadow-md active:scale-95">
                     ${isFollowing ? 'Siguiendo ✓' : 'Seguir +'}
                 </button>
             `;
@@ -1354,12 +1354,17 @@
             }
             updateUserUI();
 
-            // Actualizar texto del botón si estamos viendo su perfil en ese momento
+            // Actualizar el estilo y texto del botón en la vista de perfil si está abierto
             const profileBtn = document.getElementById('profile-follow-action-btn');
             if (profileBtn && viewingProfileUser && viewingProfileUser.id === userId) {
                 const isFollowing = followedUserIds.has(userId);
-                profileBtn.className = `${isFollowing ? 'bg-white/20 text-white' : 'bg-slap-500 text-slate-950'} font-bold px-4 py-2 rounded-xl text-xs transition-all shadow-md active:scale-95`;
-                profileBtn.innerText = isFollowing ? 'Siguiendo ✓' : 'Seguir +';
+                if (isFollowing) {
+                    profileBtn.className = "bg-white/20 hover:bg-white/30 text-white font-medium px-4 py-2 rounded-xl text-xs transition-all shadow-md active:scale-95";
+                    profileBtn.innerText = "Siguiendo ✓";
+                } else {
+                    profileBtn.className = "bg-slap-500 hover:bg-slap-400 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs transition-all shadow-md active:scale-95";
+                    profileBtn.innerText = "Seguir +";
+                }
             }
         }
 
