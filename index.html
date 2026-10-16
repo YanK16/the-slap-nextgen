@@ -711,54 +711,55 @@
         let activeChatId = null;
         let selectedMedia = { type: null, data: null };
         let viewingProfileUser = null; 
+        let registeredProfiles = [];
 
-       window.onload = async function() {
-    // 1. Obtener la sesión actual guardada en el navegador
-    const { data: { session }, error } = await _supabase.auth.getSession();
+        window.onload = async function() {
+            // 1. Obtener la sesión actual guardada en el navegador
+            const { data: { session }, error } = await _supabase.auth.getSession();
 
-    if (session && session.user) {
-        // Extraer los metadatos del usuario o asignar valores por defecto
-        const meta = session.user.user_metadata || {};
-        currentUser = {
-            id: session.user.id,
-            name: meta.name || session.user.email.split('@')[0],
-            handle: meta.handle || `@${session.user.email.split('@')[0]}`,
-            mood: meta.mood || '😎 Activo',
-            avatar: meta.avatar || 'https://placehold.co/100x100/84cc16/ffffff?text=U',
-            bio: meta.bio || 'Estudiante en Hollywood Arts High School.',
-            banner: meta.banner || null
+            if (session && session.user) {
+                // Extraer los metadatos del usuario o asignar valores por defecto
+                const meta = session.user.user_metadata || {};
+                currentUser = {
+                    id: session.user.id,
+                    name: meta.name || session.user.email.split('@')[0],
+                    handle: meta.handle || `@${session.user.email.split('@')[0]}`,
+                    mood: meta.mood || '😎 Activo',
+                    avatar: meta.avatar || 'https://placehold.co/100x100/84cc16/ffffff?text=U',
+                    bio: meta.bio || 'Estudiante en Hollywood Arts High School.',
+                    banner: meta.banner || null
+                };
+
+                // Ocultar el modal de inicio de sesión
+                const authModal = document.getElementById('auth-modal');
+                if (authModal) {
+                    authModal.classList.add('hidden');
+                }
+
+                // Actualizar la interfaz con los datos del usuario logueado
+                if (typeof updateUserUI === 'function') {
+                    updateUserUI();
+                }
+            } else {
+                // Si no hay sesión activa, aseguramos que el modal se muestre
+                const authModal = document.getElementById('auth-modal');
+                if (authModal) {
+                    authModal.classList.remove('hidden');
+                }
+            }
+
+            // 2. Cargar datos de la base de datos
+            await cargarSlapsRemotos();
+            await cargarPerfilesRemotos();
+
+            // 3. Renderizar la lista unificada en Explore
+            if (typeof renderExploreUsers === 'function') {
+                renderExploreUsers(getCombinedUsers());
+            }
+            if (typeof renderSideSuggestions === 'function') {
+                renderSideSuggestions();
+            }
         };
-
-        // Ocultar el modal de inicio de sesión
-        const authModal = document.getElementById('auth-modal');
-        if (authModal) {
-            authModal.classList.add('hidden');
-        }
-
-        // Actualizar la interfaz con los datos del usuario logueado
-        if (typeof updateUserUI === 'function') {
-            updateUserUI();
-        }
-    } else {
-        // Si no hay sesión activa, aseguramos que el modal se muestre
-        const authModal = document.getElementById('auth-modal');
-        if (authModal) {
-            authModal.classList.remove('hidden');
-        }
-    }
-
-    // 2. Cargar datos de la base de datos
-    await cargarSlapsRemotos();
-    await cargarPerfilesRemotos();
-
-    // 3. Renderizar la lista unificada en Explore
-    if (typeof renderExploreUsers === 'function') {
-        renderExploreUsers(getCombinedUsers());
-    }
-    if (typeof renderSideSuggestions === 'function') {
-        renderSideSuggestions();
-    }
-};
 
         function switchAuthMode(mode) {
             SoundFX.click();
@@ -806,7 +807,8 @@
                     alert("Error al registrarse: " + error.message);
                 } else {
                     if (data.user) {
-                        await _supabase.from('profiles').insert([{
+                        // INSERTAR PERFIL EN LA TABLA PROFILES
+                        const { error: profileError } = await _supabase.from('profiles').insert([{
                             id: data.user.id,
                             name: name,
                             handle: handle,
@@ -814,9 +816,14 @@
                             bio: 'Estudiante en Hollywood Arts High School.',
                             mood: mood
                         }]);
+
+                        if (profileError) {
+                            console.error("Error guardando en profiles:", profileError);
+                        }
                     }
 
                     currentUser = {
+                        id: data.user ? data.user.id : null,
                         name: name,
                         handle: handle,
                         mood: mood,
@@ -824,6 +831,8 @@
                         bio: 'Estudiante en Hollywood Arts High School.',
                         banner: null
                     };
+
+                    await cargarPerfilesRemotos();
                     document.getElementById('auth-modal').classList.add('hidden');
                     updateUserUI();
                     SoundFX.pop();
@@ -855,8 +864,9 @@
                 alert("Error al iniciar sesión: Verifique su correo, contraseña o confirme su cuenta en Supabase.");
                 console.error(error);
             } else if (data.user) {
-                const meta = data.user.user_metadata;
+                const meta = data.user.user_metadata || {};
                 currentUser = {
+                    id: data.user.id,
                     name: meta.name || 'Estudiante',
                     handle: meta.handle || '@usuario',
                     mood: meta.mood || '😎 Emocionado',
@@ -872,6 +882,7 @@
 
         function handleGuestAccess() {
             currentUser = {
+                id: 'guest',
                 name: 'Invitado Slap',
                 handle: '@invitado',
                 mood: '😎 Emocionado',
@@ -897,12 +908,31 @@
             }
         }
 
-    
+        async function cargarSlapsRemotos() {
+            const { data, error } = await _supabase
+                .from('slaps')
+                .select('*')
+                .order('created_at', { ascending: false });
 
-       // 1. Declaración de la variable para almacenar perfiles remotos
-        let registeredProfiles = [];
+            if (!error && data) {
+                slaps = data.map(item => ({
+                    id: item.id,
+                    author: {
+                        name: item.author_name,
+                        handle: item.author_handle,
+                        avatar: item.author_avatar
+                    },
+                    text: item.text,
+                    image: item.image,
+                    audio: item.audio,
+                    likes: item.likes || 0,
+                    comments: [],
+                    timestamp: new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                }));
+                renderSlaps();
+            }
+        }
 
-        // 2. Función independiente para cargar perfiles de Supabase
         async function cargarPerfilesRemotos() {
             try {
                 const { data, error } = await _supabase.from('profiles').select('*');
@@ -914,14 +944,11 @@
             }
         }
 
-        // 3. Función independiente para combinar Personajes de la Serie + Usuarios Reales
         function getCombinedUsers() {
             const usersMap = new Map();
 
-            // Insertar personajes de Hollywood Arts
             CHARACTERS.forEach(c => usersMap.set(c.handle, c));
 
-            // Insertar usuarios reales registrados en Supabase
             registeredProfiles.forEach(p => {
                 if (p.handle) {
                     usersMap.set(p.handle, {
@@ -938,7 +965,6 @@
             return Array.from(usersMap.values());
         }
 
-    
         async function publicarEnNube(text, mediaType, mediaData) {
             const { error } = await _supabase.from('slaps').insert([{
                 author_name: currentUser.name,
@@ -993,6 +1019,17 @@
                     banner: currentUser.banner
                 }
             });
+
+            if (currentUser.id && currentUser.id !== 'guest') {
+                await _supabase.from('profiles').upsert({
+                    id: currentUser.id,
+                    name: currentUser.name,
+                    handle: currentUser.handle,
+                    avatar: currentUser.avatar,
+                    bio: currentUser.bio,
+                    mood: currentUser.mood
+                });
+            }
         }
 
         function updateUserUI() {
@@ -1012,7 +1049,7 @@
 
             document.getElementById('feed-user-avatar').src = currentUser.avatar;
 
-            renderExploreUsers();
+            renderExploreUsers(getCombinedUsers());
             renderSideSuggestions();
             renderChatContacts();
         }
@@ -1085,7 +1122,8 @@
                 return;
             }
 
-            targetUser = CHARACTERS.find(c => c.handle === handle);
+            const allUsers = getCombinedUsers();
+            targetUser = allUsers.find(c => c.handle === handle);
             if (!targetUser) return;
 
             viewingProfileUser = targetUser;
@@ -1095,7 +1133,7 @@
             document.getElementById('profile-page-avatar').src = targetUser.avatar;
             document.getElementById('profile-page-name').innerText = targetUser.name;
             document.getElementById('profile-page-handle').innerText = targetUser.handle;
-            document.getElementById('profile-page-bio').innerText = targetUser.bio;
+            document.getElementById('profile-page-bio').innerText = targetUser.bio || 'Estudiante en Hollywood Arts.';
             document.getElementById('profile-section-title').innerText = `Publicaciones de ${targetUser.name}`;
             
             document.getElementById('edit-profile-btn').classList.add('hidden');
@@ -1152,10 +1190,6 @@
                 reader.readAsDataURL(file);
             }
         }
-
-                reader.readAsDataURL(file); // <-- ESTA LÍNEA REPETIDA ESTÁ DE MÁS Y ROMPE EL CÓDIGO
-    
-
 
         function clearMediaPreview() {
             selectedMedia = { type: null, data: null };
@@ -1224,7 +1258,7 @@
                 blockedUserHandles.add(handle);
                 SoundFX.click();
                 renderSlaps();
-                renderExploreUsers();
+                renderExploreUsers(getCombinedUsers());
             }
         }
 
@@ -1357,7 +1391,7 @@
             `).join('');
         }
 
-       let searchTimeout = null;
+        let searchTimeout = null;
 
         function handleSearch() {
             const queryInput = document.getElementById('explore-search-input');
@@ -1367,9 +1401,8 @@
 
             clearTimeout(searchTimeout);
 
-            // Si el buscador está vacío, restauramos el directorio por defecto y limpiamos publicaciones extra
             if (!query) {
-                renderExploreUsers(CHARACTERS); // Muestra todos los personajes por defecto
+                renderExploreUsers(getCombinedUsers());
                 if (resultsContainer) resultsContainer.innerHTML = '';
                 return;
             }
@@ -1377,7 +1410,6 @@
             searchTimeout = setTimeout(async () => {
                 const lowerQuery = query.toLowerCase();
 
-                // 1. Buscar en personajes de la serie
                 const matchedCharacters = CHARACTERS.filter(u => 
                     !blockedUserHandles.has(u.handle) && (
                         (u.name && u.name.toLowerCase().includes(lowerQuery)) || 
@@ -1385,7 +1417,6 @@
                     )
                 );
 
-                // 2. Buscar en publicaciones (Slaps)
                 const matchedSlaps = slaps.filter(s => 
                     !blockedUserHandles.has(s.author.handle) && (
                         (s.text && s.text.toLowerCase().includes(lowerQuery)) || 
@@ -1394,7 +1425,6 @@
                     )
                 );
 
-                // 3. Buscar usuarios registrados en Supabase
                 let matchedRealUsers = [];
                 try {
                     const { data, error } = await _supabase
@@ -1410,7 +1440,6 @@
                     console.error("Error buscando en Supabase:", err);
                 }
 
-                // Unificar usuarios locales y remotos sin duplicar
                 const usersMap = new Map();
                 matchedCharacters.forEach(u => usersMap.set(u.handle, u));
                 matchedRealUsers.forEach(u => {
@@ -1426,7 +1455,6 @@
 
                 const allMatchedUsers = Array.from(usersMap.values());
 
-                // 4. MOSTRAR USUARIOS EN EL RECUADRO DE ESTUDIANTES DE HOLLYWOOD ARTS
                 if (directory) {
                     if (allMatchedUsers.length > 0) {
                         directory.innerHTML = allMatchedUsers.map(u => `
@@ -1447,7 +1475,6 @@
                     }
                 }
 
-                // 5. Renderizar publicaciones (Slaps) encontradas abajo de forma independiente
                 if (resultsContainer) {
                     if (matchedSlaps.length > 0) {
                         resultsContainer.innerHTML = `
