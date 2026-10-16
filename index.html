@@ -713,31 +713,13 @@
         let viewingProfileUser = null; 
 
         window.onload = async function() {
-            const { data: { session } } = await _supabase.auth.getSession();
-            if (session && session.user) {
-                const meta = session.user.user_metadata;
-                currentUser = {
-                    name: meta.name || 'Estudiante',
-                    handle: meta.handle || '@usuario',
-                    mood: meta.mood || '😎 Emocionado',
-                    avatar: meta.avatar || 'https://placehold.co/100x100/84cc16/ffffff?text=U',
-                    bio: meta.bio || 'Estudiante en Hollywood Arts High School.',
-                    banner: meta.banner || null
-                };
-                document.getElementById('auth-modal').classList.add('hidden');
-                updateUserUI();
-            }
+            // ... (tu código de autenticación previo) ...
 
             await cargarSlapsRemotos();
-            renderExploreUsers();
-            renderSideSuggestions();
+            await cargarPerfilesRemotos(); // <-- Descarga las cuentas registradas
 
-            _supabase
-              .channel('public:slaps')
-              .on('postgres_changes', { event: '*', schema: 'public', table: 'slaps' }, payload => {
-                  cargarSlapsRemotos();
-              })
-              .subscribe();
+            renderExploreUsers(getCombinedUsers());
+            renderSideSuggestions();
         };
 
         function switchAuthMode(mode) {
@@ -877,31 +859,58 @@
             }
         }
 
-        async function cargarSlapsRemotos() {
-            const { data, error } = await _supabase
-                .from('slaps')
-                .select('*')
-                .order('created_at', { ascending: false });
+    
 
-            if (!error && data) {
-                slaps = data.map(item => ({
-                    id: item.id,
-                    author: {
-                        name: item.author_name,
-                        handle: item.author_handle,
-                        avatar: item.author_avatar || 'https://placehold.co/100'
-                    },
-                    text: item.text,
-                    likes: item.likes || 0,
-                    likedByMe: false,
-                    comments: [],
-                    timestamp: new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                    image: item.image,
-                    audio: item.audio
-                }));
-                renderSlaps();
+       // 1. Declaración de la variable para almacenar perfiles remotos
+        let registeredProfiles = [];
+
+        // 2. Función independiente para cargar perfiles de Supabase
+        async function cargarPerfilesRemotos() {
+            try {
+                const { data, error } = await _supabase.from('profiles').select('*');
+                if (!error && data) {
+                    registeredProfiles = data;
+                }
+            } catch (e) {
+                console.error("Error cargando perfiles:", e);
             }
         }
+
+        // 3. Función independiente para combinar Personajes de la Serie + Usuarios Reales
+        function getCombinedUsers() {
+            const usersMap = new Map();
+
+            // Insertar personajes de Hollywood Arts
+            CHARACTERS.forEach(c => usersMap.set(c.handle, c));
+
+            // Insertar usuarios reales registrados en Supabase
+            registeredProfiles.forEach(p => {
+                if (p.handle) {
+                    usersMap.set(p.handle, {
+                        id: p.id || p.handle.replace('@', ''),
+                        name: p.name,
+                        handle: p.handle,
+                        avatar: p.avatar || 'https://placehold.co/100',
+                        bio: p.bio || 'Estudiante registrado en Hollywood Arts.',
+                        mood: p.mood || '😎 Activo'
+                    });
+                }
+            });
+
+            return Array.from(usersMap.values());
+        }
+
+        // 4. Tu evento de carga inicial de la ventana
+        window.onload = async function() {
+            // ... (tu código previo de verificación de sesión/autenticación) ...
+
+            await cargarSlapsRemotos();
+            await cargarPerfilesRemotos(); // Carga las cuentas de la base de datos
+
+            // Aquí solo LLAMAS a getCombinedUsers(), no la defines adentro
+            renderExploreUsers(getCombinedUsers());
+            renderSideSuggestions();
+        };
 
         async function publicarEnNube(text, mediaType, mediaData) {
             const { error } = await _supabase.from('slaps').insert([{
