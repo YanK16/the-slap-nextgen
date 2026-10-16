@@ -1114,7 +1114,7 @@
             renderProfileSlaps();
         }
 
-        function viewUserProfile(handle) {
+       function viewUserProfile(handle) {
             SoundFX.click();
             let targetUser = null;
             if (currentUser && currentUser.handle === handle) {
@@ -1140,6 +1140,21 @@
             document.getElementById('profile-banner-btn-label').classList.add('hidden');
             document.getElementById('profile-avatar-btn-label').classList.add('hidden');
             document.getElementById('profile-banner-img').classList.add('hidden');
+
+            // --- AGREGAR BOTÓN DE SEGUIR EN EL PERFIL ---
+            const profileHeaderActions = document.querySelector('#tab-profile .flex.flex-col.sm\\:flex-row.items-center.sm\\:items-end');
+            
+            // Eliminar botón de seguir previo si existía para no duplicarlo
+            const existingFollowBtn = document.getElementById('profile-follow-action-btn');
+            if (existingFollowBtn) existingFollowBtn.remove();
+
+            const isFollowing = followedUserIds.has(targetUser.id);
+            const followBtnHtml = `
+                <button id="profile-follow-action-btn" onclick="toggleFollow('${targetUser.id}')" class="${isFollowing ? 'bg-white/20 text-white' : 'bg-slap-500 text-slate-950'} font-bold px-4 py-2 rounded-xl text-xs transition-all shadow-md active:scale-95">
+                    ${isFollowing ? 'Siguiendo ✓' : 'Seguir +'}
+                </button>
+            `;
+            profileHeaderActions.insertAdjacentHTML('beforeend', followBtnHtml);
 
             renderExternalProfileSlaps(targetUser.handle);
         }
@@ -1338,6 +1353,14 @@
                 followedUserIds.add(userId);
             }
             updateUserUI();
+
+            // Actualizar texto del botón si estamos viendo su perfil en ese momento
+            const profileBtn = document.getElementById('profile-follow-action-btn');
+            if (profileBtn && viewingProfileUser && viewingProfileUser.id === userId) {
+                const isFollowing = followedUserIds.has(userId);
+                profileBtn.className = `${isFollowing ? 'bg-white/20 text-white' : 'bg-slap-500 text-slate-950'} font-bold px-4 py-2 rounded-xl text-xs transition-all shadow-md active:scale-95`;
+                profileBtn.innerText = isFollowing ? 'Siguiendo ✓' : 'Seguir +';
+            }
         }
 
         function renderExploreUsers(usersList = CHARACTERS) {
