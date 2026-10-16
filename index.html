@@ -712,15 +712,53 @@
         let selectedMedia = { type: null, data: null };
         let viewingProfileUser = null; 
 
-        window.onload = async function() {
-            // ... (tu código de autenticación previo) ...
+       window.onload = async function() {
+    // 1. Obtener la sesión actual guardada en el navegador
+    const { data: { session }, error } = await _supabase.auth.getSession();
 
-            await cargarSlapsRemotos();
-            await cargarPerfilesRemotos(); // <-- Descarga las cuentas registradas
-
-            renderExploreUsers(getCombinedUsers());
-            renderSideSuggestions();
+    if (session && session.user) {
+        // Extraer los metadatos del usuario o asignar valores por defecto
+        const meta = session.user.user_metadata || {};
+        currentUser = {
+            id: session.user.id,
+            name: meta.name || session.user.email.split('@')[0],
+            handle: meta.handle || `@${session.user.email.split('@')[0]}`,
+            mood: meta.mood || '😎 Activo',
+            avatar: meta.avatar || 'https://placehold.co/100x100/84cc16/ffffff?text=U',
+            bio: meta.bio || 'Estudiante en Hollywood Arts High School.',
+            banner: meta.banner || null
         };
+
+        // Ocultar el modal de inicio de sesión
+        const authModal = document.getElementById('auth-modal');
+        if (authModal) {
+            authModal.classList.add('hidden');
+        }
+
+        // Actualizar la interfaz con los datos del usuario logueado
+        if (typeof updateUserUI === 'function') {
+            updateUserUI();
+        }
+    } else {
+        // Si no hay sesión activa, aseguramos que el modal se muestre
+        const authModal = document.getElementById('auth-modal');
+        if (authModal) {
+            authModal.classList.remove('hidden');
+        }
+    }
+
+    // 2. Cargar datos de la base de datos
+    await cargarSlapsRemotos();
+    await cargarPerfilesRemotos();
+
+    // 3. Renderizar la lista unificada en Explore
+    if (typeof renderExploreUsers === 'function') {
+        renderExploreUsers(getCombinedUsers());
+    }
+    if (typeof renderSideSuggestions === 'function') {
+        renderSideSuggestions();
+    }
+};
 
         function switchAuthMode(mode) {
             SoundFX.click();
@@ -900,18 +938,7 @@
             return Array.from(usersMap.values());
         }
 
-        // 4. Tu evento de carga inicial de la ventana
-        window.onload = async function() {
-            // ... (tu código previo de verificación de sesión/autenticación) ...
-
-            await cargarSlapsRemotos();
-            await cargarPerfilesRemotos(); // Carga las cuentas de la base de datos
-
-            // Aquí solo LLAMAS a getCombinedUsers(), no la defines adentro
-            renderExploreUsers(getCombinedUsers());
-            renderSideSuggestions();
-        };
-
+    
         async function publicarEnNube(text, mediaType, mediaData) {
             const { error } = await _supabase.from('slaps').insert([{
                 author_name: currentUser.name,
