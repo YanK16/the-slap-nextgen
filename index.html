@@ -966,7 +966,28 @@
         }
 
         async function publicarEnNube(text, mediaType, mediaData) {
-            const { error } = await _supabase.from('slaps').insert([{
+            // 1. Creamos un Slap temporal para mostrarlo en pantalla de forma INSTANTÁNEA
+            const slapTemporal = {
+                id: 'temp_' + Date.now(),
+                author: {
+                    name: currentUser.name,
+                    handle: currentUser.handle,
+                    avatar: currentUser.avatar
+                },
+                text: text,
+                image: mediaType === 'image' ? mediaData : null,
+                audio: mediaType === 'audio' ? mediaData : null,
+                likes: 0,
+                comments: [],
+                timestamp: 'Hace un momento'
+            };
+
+            // Lo ponemos al principio del arreglo local y redibujamos el feed al instante
+            slaps.unshift(slapTemporal);
+            renderSlaps();
+
+            // 2. Enviamos los datos a Supabase en segundo plano
+            const { data, error } = await _supabase.from('slaps').insert([{
                 author_name: currentUser.name,
                 author_handle: currentUser.handle,
                 author_avatar: currentUser.avatar,
@@ -974,13 +995,15 @@
                 image: mediaType === 'image' ? mediaData : null,
                 audio: mediaType === 'audio' ? mediaData : null,
                 likes: 0
-            }]);
+            }]).select();
 
             if (error) {
-                alert("Hubo un error al publicar en la base de datos.");
+                alert("Hubo un error al sincronizar el Slap con la base de datos.");
                 console.error(error);
-            } else {
-                await cargarSlapsRemotos();
+                await cargarSlapsRemotos(); // Si falla, recargamos el estado real
+            } else if (data && data[0]) {
+                // Actualizamos el ID temporal con el ID real que generó la base de datos
+                slapTemporal.id = data[0].id;
             }
         }
 
