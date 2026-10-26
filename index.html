@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Slap NextGen</title>
     
-    <!-- FAVICON CON TU LOGO INCRUSTADO -->
-    <link rel="icon" type="image/jpeg" href="favicon.jpg">
-    
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -124,7 +121,7 @@
             border: 1px solid rgba(255, 255, 255, 0.12);
         }
 
-        /* ESTILOS DE BOTONES DE SEGUIMIENTO */
+        /* ESTILOS DIRECTOS Y EXPLICITOS PARA EL BOTÓN SEGUIR */
         .btn-state-follow {
             background-color: #84cc16 !important;
             color: #020617 !important;
@@ -149,13 +146,15 @@
     <!-- INTRO SPLASH ANIMATION SCREEN -->
     <div id="intro-splash" class="fixed inset-0 z-[100] bg-slate-950 flex flex-col items-center justify-center p-4 transition-opacity duration-700">
         <div class="relative flex flex-col items-center">
-            <div class="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl bg-gradient-to-tr from-slap-500 via-hollywood-pink to-hollywood-purple p-1 shadow-2xl shadow-slap-500/30 animate-logoIntro flex items-center justify-center mb-6 overflow-hidden">
-                <img src="favicon.jpg" alt="The Slap Logo" class="w-full h-full object-cover rounded-[22px]">
+            <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-gradient-to-tr from-slap-500 via-hollywood-pink to-hollywood-purple p-1 shadow-2xl shadow-slap-500/30 animate-logoIntro flex items-center justify-center mb-6">
+                <div class="w-full h-full bg-slate-900 rounded-[22px] flex items-center justify-center">
+                    <span class="text-5xl sm:text-6xl animate-bounce">👏</span>
+                </div>
             </div>
             <h1 class="font-fredoka text-3xl sm:text-5xl font-bold tracking-wide bg-gradient-to-r from-slap-400 via-hollywood-pink to-hollywood-purple bg-clip-text text-transparent text-center animate-fadeUp">
                 The Slap <span class="text-xs sm:text-base px-3 py-1 rounded-full bg-slap-500/20 text-slap-400 font-sans tracking-normal border border-slap-500/30">NextGen</span>
             </h1>
-            <p class="text-xs sm:text-sm text-slate-400 font-mono mt-2 animate-fadeUp" style="animation-delay: 0.2s">La red de la comunidad escolar</p>
+            <p class="text-xs sm:text-sm text-slate-400 font-mono mt-2 animate-fadeUp" style="animation-delay: 0.2s">Hollywood Arts High • Slap OS v14.4</p>
             
             <div class="mt-8 flex items-center gap-2 text-slap-400 text-xs font-mono animate-pulse">
                 <i class="fa-solid fa-circle-notch fa-spin"></i> Cargando experiencia...
@@ -216,14 +215,16 @@
     <header class="sticky top-0 z-40 glass-card border-b border-white/10 shadow-lg px-4 lg:px-8 py-3 transition-all">
         <div class="max-w-7xl mx-auto flex items-center justify-between">
             <div onclick="switchTab('feed')" class="flex items-center gap-3 cursor-pointer group">
-                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-slap-500 to-hollywood-pink p-0.5 shadow-md transform group-hover:scale-105 transition-all flex items-center justify-center overflow-hidden">
-                    <img src="favicon.jpg" alt="Logo" class="w-full h-full object-cover rounded-[14px]">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-slap-500 to-hollywood-pink p-0.5 shadow-md transform group-hover:scale-105 transition-all flex items-center justify-center">
+                    <div class="w-full h-full bg-slate-900 rounded-[14px] flex items-center justify-center">
+                        <span class="text-xl group-hover:scale-125 transition-transform">👏</span>
+                    </div>
                 </div>
                 <div>
                     <h1 class="font-fredoka text-2xl font-bold tracking-wide bg-gradient-to-r from-slap-400 via-hollywood-pink to-hollywood-purple bg-clip-text text-transparent">
                         The Slap <span class="text-xs px-2 py-0.5 rounded-full bg-slap-500/20 text-slap-400 font-sans tracking-normal border border-slap-500/30">NextGen</span>
                     </h1>
-                    <p class="text-[10px] text-slate-400 -mt-1 font-mono">Comunidad Escolar</p>
+                    <p class="text-[10px] text-slate-400 -mt-1 font-mono">Hollywood Arts High • Slap OS v14.4</p>
                 </div>
             </div>
 
@@ -267,11 +268,11 @@
             <div class="absolute -bottom-24 -left-24 w-48 h-48 bg-hollywood-pink/30 rounded-full blur-3xl pointer-events-none"></div>
 
             <div class="text-center mb-5">
-                <div class="inline-flex w-16 h-16 rounded-2xl bg-slap-500/20 border border-slap-500/30 text-slap-400 mb-2 items-center justify-center overflow-hidden animate-bounce shadow-md">
-                    <img src="favicon.jpg" class="w-full h-full object-cover">
+                <div class="inline-flex p-3 rounded-2xl bg-slap-500/20 border border-slap-500/30 text-slap-400 mb-2 animate-bounce">
+                    <span class="text-3xl">👏</span>
                 </div>
                 <h2 class="font-fredoka text-2xl font-bold text-white tracking-wide">The Slap NextGen</h2>
-                <p id="auth-subtitle" class="text-xs text-slate-300 mt-1">La red de la comunidad escolar</p>
+                <p id="auth-subtitle" class="text-xs text-slate-300 mt-1">Crea tu cuenta oficial en Hollywood Arts</p>
             </div>
 
             <div class="grid grid-cols-2 gap-1 bg-black/40 p-1 rounded-xl mb-5 border border-white/10">
@@ -283,17 +284,17 @@
             <form id="register-form" onsubmit="handleAuthRegister(event)" class="space-y-3.5">
                 <div>
                     <label class="block text-xs font-medium text-slate-300 mb-1">Nombre Completo</label>
-                    <input type="text" id="reg-name" required placeholder="Ej. Ana Pérez" class="w-full bg-black/40 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-slap-400 transition-colors">
+                    <input type="text" id="reg-name" required placeholder="Ej. Tori Vega" class="w-full bg-black/40 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-slap-400 transition-colors">
                 </div>
 
                 <div>
                     <label class="block text-xs font-medium text-slate-300 mb-1">Nombre de Usuario (@handle)</label>
-                    <input type="text" id="reg-handle" required placeholder="anaperez" class="w-full bg-black/40 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-slap-400 transition-colors">
+                    <input type="text" id="reg-handle" required placeholder="torivega" class="w-full bg-black/40 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-slap-400 transition-colors">
                 </div>
 
                 <div>
                     <label class="block text-xs font-medium text-slate-300 mb-1">Correo Electrónico</label>
-                    <input type="email" id="reg-email" required placeholder="ana@escuela.edu" class="w-full bg-black/40 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-slap-400 transition-colors">
+                    <input type="email" id="reg-email" required placeholder="tori@hollywoodarts.edu" class="w-full bg-black/40 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-slap-400 transition-colors">
                 </div>
 
                 <div>
@@ -331,7 +332,7 @@
             <form id="login-form" onsubmit="handleAuthLogin(event)" class="space-y-4 hidden">
                 <div>
                     <label class="block text-xs font-medium text-slate-300 mb-1">Correo Electrónico</label>
-                    <input type="email" id="login-email" required placeholder="ana@escuela.edu" class="w-full bg-black/40 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-slap-400 transition-colors">
+                    <input type="email" id="login-email" required placeholder="tori@hollywoodarts.edu" class="w-full bg-black/40 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-slap-400 transition-colors">
                 </div>
 
                 <div>
@@ -381,17 +382,17 @@
 
             <div class="glass-card rounded-2xl p-4 border border-white/10 shadow-lg">
                 <h4 class="font-fredoka text-sm font-semibold text-slate-200 mb-3 flex items-center gap-2">
-                    <i class="fa-solid fa-fire text-hollywood-pink"></i> Tendencias Escolares
+                    <i class="fa-solid fa-fire text-hollywood-pink"></i> Tendencias en Hollywood Arts
                 </h4>
                 <div class="space-y-3 text-xs">
                     <div class="p-2 rounded-xl hover:bg-white/5 transition-colors cursor-pointer">
-                        <p class="text-slate-400 text-[10px]">#1 Actividades</p>
-                        <p class="font-bold text-white">#ComunidadEscolar</p>
+                        <p class="text-slate-400 text-[10px]">#1 Teatro Improv</p>
+                        <p class="font-bold text-white">#SikowitzCoconuts</p>
                         <p class="text-slate-400 text-[10px]">1,240 Slaps</p>
                     </div>
                     <div class="p-2 rounded-xl hover:bg-white/5 transition-colors cursor-pointer">
                         <p class="text-slate-400 text-[10px]">#2 Tecnología</p>
-                        <p class="font-bold text-white">#SlapOSNextGen</p>
+                        <p class="font-bold text-white">#SlapPhoneXT</p>
                         <p class="text-slate-400 text-[10px]">890 Slaps</p>
                     </div>
                 </div>
@@ -406,7 +407,7 @@
                     <div class="flex items-start gap-3">
                         <img id="feed-user-avatar" src="https://placehold.co/80x80/84cc16/ffffff?text=U" class="w-10 h-10 rounded-full object-cover border border-slap-400">
                         <div class="flex-1">
-                            <textarea id="new-slap-text" rows="2" placeholder="¿Qué está pasando en la comunidad escolar?" class="w-full bg-black/30 border border-white/10 rounded-xl p-3 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-slap-400 transition-all resize-none"></textarea>
+                            <textarea id="new-slap-text" rows="2" placeholder="¿Qué está pasando en Hollywood Arts?" class="w-full bg-black/30 border border-white/10 rounded-xl p-3 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-slap-400 transition-all resize-none"></textarea>
                             
                             <div id="media-preview-container" class="hidden mt-2 relative rounded-xl overflow-hidden bg-black/50 border border-white/10 p-2">
                                 <button onclick="clearMediaPreview()" class="absolute top-2 right-2 bg-black/70 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs hover:bg-red-500 transition-colors z-10"><i class="fa-solid fa-xmark"></i></button>
@@ -447,7 +448,7 @@
 
                 <div class="glass-card rounded-2xl p-5 border border-white/10 shadow-lg">
                     <h3 class="font-fredoka text-base font-bold text-white mb-4 flex items-center gap-2">
-                        <i class="fa-solid fa-users text-slap-400"></i> Estudiantes de la Comunidad Escolar
+                        <i class="fa-solid fa-users text-slap-400"></i> Estudiantes de Hollywood Arts
                     </h3>
                     <div id="users-directory" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
                 </div>
@@ -477,7 +478,7 @@
 
                         <div id="chat-messages-container" class="flex-1 p-4 overflow-y-auto space-y-3">
                             <div class="text-center text-xs text-slate-500 py-10">
-                                Sigue a tus compañeros para iniciar un SlapChat.
+                                Sigue a tus compañeros de Hollywood Arts para iniciar un SlapChat.
                             </div>
                         </div>
 
@@ -530,7 +531,7 @@
                         <div>
                             <h2 id="profile-page-name" class="font-fredoka text-2xl font-bold text-white">Nombre de Usuario</h2>
                             <p id="profile-page-handle" class="text-sm text-slap-400 font-mono">@usuario</p>
-                            <p id="profile-page-bio" class="text-xs text-slate-300 mt-2">Estudiante en la comunidad escolar.</p>
+                            <p id="profile-page-bio" class="text-xs text-slate-300 mt-2">Estudiante en Hollywood Arts High School.</p>
                             
                             <div class="flex items-center gap-4 mt-4 text-xs">
                                 <div><strong id="profile-count-slaps" class="text-white text-sm">0</strong> <span class="text-slate-400">Slaps</span></div>
@@ -611,7 +612,7 @@
 
             <div class="text-center text-[11px] text-slate-400 px-2 space-y-1 font-mono">
                 <p>The Slap NextGen © 2026 SlapOS</p>
-                <p>La red de la comunidad escolar</p>
+                <p>Inspired by Hollywood Arts & Victorious</p>
             </div>
         </aside>
 
@@ -680,7 +681,7 @@
             </h3>
             
             <div class="space-y-4">
-                <textarea id="modal-slap-text" rows="3" placeholder="¿Qué está pasando en la comunidad escolar?" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-slap-400 transition-all resize-none"></textarea>
+                <textarea id="modal-slap-text" rows="3" placeholder="¿Qué está pasando en Hollywood Arts?" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-slap-400 transition-all resize-none"></textarea>
                 
                 <div id="modal-media-preview-container" class="hidden relative rounded-xl overflow-hidden bg-black/50 border border-white/10 p-2">
                     <button onclick="clearModalMediaPreview()" class="absolute top-2 right-2 bg-black/70 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs hover:bg-red-500 transition-colors z-10"><i class="fa-solid fa-xmark"></i></button>
@@ -714,21 +715,21 @@
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const CHARACTERS = [
-            { id: 'tori', name: 'Tori Vega', handle: '@torivega', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80', bio: 'Cantante, actriz y estudiante 🎤', mood: '😎 Emocionado' },
+            { id: 'tori', name: 'Tori Vega', handle: '@torivega', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80', bio: 'Cantante, actriz y estudiante en Hollywood Arts 🎤', mood: '😎 Emocionado' },
             { id: 'jade', name: 'Jade West', handle: '@jadewest', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80', bio: 'Me gustan las tijeras. No me hables.', mood: '😏 Sarcástico' },
-            { id: 'cat', name: 'Cat Valentine', handle: '@catvalentine', avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=150&auto=format&fit=crop&q=80', bio: '¡Me encantan los pastelitos! 🌸✨', mood: '🎨 Creativo' },
+            { id: 'cat', name: 'Cat Valentine', handle: '@catvalentine', avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=150&auto=format&fit=crop&q=80', bio: '¡Mi hermano trajo un pulpo a casa! 🐙✨', mood: '🎨 Creativo' },
             { id: 'beck', name: 'Beck Oliver', handle: '@beckoliver', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80', bio: 'Actuando en mi RV. Relajado.', mood: '😎 Emocionado' },
             { id: 'andre', name: 'Andre Harris', handle: '@andreharris', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80', bio: 'Escribiendo la próxima canción número 1 🎹', mood: '🎨 Creativo' },
             { id: 'robbie', name: 'Robbie Shapiro', handle: '@robbieshapiro', avatar: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=150&auto=format&fit=crop&q=80', bio: '¡Rex no es un títere, es mi mejor amigo!', mood: '🎭 Dramático' }
         ];
 
         const AUTO_REPLIES = {
-            tori: ["¡Hola! ¿Viste la clase de hoy?", "¡Estoy ensayando para la nueva obra!", "¡The Slap is genial! 👏"],
-            jade: ["¿Por qué me estás escribiendo?", "Si no es sobre café negro, no me interesa.", "Déjame en paz."],
-            cat: ["¡Holaaa! 🌸 ¿Quieres un pastelito?", "¡Hice algo súper divertido hoy!", "hehe yay!"],
-            beck: ["Hola, todo tranquilo por aquí.", "Nos vemos en el almuerzo."],
-            andre: ["¡Oye! Encontré unos acordes increíbles para el piano.", "Trabajando en un nuevo ritmo 🎧"],
-            robbie: ["¡Rex dice hola!", "¿Quieres ver mi acto de ventriloquia?"]
+            tori: ["¡Hola! ¿Viste la clase de Sikowitz hoy?", "¡Estoy ensayando para la nueva obra!", "¡The Slap es genial! 👏"],
+            jade: ["¿Por qué me estás escribiendo?", "Si no es sobre tijeras o café negro, no me interesa.", "Déjame en paz."],
+            cat: ["¡Holaaa! 🌸 ¿Quieres un pastelito de terciopelo rojo?", "¡Mi hermano hizo algo súper raro hoy!", "hehe yay!"],
+            beck: ["Hola, todo tranquilo por aquí.", "¿Has visto a Jade? Creo que perdió sus tijeras otra vez.", "Nos vemos en el almuerzo."],
+            andre: ["¡Oye! Encontré unos acordes increíbles para el piano.", "Trabajando en un nuevo ritmo 🎧", "Sikowitz nos dio coco otra vez..."],
+            robbie: ["¡Rex dice hola! (Bueno, en realidad dijo que consigas una vida, pero ignoralo)", "¿Quieres ver mi acto de ventriloquia?"]
         };
 
         let currentUser = null;
@@ -756,7 +757,7 @@
                     handle: meta.handle || `@${session.user.email.split('@')[0]}`,
                     mood: meta.mood || '😎 Activo',
                     avatar: meta.avatar || 'https://placehold.co/100x100/84cc16/ffffff?text=U',
-                    bio: meta.bio || 'Estudiante en la comunidad escolar.',
+                    bio: meta.bio || 'Estudiante en Hollywood Arts High School.',
                     banner: meta.banner || null
                 };
 
@@ -796,7 +797,7 @@
                 loginForm.classList.add('hidden');
                 btnReg.className = "py-2 text-xs font-bold rounded-lg bg-slap-500 text-slate-950 transition-all shadow-md";
                 btnLogin.className = "py-2 text-xs font-medium rounded-lg text-slate-300 hover:text-white transition-all";
-                subtitle.innerText = "Crea tu cuenta oficial en la comunidad escolar";
+                subtitle.innerText = "Crea tu cuenta oficial en Hollywood Arts";
             } else {
                 regForm.classList.add('hidden');
                 loginForm.classList.remove('hidden');
@@ -834,7 +835,7 @@
                             name: name,
                             handle: handle,
                             avatar: finalAvatar,
-                            bio: 'Estudiante en la comunidad escolar.',
+                            bio: 'Estudiante en Hollywood Arts High School.',
                             mood: mood
                         }]);
                     }
@@ -845,7 +846,7 @@
                         handle: handle,
                         mood: mood,
                         avatar: finalAvatar,
-                        bio: 'Estudiante en la comunidad escolar.',
+                        bio: 'Estudiante en Hollywood Arts High School.',
                         banner: null
                     };
 
@@ -887,7 +888,7 @@
                     handle: meta.handle || '@usuario',
                     mood: meta.mood || '😎 Emocionado',
                     avatar: meta.avatar || 'https://placehold.co/100',
-                    bio: meta.bio || 'Estudiante en la comunidad escolar.',
+                    bio: meta.bio || 'Estudiante en Hollywood Arts High School.',
                     banner: meta.banner || null
                 };
                 document.getElementById('auth-modal').classList.add('hidden');
@@ -903,7 +904,7 @@
                 handle: '@invitado',
                 mood: '😎 Emocionado',
                 avatar: 'https://placehold.co/100x100/84cc16/ffffff?text=G',
-                bio: 'Invitado en la comunidad escolar.',
+                bio: 'Invitado en Hollywood Arts.',
                 banner: null
             };
             document.getElementById('auth-modal').classList.add('hidden');
@@ -973,7 +974,7 @@
                         name: p.name,
                         handle: p.handle,
                         avatar: p.avatar || 'https://placehold.co/100',
-                        bio: p.bio || 'Estudiante registrado en la comunidad escolar.',
+                        bio: p.bio || 'Estudiante registrado en Hollywood Arts.',
                         mood: p.mood || '😎 Activo'
                     });
                 }
@@ -1119,7 +1120,7 @@
             document.getElementById('profile-page-avatar').src = targetUser.avatar;
             document.getElementById('profile-page-name').innerText = targetUser.name;
             document.getElementById('profile-page-handle').innerText = targetUser.handle;
-            document.getElementById('profile-page-bio').innerText = targetUser.bio || 'Estudiante en la comunidad escolar.';
+            document.getElementById('profile-page-bio').innerText = targetUser.bio || 'Estudiante en Hollywood Arts.';
             document.getElementById('profile-section-title').innerText = `Publicaciones de ${targetUser.name}`;
             
             document.getElementById('edit-profile-btn').classList.add('hidden');
