@@ -140,7 +140,7 @@
         }
     </style>
 </head>
-<body class="theme-dark-slap min-h-screen flex flex-col antialiased selection:bg-slap-500 selection:text-black">
+<body class="theme-dark-slap min-h-screen flex flex-col antialiased selection:bg-slap-500 selection:text-black" onclick="closeAllDropdowns(event)">
 
     <!-- INTRO SPLASH ANIMATION SCREEN -->
     <div id="intro-splash" class="fixed inset-0 z-[100] bg-slate-950 flex flex-col items-center justify-center p-4 transition-opacity duration-700">
@@ -153,7 +153,7 @@
             <h1 class="font-fredoka text-3xl sm:text-5xl font-bold tracking-wide bg-gradient-to-r from-slap-400 via-hollywood-pink to-hollywood-purple bg-clip-text text-transparent text-center animate-fadeUp">
                 The Slap <span class="text-xs sm:text-base px-3 py-1 rounded-full bg-slap-500/20 text-slap-400 font-sans tracking-normal border border-slap-500/30">NextGen</span>
             </h1>
-            <p class="text-xs sm:text-sm text-slate-400 font-mono mt-2 animate-fadeUp" style="animation-delay: 0.2s">Hollywood Arts High • Slap OS v14.5</p>
+            <p class="text-xs sm:text-sm text-slate-400 font-mono mt-2 animate-fadeUp" style="animation-delay: 0.2s">Hollywood Arts High • Slap OS v14.6</p>
             
             <div class="mt-8 flex items-center gap-2 text-slap-400 text-xs font-mono animate-pulse">
                 <i class="fa-solid fa-circle-notch fa-spin"></i> Cargando experiencia...
@@ -352,6 +352,27 @@
             <button onclick="handleGuestAccess()" class="w-full bg-white/5 hover:bg-white/10 border border-white/15 text-slate-200 font-medium py-2 rounded-xl transition-all text-xs sm:text-sm flex items-center justify-center gap-2 group">
                 <i class="fa-solid fa-user-secret text-slate-400 group-hover:text-slap-400 transition-colors"></i> Entrar como Invitado Rápido
             </button>
+        </div>
+    </div>
+
+    <!-- MODAL DE DENUNCIA -->
+    <div id="report-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+        <div class="glass-card max-w-md w-full rounded-2xl p-6 border border-white/20 shadow-2xl relative">
+            <button onclick="closeModal('report-modal')" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            <h3 class="font-fredoka text-xl font-bold text-white mb-2 flex items-center gap-2">
+                <i class="fa-solid fa-triangle-exclamation text-yellow-400"></i> Denunciar Publicación
+            </h3>
+            <p class="text-xs text-slate-300 mb-4">Indica la causa de tu reporte. Esto se enviará por correo a la administración.</p>
+            
+            <form onsubmit="submitReport(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Causa de la denuncia</label>
+                    <textarea id="report-reason-input" required rows="3" placeholder="Explica detalladamente por qué denuncias esta publicación..." class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-slap-400 resize-none"></textarea>
+                </div>
+                <button type="submit" class="w-full bg-yellow-500 hover:bg-yellow-400 text-slate-950 font-bold py-2.5 rounded-xl text-sm transition-all shadow-md">
+                    Enviar Denuncia por Correo
+                </button>
+            </form>
         </div>
     </div>
 
@@ -715,15 +736,6 @@
             { id: 'robbie', name: 'Robbie Shapiro', handle: '@robbieshapiro', avatar: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=150&auto=format&fit=crop&q=80', bio: '¡Rex no es un títere, es mi mejor amigo!', mood: '🎭 Dramático' }
         ];
 
-        const AUTO_REPLIES = {
-            tori: ["¡Hola! ¿Viste la clase de Sikowitz hoy?", "¡Estoy ensayando para la nueva obra!", "¡The Slap es genial! 👏"],
-            jade: ["¿Por qué me estás escribiendo?", "Si no es sobre tijeras o café negro, no me interesa.", "Déjame en paz."],
-            cat: ["¡Holaaa! 🌸 ¿Quieres un pastelito de terciopelo rojo?", "¡Mi hermano hizo algo súper raro hoy!", "hehe yay!"],
-            beck: ["Hola, todo tranquilo por aquí.", "¿Has visto a Jade? Creo que perdió sus tijeras otra vez.", "Nos vemos en el almuerzo."],
-            andre: ["¡Oye! Encontré unos acordes increíbles para el piano.", "Trabajando en un nuevo ritmo 🎧", "Sikowitz nos dio coco otra vez..."],
-            robbie: ["¡Rex dice hola!", "¿Quieres ver mi acto de ventriloquia?"]
-        };
-
         let currentUser = null;
         let followedUserIds = new Set();
         let blockedUserHandles = new Set();
@@ -734,6 +746,7 @@
         let modalSelectedMedia = { type: null, data: null };
         let viewingProfileUser = null; 
         let registeredProfiles = [];
+        let currentReportingSlapId = null;
 
         window.onload = async function() {
             const introSplash = document.getElementById('intro-splash');
@@ -995,6 +1008,20 @@
                         }
                     }
                 })
+                .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'slaps' }, payload => {
+                    slaps = slaps.filter(s => s.id !== payload.old.id);
+                    renderSlaps();
+                    if (!document.getElementById('tab-profile').classList.contains('hidden')) {
+                        renderProfileSlaps();
+                    }
+                })
+                .subscribe();
+
+            _supabase
+                .channel('public:profiles')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, async () => {
+                    await cargarPerfilesRemotos();
+                })
                 .subscribe();
         }
 
@@ -1076,6 +1103,54 @@
             const text = document.getElementById('modal-slap-text').value.trim();
             if (!text && !modalSelectedMedia.data) return;
             await publicarEnNube(text, modalSelectedMedia.type, modalSelectedMedia.data, true);
+        }
+
+        // FUNCIONES DE ACCIONES EN PUBLICACIONES (MENÚ, BORRAR, DENUNCIAR)
+        function toggleSlapMenu(event, slapId) {
+            event.stopPropagation();
+            closeAllDropdowns();
+            const menu = document.getElementById('menu-' + slapId);
+            if (menu) menu.classList.toggle('hidden');
+        }
+
+        function closeAllDropdowns(event) {
+            document.querySelectorAll('[id^="menu-"]').forEach(m => m.classList.add('hidden'));
+        }
+
+        async function deleteSlap(slapId) {
+            if (!confirm("¿Estás seguro de que deseas eliminar esta publicación?")) return;
+            
+            const { error } = await _supabase.from('slaps').delete().eq('id', slapId);
+            if (error) {
+                alert("Error al eliminar: " + error.message);
+            } else {
+                slaps = slaps.filter(s => s.id !== slapId);
+                renderSlaps();
+                if (!document.getElementById('tab-profile').classList.contains('hidden')) {
+                    renderProfileSlaps();
+                }
+                SoundFX.pop();
+            }
+        }
+
+        function openReportModal(slapId) {
+            currentReportingSlapId = slapId;
+            document.getElementById('report-reason-input').value = '';
+            openModal('report-modal');
+        }
+
+        function submitReport(e) {
+            e.preventDefault();
+            const reason = document.getElementById('report-reason-input').value.trim();
+            if (!reason) return;
+
+            const adminEmail = "denuncias@theslapnextgen.com";
+            const subject = encodeURIComponent(`Denuncia de publicación en The Slap NextGen (ID: ${currentReportingSlapId})`);
+            const body = encodeURIComponent(`Hola Administrador,\n\nSe ha reportado una publicación en la plataforma.\n\n- ID de publicación: ${currentReportingSlapId}\n- Causa / Motivo del reporte:\n${reason}\n\nAtentamente,\nSistema de Moderación The Slap NextGen`);
+
+            window.location.href = `mailto:${adminEmail}?subject=${subject}&body=${body}`;
+            closeModal('report-modal');
+            alert("¡Denuncia preparada! Se abrirá tu aplicación de correo para enviarla formalmente.");
         }
 
         function updateUserUI() {
@@ -1255,6 +1330,10 @@
                     document.getElementById('feed-user-avatar').src = base64Img;
 
                     await _supabase.from('profiles').update({ avatar: base64Img }).eq('id', currentUser.id);
+                    await _supabase.from('slaps').update({ author_avatar: base64Img }).eq('author_handle', currentUser.handle);
+                    
+                    await cargarPerfilesRemotos();
+                    await cargarSlapsRemotos();
                     SoundFX.pop();
                 };
                 reader.readAsDataURL(input.files[0]);
@@ -1301,6 +1380,7 @@
                 mood: mood
             }).eq('id', currentUser.id);
 
+            await cargarPerfilesRemotos();
             closeModal('edit-profile-modal');
             SoundFX.pop();
         }
@@ -1378,12 +1458,37 @@
                 return;
             }
 
+            const allUsers = getCombinedUsers();
+
             container.innerHTML = filteredSlaps.map(slap => {
+                // Actualizar avatar en tiempo real si el usuario cambió su foto
+                const authorProfile = allUsers.find(u => u.handle === slap.author.handle);
+                const currentAvatar = authorProfile ? authorProfile.avatar : slap.author.avatar;
+
+                const isMySlap = currentUser && slap.author.handle === currentUser.handle;
+
                 return `
-                    <div class="glass-card rounded-2xl p-4 sm:p-5 border border-white/10 shadow-md transition-all animate-fadeUp">
-                        <div class="flex items-center justify-between mb-3">
+                    <div class="glass-card rounded-2xl p-4 sm:p-5 border border-white/10 shadow-md transition-all animate-fadeUp relative">
+                        <!-- MENÚ SUPERIOR DERECHO (DENUNCIAR / BORRAR) -->
+                        <div class="absolute top-4 right-4">
+                            <button onclick="toggleSlapMenu(event, '${slap.id}')" class="text-slate-400 hover:text-white px-2 py-1 rounded-lg transition-colors text-xs">
+                                <i class="fa-solid fa-ellipsis-vertical"></i>
+                            </button>
+                            <div id="menu-${slap.id}" class="hidden absolute right-0 mt-1 w-36 bg-slate-900 border border-white/15 rounded-xl shadow-2xl py-1 z-20 text-xs">
+                                <button onclick="openReportModal('${slap.id}')" class="w-full text-left px-3 py-2 text-yellow-400 hover:bg-white/10 flex items-center gap-2">
+                                    <i class="fa-solid fa-triangle-exclamation"></i> Denunciar
+                                </button>
+                                ${isMySlap ? `
+                                    <button onclick="deleteSlap('${slap.id}')" class="w-full text-left px-3 py-2 text-red-400 hover:bg-white/10 flex items-center gap-2 border-t border-white/10">
+                                        <i class="fa-solid fa-trash"></i> Borrar
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between mb-3 pr-8">
                             <div class="flex items-center gap-3 cursor-pointer" onclick="viewUserProfile('${slap.author.handle}')">
-                                <img src="${slap.author.avatar}" class="w-10 h-10 rounded-full object-cover border border-slap-400">
+                                <img src="${currentAvatar}" class="w-10 h-10 rounded-full object-cover border border-slap-400">
                                 <div class="flex-1 min-w-0">
                                     <h4 class="font-bold text-sm text-white truncate hover:underline">${slap.author.name}</h4>
                                     <p class="text-xs text-slap-400 font-mono truncate">${slap.author.handle} • ${slap.timestamp}</p>
@@ -1545,24 +1650,6 @@
             input.value = '';
             renderChatMessages();
             SoundFX.chat();
-
-            const isBotCharacter = CHARACTERS.some(c => String(c.id) === targetChatId);
-
-            if (isBotCharacter) {
-                setTimeout(() => {
-                    if (!messages[targetChatId]) messages[targetChatId] = [];
-                    const replies = AUTO_REPLIES[targetChatId] || ["¡The Slap es genial! 👏"];
-                    const randomReply = replies[Math.floor(Math.random() * replies.length)];
-                    
-                    messages[targetChatId].push({
-                        text: randomReply,
-                        fromMe: false,
-                        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                    });
-                    renderChatMessages();
-                    SoundFX.chat();
-                }, 1200);
-            }
         }
 
         function renderProfileSlaps() {
@@ -1578,8 +1665,18 @@
             }
 
             container.innerHTML = mySlaps.map(slap => `
-                <div class="glass-card rounded-xl p-4 border border-white/10">
-                    <p class="text-sm text-white">${escapeHTML(slap.text)}</p>
+                <div class="glass-card rounded-xl p-4 border border-white/10 relative">
+                    <div class="absolute top-3 right-3">
+                        <button onclick="toggleSlapMenu(event, 'p_${slap.id}')" class="text-slate-400 hover:text-white px-2 py-1 rounded-lg text-xs">
+                            <i class="fa-solid fa-ellipsis-vertical"></i>
+                        </button>
+                        <div id="menu-p_${slap.id}" class="hidden absolute right-0 mt-1 w-36 bg-slate-900 border border-white/15 rounded-xl shadow-2xl py-1 z-20 text-xs">
+                            <button onclick="deleteSlap('${slap.id}')" class="w-full text-left px-3 py-2 text-red-400 hover:bg-white/10 flex items-center gap-2">
+                                <i class="fa-solid fa-trash"></i> Borrar
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text-sm text-white pr-6">${escapeHTML(slap.text)}</p>
                     ${slap.image ? `<div class="rounded-xl overflow-hidden mt-2 max-h-72 bg-black/80 flex items-center justify-center"><img src="${slap.image}" class="w-full h-auto max-h-72 object-contain"></div>` : ''}
                     <div class="mt-2 text-xs text-slate-400 font-mono">${slap.timestamp} • ${slap.likes} Slaps</div>
                 </div>
@@ -1598,8 +1695,18 @@
             }
 
             container.innerHTML = userSlaps.map(slap => `
-                <div class="glass-card rounded-xl p-4 border border-white/10">
-                    <p class="text-sm text-white">${escapeHTML(slap.text)}</p>
+                <div class="glass-card rounded-xl p-4 border border-white/10 relative">
+                    <div class="absolute top-3 right-3">
+                        <button onclick="toggleSlapMenu(event, 'ext_${slap.id}')" class="text-slate-400 hover:text-white px-2 py-1 rounded-lg text-xs">
+                            <i class="fa-solid fa-ellipsis-vertical"></i>
+                        </button>
+                        <div id="menu-ext_${slap.id}" class="hidden absolute right-0 mt-1 w-36 bg-slate-900 border border-white/15 rounded-xl shadow-2xl py-1 z-20 text-xs">
+                            <button onclick="openReportModal('${slap.id}')" class="w-full text-left px-3 py-2 text-yellow-400 hover:bg-white/10 flex items-center gap-2">
+                                <i class="fa-solid fa-triangle-exclamation"></i> Denunciar
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text-sm text-white pr-6">${escapeHTML(slap.text)}</p>
                     ${slap.image ? `<div class="rounded-xl overflow-hidden mt-2 max-h-72 bg-black/80 flex items-center justify-center"><img src="${slap.image}" class="w-full h-auto max-h-72 object-contain"></div>` : ''}
                     <div class="mt-2 text-xs text-slate-400 font-mono">${slap.timestamp} • ${slap.likes} Slaps</div>
                 </div>
@@ -1635,4 +1742,3 @@
     </script>
 </body>
 </html>
-```
