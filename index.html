@@ -140,21 +140,21 @@
             border: 1px solid rgba(255, 255, 255, 0.6);
         }
 
-        /* Estilos explícitos para forzar el estado del botón Seguir / Siguiendo */
-        .btn-follow-active {
+        /* Estilos CSS puros con !important para garantizar el cambio de color */
+        .btn-follow-state {
             background-color: #84cc16 !important;
             color: #020617 !important;
             font-weight: 700 !important;
         }
-        .btn-follow-active:hover {
+        .btn-follow-state:hover {
             background-color: #a3e635 !important;
         }
-        .btn-following-active {
+        .btn-following-state {
             background-color: #475569 !important;
             color: #ffffff !important;
             font-weight: 600 !important;
         }
-        .btn-following-active:hover {
+        .btn-following-state:hover {
             background-color: #334155 !important;
         }
     </style>
@@ -1000,7 +1000,7 @@
             registeredProfiles.forEach(p => {
                 if (p.handle) {
                     usersMap.set(p.handle, {
-                        id: p.id || p.handle.replace('@', ''),
+                        id: String(p.id || p.handle.replace('@', '')),
                         name: p.name,
                         handle: p.handle,
                         avatar: p.avatar || 'https://placehold.co/100',
@@ -1212,7 +1212,13 @@
             document.getElementById('profile-avatar-btn-label').classList.add('hidden');
             document.getElementById('profile-banner-img').classList.add('hidden');
 
-            // --- ACCIONES DE PERFIL EXTERNO ---
+            // Renderizar acciones de perfil
+            renderProfileActions(targetUser);
+
+            renderExternalProfileSlaps(targetUser.handle);
+        }
+
+        function renderProfileActions(targetUser) {
             const profileHeaderActions = document.querySelector('#tab-profile .flex.flex-col.sm\\:flex-row.items-center.sm\\:items-end');
             
             const oldActionGroup = document.getElementById('profile-external-action-group');
@@ -1221,14 +1227,16 @@
             const isMe = currentUser && currentUser.handle === targetUser.handle;
 
             if (!isMe) {
-                const isFollowing = followedUserIds.has(targetUser.id);
+                const targetIdStr = String(targetUser.id);
+                const isFollowing = followedUserIds.has(targetIdStr);
+
                 const actionGroupHtml = `
                     <div id="profile-external-action-group" class="flex items-center gap-2">
-                        <button id="profile-follow-action-btn" onclick="toggleFollow('${targetUser.id}')" class="${isFollowing ? 'btn-following-active' : 'btn-follow-active'} px-4 py-2 rounded-xl text-xs transition-all shadow-md active:scale-95">
+                        <button id="profile-follow-action-btn" onclick="toggleFollow('${targetIdStr}')" class="${isFollowing ? 'btn-following-state' : 'btn-follow-state'} px-4 py-2 rounded-xl text-xs transition-all shadow-md active:scale-95">
                             ${isFollowing ? 'Siguiendo ✓' : 'Seguir +'}
                         </button>
                         ${isFollowing ? `
-                            <button onclick="directOpenChat('${targetUser.id}')" class="bg-hollywood-purple hover:bg-purple-600 text-white font-bold px-3.5 py-2 rounded-xl text-xs transition-all shadow-md flex items-center gap-1.5 active:scale-95">
+                            <button onclick="directOpenChat('${targetIdStr}')" class="bg-hollywood-purple hover:bg-purple-600 text-white font-bold px-3.5 py-2 rounded-xl text-xs transition-all shadow-md flex items-center gap-1.5 active:scale-95">
                                 <i class="fa-solid fa-comments"></i> Mensaje
                             </button>
                         ` : ''}
@@ -1236,8 +1244,6 @@
                 `;
                 profileHeaderActions.insertAdjacentHTML('beforeend', actionGroupHtml);
             }
-
-            renderExternalProfileSlaps(targetUser.handle);
         }
 
         function directOpenChat(userId) {
@@ -1433,23 +1439,24 @@
 
         function toggleFollow(userId) {
             SoundFX.click();
+            const idStr = String(userId);
             const allUsers = getCombinedUsers();
-            const target = allUsers.find(u => u.id === userId);
+            const target = allUsers.find(u => String(u.id) === idStr);
 
-            if (followedUserIds.has(userId)) {
+            if (followedUserIds.has(idStr)) {
                 const targetName = target ? target.name : 'este usuario';
                 const confirmUnfollow = confirm(`¿Estás seguro de que deseas dejar de seguir a ${targetName}?`);
                 if (!confirmUnfollow) return;
-                followedUserIds.delete(userId);
+                followedUserIds.delete(idStr);
             } else {
-                followedUserIds.add(userId);
+                followedUserIds.add(idStr);
             }
 
             updateUserUI();
 
-            // Si estamos en la vista de perfil de ese usuario, re-renderizamos la vista
-            if (viewingProfileUser && viewingProfileUser.id === userId) {
-                viewUserProfile(viewingProfileUser.handle);
+            // Si estamos en la vista de perfil de ese usuario, re-renderizamos las acciones directamente
+            if (viewingProfileUser && String(viewingProfileUser.id) === idStr) {
+                renderProfileActions(viewingProfileUser);
             }
         }
 
@@ -1482,7 +1489,7 @@
         function renderSideSuggestions() {
             const list = document.getElementById('side-suggestions-list');
             const allUsers = getCombinedUsers();
-            const suggestions = allUsers.filter(c => (!currentUser || c.handle !== currentUser.handle) && !followedUserIds.has(c.id) && !blockedUserHandles.has(c.handle)).slice(0, 3);
+            const suggestions = allUsers.filter(c => (!currentUser || c.handle !== currentUser.handle) && !followedUserIds.has(String(c.id)) && !blockedUserHandles.has(c.handle)).slice(0, 3);
             
             if(suggestions.length === 0) {
                 list.innerHTML = `<p class="text-xs text-slate-400 text-center py-2">¡Ya sigues a todos los compañeros!</p>`;
@@ -1498,7 +1505,7 @@
                             <p class="text-[10px] text-slate-400 font-mono truncate">${char.handle}</p>
                         </div>
                     </div>
-                    <button onclick="toggleFollow('${char.id}')" class="bg-slap-500/20 text-slap-400 hover:bg-slap-500 hover:text-black font-bold px-2.5 py-1 rounded-lg text-[11px] transition-all">
+                    <button onclick="toggleFollow('${String(char.id)}')" class="bg-slap-500/20 text-slap-400 hover:bg-slap-500 hover:text-black font-bold px-2.5 py-1 rounded-lg text-[11px] transition-all">
                         Seguir
                     </button>
                 </div>
@@ -1558,7 +1565,7 @@
                 matchedCharacters.forEach(u => usersMap.set(u.handle, u));
                 matchedRealUsers.forEach(u => {
                     usersMap.set(u.handle, {
-                        id: u.id || u.handle.replace('@', ''),
+                        id: String(u.id || u.handle.replace('@', '')),
                         name: u.name,
                         handle: u.handle,
                         avatar: u.avatar || 'https://placehold.co/100',
@@ -1612,7 +1619,7 @@
             const allUsers = getCombinedUsers();
             
             // Filtrar SOLO los usuarios que actualmente sigues
-            const followedContacts = allUsers.filter(c => followedUserIds.has(c.id) && !blockedUserHandles.has(c.handle));
+            const followedContacts = allUsers.filter(c => followedUserIds.has(String(c.id)) && !blockedUserHandles.has(c.handle));
 
             document.getElementById('chat-count-tag').innerText = followedContacts.length;
 
@@ -1626,7 +1633,7 @@
             }
 
             container.innerHTML = followedContacts.map(char => `
-                <div onclick="openChat('${char.id}')" class="p-3 hover:bg-white/10 cursor-pointer transition-colors flex items-center gap-3 ${activeChatId === char.id ? 'bg-white/15 border-l-4 border-slap-400' : ''}">
+                <div onclick="openChat('${String(char.id)}')" class="p-3 hover:bg-white/10 cursor-pointer transition-colors flex items-center gap-3 ${activeChatId === String(char.id) ? 'bg-white/15 border-l-4 border-slap-400' : ''}">
                     <img src="${char.avatar}" class="w-8 h-8 rounded-full object-cover border border-slap-400">
                     <div class="truncate">
                         <h5 class="text-xs font-bold text-white truncate">${char.name}</h5>
@@ -1637,9 +1644,9 @@
         }
 
         function openChat(charId) {
-            activeChatId = charId;
+            activeChatId = String(charId);
             const allUsers = getCombinedUsers();
-            const char = allUsers.find(c => c.id === charId);
+            const char = allUsers.find(c => String(c.id) === activeChatId);
             
             if (char) {
                 document.getElementById('chat-active-name').innerText = char.name;
@@ -1687,8 +1694,7 @@
             renderChatMessages();
             SoundFX.chat();
 
-            // SÓLO ENVIAR RESPUESTAS AUTOMÁTICAS SI ES UN PERSONAJE OFICIAL DE LA SERIE
-            const isBotCharacter = CHARACTERS.some(c => c.id === targetChatId);
+            const isBotCharacter = CHARACTERS.some(c => String(c.id) === targetChatId);
 
             if (isBotCharacter) {
                 setTimeout(() => {
