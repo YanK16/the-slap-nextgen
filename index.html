@@ -261,51 +261,51 @@
         </div>
     </header>
 
-    <!-- AUTH MODAL -->
-    <div id="auth-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/85 backdrop-blur-xl animate-fadeUp">
-        <div class="glass-card max-w-md w-full rounded-3xl p-6 sm:p-8 border border-white/25 shadow-2xl relative overflow-hidden">
+    <!-- AUTH MODAL (AJUSTADO EN TAMAÑO Y SCROLL INTERNO PARA MÓVILES Y PC) -->
+    <div id="auth-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-xl animate-fadeUp overflow-y-auto">
+        <div class="glass-card max-w-sm w-full rounded-2xl p-5 sm:p-6 border border-white/25 shadow-2xl relative overflow-hidden my-auto max-h-[90vh] overflow-y-auto">
             <div class="absolute -top-24 -right-24 w-48 h-48 bg-slap-500/30 rounded-full blur-3xl pointer-events-none"></div>
             <div class="absolute -bottom-24 -left-24 w-48 h-48 bg-hollywood-pink/30 rounded-full blur-3xl pointer-events-none"></div>
 
-            <div class="text-center mb-5">
-                <div class="inline-flex p-3 rounded-2xl bg-slap-500/20 border border-slap-500/30 text-slap-400 mb-2 animate-bounce">
-                    <span class="text-3xl">👏</span>
+            <div class="text-center mb-4">
+                <div class="inline-flex p-2.5 rounded-xl bg-slap-500/20 border border-slap-500/30 text-slap-400 mb-1.5 animate-bounce">
+                    <span class="text-2xl">👏</span>
                 </div>
-                <h2 class="font-fredoka text-2xl font-bold text-white tracking-wide">The Slap NextGen</h2>
-                <p id="auth-subtitle" class="text-xs text-slate-300 mt-1">Crea tu cuenta oficial en Hollywood Arts</p>
+                <h2 class="font-fredoka text-xl sm:text-2xl font-bold text-white tracking-wide">The Slap NextGen</h2>
+                <p id="auth-subtitle" class="text-[11px] sm:text-xs text-slate-300 mt-0.5">Crea tu cuenta oficial en Hollywood Arts</p>
             </div>
 
-            <div class="grid grid-cols-2 gap-1 bg-black/40 p-1 rounded-xl mb-5 border border-white/10">
-                <button type="button" id="tab-btn-register" onclick="switchAuthMode('register')" class="py-2 text-xs font-bold rounded-lg bg-slap-500 text-slate-950 transition-all shadow-md">Registrarse</button>
-                <button type="button" id="tab-btn-login" onclick="switchAuthMode('login')" class="py-2 text-xs font-medium rounded-lg text-slate-300 hover:text-white transition-all">Iniciar Sesión</button>
+            <div class="grid grid-cols-2 gap-1 bg-black/40 p-1 rounded-xl mb-4 border border-white/10">
+                <button type="button" id="tab-btn-register" onclick="switchAuthMode('register')" class="py-1.5 text-xs font-bold rounded-lg bg-slap-500 text-slate-950 transition-all shadow-md">Registrarse</button>
+                <button type="button" id="tab-btn-login" onclick="switchAuthMode('login')" class="py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white transition-all">Iniciar Sesión</button>
             </div>
 
             <!-- REGISTRO -->
-            <form id="register-form" onsubmit="handleAuthRegister(event)" class="space-y-3.5">
+            <form id="register-form" onsubmit="handleAuthRegister(event)" class="space-y-3">
                 <div>
-                    <label class="block text-xs font-medium text-slate-300 mb-1">Nombre Completo</label>
-                    <input type="text" id="reg-name" required placeholder="Ej. Tori Vega" class="w-full bg-black/40 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-slap-400 transition-colors">
+                    <label class="block text-[11px] font-medium text-slate-300 mb-1">Nombre Completo</label>
+                    <input type="text" id="reg-name" required placeholder="Ej. Tori Vega" class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-slap-400 transition-colors">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-medium text-slate-300 mb-1">Nombre de Usuario (@handle)</label>
-                    <input type="text" id="reg-handle" required placeholder="torivega" class="w-full bg-black/40 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-slap-400 transition-colors">
+                    <label class="block text-[11px] font-medium text-slate-300 mb-1">Nombre de Usuario (@handle)</label>
+                    <input type="text" id="reg-handle" required placeholder="torivega" class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-slap-400 transition-colors">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-medium text-slate-300 mb-1">Correo Electrónico</label>
-                    <input type="email" id="reg-email" required placeholder="tori@hollywoodarts.edu" class="w-full bg-black/40 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-slap-400 transition-colors">
+                    <label class="block text-[11px] font-medium text-slate-300 mb-1">Correo Electrónico</label>
+                    <input type="email" id="reg-email" required placeholder="tori@hollywoodarts.edu" class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-slap-400 transition-colors">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-medium text-slate-300 mb-1">Contraseña</label>
-                    <input type="password" id="reg-password" required placeholder="Mínimo 6 caracteres" class="w-full bg-black/40 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-slap-400 transition-colors">
+                    <label class="block text-[11px] font-medium text-slate-300 mb-1">Contraseña</label>
+                    <input type="password" id="reg-password" required placeholder="Mínimo 6 caracteres" class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-slap-400 transition-colors">
                 </div>
 
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-2 gap-2.5">
                     <div>
-                        <label class="block text-xs font-medium text-slate-300 mb-1">Mood</label>
-                        <select id="reg-mood" class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-slap-400 transition-colors">
+                        <label class="block text-[11px] font-medium text-slate-300 mb-1">Mood</label>
+                        <select id="reg-mood" class="w-full bg-black/40 border border-white/10 rounded-xl px-2.5 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-slap-400 transition-colors">
                             <option value="😎 Emocionado">😎 Emocionado</option>
                             <option value="😏 Sarcástico">😏 Sarcástico</option>
                             <option value="🎨 Creativo">🎨 Creativo</option>
@@ -314,8 +314,8 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs font-medium text-slate-300 mb-1">Avatar</label>
-                        <label for="reg-avatar-file" class="w-full bg-black/40 border border-white/10 hover:border-slap-400 rounded-xl px-3 py-2 text-xs text-slate-300 cursor-pointer flex items-center justify-center gap-1.5 transition-colors">
+                        <label class="block text-[11px] font-medium text-slate-300 mb-1">Avatar</label>
+                        <label for="reg-avatar-file" class="w-full bg-black/40 border border-white/10 hover:border-slap-400 rounded-xl px-2.5 py-2 text-[11px] text-slate-300 cursor-pointer flex items-center justify-center gap-1.5 transition-colors truncate">
                             <i class="fa-solid fa-upload text-slap-400"></i>
                             <span id="avatar-filename-label" class="truncate">Subir Foto</span>
                         </label>
@@ -323,34 +323,34 @@
                     </div>
                 </div>
 
-                <button type="submit" class="w-full bg-gradient-to-r from-slap-500 to-slap-600 hover:from-slap-400 hover:to-slap-500 text-slate-950 font-bold py-3 rounded-xl shadow-lg shadow-slap-500/25 active:scale-98 transition-all text-sm uppercase tracking-wider">
+                <button type="submit" class="w-full bg-gradient-to-r from-slap-500 to-slap-600 hover:from-slap-400 hover:to-slap-500 text-slate-950 font-bold py-2.5 rounded-xl shadow-lg shadow-slap-500/25 active:scale-98 transition-all text-xs uppercase tracking-wider mt-1">
                     <i class="fa-solid fa-bolt mr-1"></i> Registrarse
                 </button>
             </form>
 
             <!-- INICIO SESION -->
-            <form id="login-form" onsubmit="handleAuthLogin(event)" class="space-y-4 hidden">
+            <form id="login-form" onsubmit="handleAuthLogin(event)" class="space-y-3.5 hidden">
                 <div>
-                    <label class="block text-xs font-medium text-slate-300 mb-1">Correo Electrónico</label>
-                    <input type="email" id="login-email" required placeholder="tori@hollywoodarts.edu" class="w-full bg-black/40 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-slap-400 transition-colors">
+                    <label class="block text-[11px] font-medium text-slate-300 mb-1">Correo Electrónico</label>
+                    <input type="email" id="login-email" required placeholder="tori@hollywoodarts.edu" class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-slap-400 transition-colors">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-medium text-slate-300 mb-1">Contraseña</label>
-                    <input type="password" id="login-password" required placeholder="••••••••" class="w-full bg-black/40 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-slap-400 transition-colors">
+                    <label class="block text-[11px] font-medium text-slate-300 mb-1">Contraseña</label>
+                    <input type="password" id="login-password" required placeholder="••••••••" class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-slap-400 transition-colors">
                 </div>
 
-                <button type="submit" class="w-full bg-gradient-to-r from-slap-500 to-slap-600 hover:from-slap-400 hover:to-slap-500 text-slate-950 font-bold py-3 rounded-xl shadow-lg shadow-slap-500/25 active:scale-98 transition-all text-sm uppercase tracking-wider">
+                <button type="submit" class="w-full bg-gradient-to-r from-slap-500 to-slap-600 hover:from-slap-400 hover:to-slap-500 text-slate-950 font-bold py-2.5 rounded-xl shadow-lg shadow-slap-500/25 active:scale-98 transition-all text-xs uppercase tracking-wider mt-1">
                     <i class="fa-solid fa-right-to-bracket mr-1"></i> Iniciar Sesión
                 </button>
             </form>
 
-            <div class="relative my-4 flex items-center justify-center">
+            <div class="relative my-3.5 flex items-center justify-center">
                 <div class="border-t border-white/10 w-full"></div>
                 <span class="bg-slate-900 px-3 text-[10px] text-slate-400 font-mono absolute">O TAMBIÉN</span>
             </div>
 
-            <button onclick="handleGuestAccess()" class="w-full bg-white/5 hover:bg-white/10 border border-white/15 text-slate-200 font-medium py-2.5 rounded-xl transition-all text-sm flex items-center justify-center gap-2 group">
+            <button onclick="handleGuestAccess()" class="w-full bg-white/5 hover:bg-white/10 border border-white/15 text-slate-200 font-medium py-2 rounded-xl transition-all text-xs sm:text-sm flex items-center justify-center gap-2 group">
                 <i class="fa-solid fa-user-secret text-slate-400 group-hover:text-slap-400 transition-colors"></i> Entrar como Invitado Rápido
             </button>
         </div>
@@ -724,7 +724,7 @@
         ];
 
         const AUTO_REPLIES = {
-            tori: ["¡Hola! ¿Viste la clase de Sikowitz hoy?", "¡Estoy ensayando para la nueva obra!", "¡The Slap es genial! 👏"],
+            tori: ["¡Hola! ¿Viste la clase de Sikowitz hoy?", "¡Estoy ensayando para la nueva obra!", "¡The Slap is genial! 👏"],
             jade: ["¿Por qué me estás escribiendo?", "Si no es sobre tijeras o café negro, no me interesa.", "Déjame en paz."],
             cat: ["¡Holaaa! 🌸 ¿Quieres un pastelito de terciopelo rojo?", "¡Mi hermano hizo algo súper raro hoy!", "hehe yay!"],
             beck: ["Hola, todo tranquilo por aquí.", "¿Has visto a Jade? Creo que perdió sus tijeras otra vez.", "Nos vemos en el almuerzo."],
@@ -795,14 +795,14 @@
             if (mode === 'register') {
                 regForm.classList.remove('hidden');
                 loginForm.classList.add('hidden');
-                btnReg.className = "py-2 text-xs font-bold rounded-lg bg-slap-500 text-slate-950 transition-all shadow-md";
-                btnLogin.className = "py-2 text-xs font-medium rounded-lg text-slate-300 hover:text-white transition-all";
+                btnReg.className = "py-1.5 text-xs font-bold rounded-lg bg-slap-500 text-slate-950 transition-all shadow-md";
+                btnLogin.className = "py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white transition-all";
                 subtitle.innerText = "Crea tu cuenta oficial en Hollywood Arts";
             } else {
                 regForm.classList.add('hidden');
                 loginForm.classList.remove('hidden');
-                btnLogin.className = "py-2 text-xs font-bold rounded-lg bg-slap-500 text-slate-950 transition-all shadow-md";
-                btnReg.className = "py-2 text-xs font-medium rounded-lg text-slate-300 hover:text-white transition-all";
+                btnLogin.className = "py-1.5 text-xs font-bold rounded-lg bg-slap-500 text-slate-950 transition-all shadow-md";
+                btnReg.className = "py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white transition-all";
                 subtitle.innerText = "Accede de nuevo a tu cuenta de Slap OS";
             }
         }
@@ -1396,7 +1396,7 @@
             if (isBotCharacter) {
                 setTimeout(() => {
                     if (!messages[targetChatId]) messages[targetChatId] = [];
-                    const replies = AUTO_REPLIES[targetChatId] || ["¡The Slap es genial! 👏"];
+                    const replies = AUTO_REPLIES[targetChatId] || ["¡The Slap is genial! 👏"];
                     const randomReply = replies[Math.floor(Math.random() * replies.length)];
                     
                     messages[targetChatId].push({
