@@ -38,14 +38,6 @@
                             '0%': { opacity: '0', transform: 'translateY(12px)' },
                             '100%': { opacity: '1', transform: 'translateY(0)' }
                         },
-                        popIn: {
-                            '0%': { transform: 'scale(0.85)', opacity: '0' },
-                            '100%': { transform: 'scale(1)', opacity: '1' }
-                        },
-                        pulseGlow: {
-                            '0%, 100%': { boxShadow: '0 0 15px rgba(132, 204, 22, 0.4)' },
-                            '50%': { boxShadow: '0 0 25px rgba(255, 42, 133, 0.6)' }
-                        },
                         logoIntro: {
                             '0%': { opacity: '0', transform: 'scale(0.5) rotate(-10deg)' },
                             '50%': { opacity: '1', transform: 'scale(1.1) rotate(5deg)' },
@@ -55,8 +47,6 @@
                     },
                     animation: {
                         fadeUp: 'fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-                        pop: 'popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
-                        glow: 'pulseGlow 3s infinite ease-in-out',
                         logoIntro: 'logoIntro 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards'
                     }
                 }
@@ -102,9 +92,6 @@
             background: rgba(132, 204, 22, 0.5);
             border-radius: 9999px;
         }
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(132, 204, 22, 0.8);
-        }
 
         .theme-dark-slap {
             background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
@@ -133,28 +120,23 @@
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.12);
         }
-        .light .glass-card {
-            background: rgba(255, 255, 255, 0.75);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.6);
-        }
 
-        /* Estilos CSS puros con !important para garantizar el cambio de color */
-        .btn-follow-state {
+        /* ESTILOS DIRECTOS Y EXPLICITOS PARA EL BOTÓN SEGUIR */
+        .btn-state-follow {
             background-color: #84cc16 !important;
             color: #020617 !important;
             font-weight: 700 !important;
         }
-        .btn-follow-state:hover {
+        .btn-state-follow:hover {
             background-color: #a3e635 !important;
         }
-        .btn-following-state {
+
+        .btn-state-following {
             background-color: #475569 !important;
             color: #ffffff !important;
             font-weight: 600 !important;
         }
-        .btn-following-state:hover {
+        .btn-state-following:hover {
             background-color: #334155 !important;
         }
     </style>
@@ -279,7 +261,7 @@
         </div>
     </header>
 
-    <!-- AUTH MODAL (Registro e Inicio de Sesión) -->
+    <!-- AUTH MODAL -->
     <div id="auth-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/85 backdrop-blur-xl animate-fadeUp">
         <div class="glass-card max-w-md w-full rounded-3xl p-6 sm:p-8 border border-white/25 shadow-2xl relative overflow-hidden">
             <div class="absolute -top-24 -right-24 w-48 h-48 bg-slap-500/30 rounded-full blur-3xl pointer-events-none"></div>
@@ -293,13 +275,12 @@
                 <p id="auth-subtitle" class="text-xs text-slate-300 mt-1">Crea tu cuenta oficial en Hollywood Arts</p>
             </div>
 
-            <!-- Pestañas de Selector (Registrarse / Iniciar Sesión) -->
             <div class="grid grid-cols-2 gap-1 bg-black/40 p-1 rounded-xl mb-5 border border-white/10">
                 <button type="button" id="tab-btn-register" onclick="switchAuthMode('register')" class="py-2 text-xs font-bold rounded-lg bg-slap-500 text-slate-950 transition-all shadow-md">Registrarse</button>
                 <button type="button" id="tab-btn-login" onclick="switchAuthMode('login')" class="py-2 text-xs font-medium rounded-lg text-slate-300 hover:text-white transition-all">Iniciar Sesión</button>
             </div>
 
-            <!-- FORMULARIO DE REGISTRO -->
+            <!-- REGISTRO -->
             <form id="register-form" onsubmit="handleAuthRegister(event)" class="space-y-3.5">
                 <div>
                     <label class="block text-xs font-medium text-slate-300 mb-1">Nombre Completo</label>
@@ -329,7 +310,6 @@
                             <option value="😏 Sarcástico">😏 Sarcástico</option>
                             <option value="🎨 Creativo">🎨 Creativo</option>
                             <option value="🎭 Dramático">🎭 Dramático</option>
-                            <option value="😴 Cansado">😴 Cansado</option>
                         </select>
                     </div>
 
@@ -348,7 +328,7 @@
                 </button>
             </form>
 
-            <!-- FORMULARIO DE INICIO DE SESIÓN -->
+            <!-- INICIO SESION -->
             <form id="login-form" onsubmit="handleAuthLogin(event)" class="space-y-4 hidden">
                 <div>
                     <label class="block text-xs font-medium text-slate-300 mb-1">Correo Electrónico</label>
@@ -405,20 +385,15 @@
                     <i class="fa-solid fa-fire text-hollywood-pink"></i> Tendencias en Hollywood Arts
                 </h4>
                 <div class="space-y-3 text-xs">
-                    <div class="p-2 rounded-xl hover:bg-white/5 transition-colors cursor-pointer" onclick="filterByTag('Sikowitz')">
+                    <div class="p-2 rounded-xl hover:bg-white/5 transition-colors cursor-pointer">
                         <p class="text-slate-400 text-[10px]">#1 Teatro Improv</p>
                         <p class="font-bold text-white">#SikowitzCoconuts</p>
                         <p class="text-slate-400 text-[10px]">1,240 Slaps</p>
                     </div>
-                    <div class="p-2 rounded-xl hover:bg-white/5 transition-colors cursor-pointer" onclick="filterByTag('SlapPhone')">
+                    <div class="p-2 rounded-xl hover:bg-white/5 transition-colors cursor-pointer">
                         <p class="text-slate-400 text-[10px]">#2 Tecnología</p>
                         <p class="font-bold text-white">#SlapPhoneXT</p>
                         <p class="text-slate-400 text-[10px]">890 Slaps</p>
-                    </div>
-                    <div class="p-2 rounded-xl hover:bg-white/5 transition-colors cursor-pointer" onclick="filterByTag('NoSkape')">
-                        <p class="text-slate-400 text-[10px]">#3 Música</p>
-                        <p class="font-bold text-white">#ConciertoNoSkape</p>
-                        <p class="text-slate-400 text-[10px]">650 Slaps</p>
                     </div>
                 </div>
             </div>
@@ -541,6 +516,16 @@
                             <button id="edit-profile-btn" onclick="openModal('edit-profile-modal')" class="bg-white/10 hover:bg-white/20 border border-white/20 text-white font-medium px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-2">
                                 <i class="fa-solid fa-pen-to-square"></i> Editar Perfil
                             </button>
+
+                            <!-- CONTENEDOR CONTROLES EXTERNOS DE PERFIL -->
+                            <div id="profile-external-action-group" class="hidden flex items-center gap-2">
+                                <button id="btn-follow-action" class="px-4 py-2 rounded-xl text-xs transition-all shadow-md active:scale-95">
+                                    Seguir +
+                                </button>
+                                <button id="btn-message-action" class="bg-hollywood-purple hover:bg-purple-600 text-white font-bold px-3.5 py-2 rounded-xl text-xs transition-all shadow-md flex items-center gap-1.5 active:scale-95 hidden">
+                                    <i class="fa-solid fa-comments"></i> Mensaje
+                                </button>
+                            </div>
                         </div>
 
                         <div>
@@ -758,18 +743,16 @@
         let registeredProfiles = [];
 
         window.onload = async function() {
-            // Mostrar animación Splash de bienvenida
             const introSplash = document.getElementById('intro-splash');
             
-            // 1. Obtener la sesión actual guardada en el navegador
-            const { data: { session }, error } = await _supabase.auth.getSession();
+            const { data: { session } } = await _supabase.auth.getSession();
 
             let hasSession = false;
             if (session && session.user) {
                 hasSession = true;
                 const meta = session.user.user_metadata || {};
                 currentUser = {
-                    id: session.user.id,
+                    id: String(session.user.id),
                     name: meta.name || session.user.email.split('@')[0],
                     handle: meta.handle || `@${session.user.email.split('@')[0]}`,
                     mood: meta.mood || '😎 Activo',
@@ -778,24 +761,15 @@
                     banner: meta.banner || null
                 };
 
-                if (typeof updateUserUI === 'function') {
-                    updateUserUI();
-                }
+                updateUserUI();
             }
 
-            // 2. Cargar datos de la base de datos
             await cargarSlapsRemotos();
             await cargarPerfilesRemotos();
 
-            // 3. Renderizar la lista unificada en Explore
-            if (typeof renderExploreUsers === 'function') {
-                renderExploreUsers(getCombinedUsers());
-            }
-            if (typeof renderSideSuggestions === 'function') {
-                renderSideSuggestions();
-            }
+            renderExploreUsers(getCombinedUsers());
+            renderSideSuggestions();
 
-            // 4. Finalizar Animación Splash suavemente y mostrar Modal si no hay sesión
             setTimeout(() => {
                 if (introSplash) {
                     introSplash.classList.add('opacity-0');
@@ -856,7 +830,7 @@
                     alert("Error al registrarse: " + error.message);
                 } else {
                     if (data.user) {
-                        const { error: profileError } = await _supabase.from('profiles').insert([{
+                        await _supabase.from('profiles').insert([{
                             id: data.user.id,
                             name: name,
                             handle: handle,
@@ -864,14 +838,10 @@
                             bio: 'Estudiante en Hollywood Arts High School.',
                             mood: mood
                         }]);
-
-                        if (profileError) {
-                            console.error("Error guardando en profiles:", profileError);
-                        }
                     }
 
                     currentUser = {
-                        id: data.user ? data.user.id : null,
+                        id: String(data.user ? data.user.id : 'guest'),
                         name: name,
                         handle: handle,
                         mood: mood,
@@ -909,12 +879,11 @@
             });
 
             if (error) {
-                alert("Error al iniciar sesión: Verifique su correo, contraseña o confirme su cuenta en Supabase.");
-                console.error(error);
+                alert("Error al iniciar sesión: Verifique su correo o contraseña.");
             } else if (data.user) {
                 const meta = data.user.user_metadata || {};
                 currentUser = {
-                    id: data.user.id,
+                    id: String(data.user.id),
                     name: meta.name || 'Estudiante',
                     handle: meta.handle || '@usuario',
                     mood: meta.mood || '😎 Emocionado',
@@ -995,12 +964,13 @@
         function getCombinedUsers() {
             const usersMap = new Map();
 
-            CHARACTERS.forEach(c => usersMap.set(c.handle, c));
+            CHARACTERS.forEach(c => usersMap.set(c.handle, { ...c, id: String(c.id) }));
 
             registeredProfiles.forEach(p => {
                 if (p.handle) {
+                    const uId = String(p.id || p.handle.replace('@', ''));
                     usersMap.set(p.handle, {
-                        id: String(p.id || p.handle.replace('@', '')),
+                        id: uId,
                         name: p.name,
                         handle: p.handle,
                         avatar: p.avatar || 'https://placehold.co/100',
@@ -1043,59 +1013,10 @@
             }]).select();
 
             if (error) {
-                alert("Hubo un error al sincronizar el Slap con la base de datos.");
                 console.error(error);
                 await cargarSlapsRemotos();
             } else if (data && data[0]) {
                 slapTemporal.id = data[0].id;
-            }
-        }
-
-        async function actualizarLikesRemotos(slapId, newLikes) {
-            await _supabase
-                .from('slaps')
-                .update({ likes: newLikes })
-                .eq('id', slapId);
-        }
-
-        async function eliminarSlapRemoto(slapId) {
-            const idValue = isNaN(slapId) ? slapId : Number(slapId);
-            
-            const { error } = await _supabase
-                .from('slaps')
-                .delete()
-                .eq('id', idValue);
-
-            if (error) {
-                console.error("Error al eliminar de Supabase:", error);
-                alert("No se pudo eliminar el Slap de la base de datos: " + error.message);
-            } else {
-                await cargarSlapsRemotos();
-            }
-        }
-
-        async function syncUserMetadata() {
-            if (!currentUser) return;
-            await _supabase.auth.updateUser({
-                data: {
-                    name: currentUser.name,
-                    handle: currentUser.handle,
-                    mood: currentUser.mood,
-                    avatar: currentUser.avatar,
-                    bio: currentUser.bio,
-                    banner: currentUser.banner
-                }
-            });
-
-            if (currentUser.id && currentUser.id !== 'guest') {
-                await _supabase.from('profiles').upsert({
-                    id: currentUser.id,
-                    name: currentUser.name,
-                    handle: currentUser.handle,
-                    avatar: currentUser.avatar,
-                    bio: currentUser.bio,
-                    mood: currentUser.mood
-                });
             }
         }
 
@@ -1111,7 +1032,6 @@
             document.getElementById('side-name').innerText = currentUser.name;
             document.getElementById('side-handle').innerText = currentUser.handle;
             document.getElementById('side-mood').innerText = currentUser.mood;
-            document.getElementById('side-followers').innerText = '0';
             document.getElementById('side-following').innerText = followedUserIds.size;
 
             document.getElementById('feed-user-avatar').src = currentUser.avatar;
@@ -1170,9 +1090,7 @@
             document.getElementById('profile-banner-btn-label').classList.remove('hidden');
             document.getElementById('profile-avatar-btn-label').classList.remove('hidden');
 
-            // Limpiar acciones de perfil externo
-            const actionBtnGroup = document.getElementById('profile-external-action-group');
-            if (actionBtnGroup) actionBtnGroup.remove();
+            document.getElementById('profile-external-action-group').classList.add('hidden');
 
             if (currentUser.banner) {
                 const bannerImg = document.getElementById('profile-banner-img');
@@ -1187,19 +1105,17 @@
 
         function viewUserProfile(handle) {
             SoundFX.click();
-            let targetUser = null;
             if (currentUser && currentUser.handle === handle) {
                 switchTab('profile');
                 return;
             }
 
             const allUsers = getCombinedUsers();
-            targetUser = allUsers.find(c => c.handle === handle);
+            const targetUser = allUsers.find(c => c.handle === handle);
             if (!targetUser) return;
 
             viewingProfileUser = targetUser;
             switchTab('profile');
-            highlightExploreNav();
 
             document.getElementById('profile-page-avatar').src = targetUser.avatar;
             document.getElementById('profile-page-name').innerText = targetUser.name;
@@ -1212,65 +1128,64 @@
             document.getElementById('profile-avatar-btn-label').classList.add('hidden');
             document.getElementById('profile-banner-img').classList.add('hidden');
 
-            // Renderizar acciones de perfil
+            // Renderizar acciones de perfil directamente en el DOM
             renderProfileActions(targetUser);
-
             renderExternalProfileSlaps(targetUser.handle);
         }
 
+        // FUNCIÓN MEJORADA: ACTUALIZACIÓN DIRECTA DEL BOTÓN DE SEGUIR
         function renderProfileActions(targetUser) {
-            const profileHeaderActions = document.querySelector('#tab-profile .flex.flex-col.sm\\:flex-row.items-center.sm\\:items-end');
-            
-            const oldActionGroup = document.getElementById('profile-external-action-group');
-            if (oldActionGroup) oldActionGroup.remove();
+            const actionContainer = document.getElementById('profile-external-action-group');
+            const followBtn = document.getElementById('btn-follow-action');
+            const msgBtn = document.getElementById('btn-message-action');
 
-            const isMe = currentUser && currentUser.handle === targetUser.handle;
+            if (!actionContainer || !followBtn || !msgBtn) return;
 
-            if (!isMe) {
-                const targetIdStr = String(targetUser.id);
-                const isFollowing = followedUserIds.has(targetIdStr);
+            const targetIdStr = String(targetUser.id);
+            const isFollowing = followedUserIds.has(targetIdStr);
 
-                const actionGroupHtml = `
-                    <div id="profile-external-action-group" class="flex items-center gap-2">
-                        <button id="profile-follow-action-btn" onclick="toggleFollow('${targetIdStr}')" class="${isFollowing ? 'btn-following-state' : 'btn-follow-state'} px-4 py-2 rounded-xl text-xs transition-all shadow-md active:scale-95">
-                            ${isFollowing ? 'Siguiendo ✓' : 'Seguir +'}
-                        </button>
-                        ${isFollowing ? `
-                            <button onclick="directOpenChat('${targetIdStr}')" class="bg-hollywood-purple hover:bg-purple-600 text-white font-bold px-3.5 py-2 rounded-xl text-xs transition-all shadow-md flex items-center gap-1.5 active:scale-95">
-                                <i class="fa-solid fa-comments"></i> Mensaje
-                            </button>
-                        ` : ''}
-                    </div>
-                `;
-                profileHeaderActions.insertAdjacentHTML('beforeend', actionGroupHtml);
+            actionContainer.classList.remove('hidden');
+
+            // Asignar dinámicamente estilo y texto directo
+            if (isFollowing) {
+                followBtn.className = "btn-state-following px-4 py-2 rounded-xl text-xs transition-all shadow-md active:scale-95";
+                followBtn.innerText = "Siguiendo ✓";
+                msgBtn.classList.remove('hidden');
+                msgBtn.onclick = () => directOpenChat(targetIdStr);
+            } else {
+                followBtn.className = "btn-state-follow px-4 py-2 rounded-xl text-xs transition-all shadow-md active:scale-95";
+                followBtn.innerText = "Seguir +";
+                msgBtn.classList.add('hidden');
+            }
+
+            followBtn.onclick = () => toggleFollow(targetIdStr);
+        }
+
+        function toggleFollow(userId) {
+            SoundFX.click();
+            const idStr = String(userId);
+            const allUsers = getCombinedUsers();
+            const target = allUsers.find(u => String(u.id) === idStr);
+
+            if (followedUserIds.has(idStr)) {
+                const targetName = target ? target.name : 'este usuario';
+                if (!confirm(`¿Estás seguro de que deseas dejar de seguir a ${targetName}?`)) return;
+                followedUserIds.delete(idStr);
+            } else {
+                followedUserIds.add(idStr);
+            }
+
+            updateUserUI();
+
+            // Si estamos mirando el perfil del usuario, actualizar de inmediato los botones
+            if (viewingProfileUser && String(viewingProfileUser.id) === idStr) {
+                renderProfileActions(viewingProfileUser);
             }
         }
 
         function directOpenChat(userId) {
             switchTab('chat');
             openChat(userId);
-        }
-
-        function highlightExploreNav() {
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('bg-slap-500', 'text-black', 'shadow-md', 'shadow-slap-500/20');
-                btn.classList.add('text-slate-300');
-            });
-            document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
-                btn.classList.remove('text-slap-400', 'font-bold');
-                btn.classList.add('text-slate-400');
-            });
-
-            const expBtn = document.getElementById('nav-explore');
-            if (expBtn) {
-                expBtn.classList.add('bg-slap-500', 'text-black', 'shadow-md', 'shadow-slap-500/20');
-                expBtn.classList.remove('text-slate-300');
-            }
-            const mobExpBtn = document.getElementById('mobile-nav-explore');
-            if (mobExpBtn) {
-                mobExpBtn.classList.add('text-slap-400', 'font-bold');
-                mobExpBtn.classList.remove('text-slate-400');
-            }
         }
 
         function handleMediaSelect(input, type) {
@@ -1318,62 +1233,6 @@
             SoundFX.slap();
         }
 
-        async function toggleLike(slapId) {
-            const slap = slaps.find(s => s.id === slapId);
-            if (slap) {
-                slap.likedByMe = !slap.likedByMe;
-                slap.likes += slap.likedByMe ? 1 : -1;
-                SoundFX.slap();
-                renderSlaps();
-                await actualizarLikesRemotos(slap.id, slap.likes);
-            }
-        }
-
-        function addComment(slapId, inputEl) {
-            const text = inputEl.value.trim();
-            if (!text) return;
-
-            const slap = slaps.find(s => s.id === slapId);
-            if (slap) {
-                if (!slap.comments) slap.comments = [];
-                slap.comments.push({
-                    author: currentUser ? currentUser.name : 'Invitado',
-                    text: text
-                });
-                inputEl.value = '';
-                SoundFX.pop();
-                renderSlaps();
-            }
-        }
-
-        function toggleComments(slapId) {
-            const container = document.getElementById('comments-' + slapId);
-            if (container) {
-                container.classList.toggle('hidden');
-            }
-        }
-
-        async function deleteSlap(slapId) {
-            if(confirm("¿Estás seguro de que deseas eliminar este Slap?")) {
-                SoundFX.pop();
-                await eliminarSlapRemoto(slapId);
-            }
-        }
-
-        function blockUser(handle) {
-            if(confirm(`¿Estás seguro de bloquear al usuario ${handle}? Dejarás de ver sus publicaciones.`)) {
-                blockedUserHandles.add(handle);
-                SoundFX.click();
-                renderSlaps();
-                renderExploreUsers(getCombinedUsers());
-            }
-        }
-
-        function reportContent(slapId) {
-            alert("¡Reporte enviado con éxito! El equipo de moderación de Hollywood Arts revisará este contenido ofensivo.");
-            SoundFX.click();
-        }
-
         function renderSlaps() {
             const container = document.getElementById('slaps-container');
             const filteredSlaps = slaps.filter(s => !blockedUserHandles.has(s.author.handle));
@@ -1395,69 +1254,15 @@
                                     <p class="text-xs text-slap-400 font-mono truncate">${slap.author.handle} • ${slap.timestamp}</p>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-2">
-                                ${isMySlap ? `<button onclick="deleteSlap('${slap.id}')" class="text-slate-400 hover:text-red-400 text-xs px-2 py-1 rounded-lg hover:bg-white/5 transition-colors" title="Eliminar Slap"><i class="fa-solid fa-trash"></i></button>` : ''}
-                                <button onclick="reportContent('${slap.id}')" class="text-slate-400 hover:text-yellow-400 text-xs px-2 py-1 rounded-lg hover:bg-white/5 transition-colors" title="Reportar contenido ofensivo"><i class="fa-solid fa-flag"></i></button>
-                                ${!isMySlap ? `<button onclick="blockUser('${slap.author.handle}')" class="text-slate-400 hover:text-red-400 text-xs px-2 py-1 rounded-lg hover:bg-white/5 transition-colors" title="Bloquear usuario"><i class="fa-solid fa-ban"></i></button>` : ''}
-                            </div>
                         </div>
 
                         <p class="text-sm text-slate-100 mb-3 whitespace-pre-line">${escapeHTML(slap.text)}</p>
 
                         ${slap.image ? `<div class="rounded-xl overflow-hidden mb-3 max-h-[500px] bg-black/80 flex items-center justify-center"><img src="${slap.image}" class="w-full h-auto max-h-[500px] object-contain"></div>` : ''}
                         ${slap.audio ? `<div class="bg-black/30 p-2 rounded-xl mb-3 border border-white/10"><audio controls src="${slap.audio}" class="w-full"></audio></div>` : ''}
-
-                        <div class="flex items-center gap-6 pt-3 border-t border-white/10 text-xs text-slate-300">
-                            <button onclick="toggleLike('${slap.id}')" class="flex items-center gap-1.5 hover:text-slap-400 transition-colors ${slap.likedByMe ? 'text-hollywood-pink font-bold' : ''}">
-                                <i class="fa-${slap.likedByMe ? 'solid' : 'regular'} fa-heart text-base"></i>
-                                <span>${slap.likes} Slaps</span>
-                            </button>
-                            <button onclick="toggleComments('${slap.id}')" class="flex items-center gap-1.5 hover:text-slap-400 transition-colors">
-                                <i class="fa-regular fa-comment text-base"></i>
-                                <span>${slap.comments.length} Comentarios</span>
-                            </button>
-                        </div>
-
-                        <div id="comments-${slap.id}" class="hidden mt-3 pt-3 border-t border-white/5 space-y-3">
-                            <div class="space-y-2 max-h-40 overflow-y-auto pr-1">
-                                ${slap.comments.map(c => `
-                                    <div class="bg-black/30 rounded-xl p-2.5 text-xs">
-                                        <span class="font-bold text-slap-400">${escapeHTML(c.author)}:</span>
-                                        <span class="text-slate-200">${escapeHTML(c.text)}</span>
-                                    </div>
-                                `).join('')}
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <input type="text" placeholder="Escribe un comentario..." onkeypress="if(event.key==='Enter') addComment('${slap.id}', this)" class="flex-1 bg-black/40 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-slap-400">
-                                <button onclick="addComment('${slap.id}', this.previousElementSibling)" class="bg-slap-500 text-black font-bold px-3 py-1.5 rounded-xl text-xs hover:bg-slap-400">Enviar</button>
-                            </div>
-                        </div>
                     </div>
                 `;
             }).join('');
-        }
-
-        function toggleFollow(userId) {
-            SoundFX.click();
-            const idStr = String(userId);
-            const allUsers = getCombinedUsers();
-            const target = allUsers.find(u => String(u.id) === idStr);
-
-            if (followedUserIds.has(idStr)) {
-                const targetName = target ? target.name : 'este usuario';
-                const confirmUnfollow = confirm(`¿Estás seguro de que deseas dejar de seguir a ${targetName}?`);
-                if (!confirmUnfollow) return;
-                followedUserIds.delete(idStr);
-            } else {
-                followedUserIds.add(idStr);
-            }
-
-            updateUserUI();
-
-            // Si estamos en la vista de perfil de ese usuario, re-renderizamos las acciones directamente
-            if (viewingProfileUser && String(viewingProfileUser.id) === idStr) {
-                renderProfileActions(viewingProfileUser);
-            }
         }
 
         function renderExploreUsers(usersList = CHARACTERS) {
@@ -1512,113 +1317,10 @@
             `).join('');
         }
 
-        let searchTimeout = null;
-
-        function handleSearch() {
-            const queryInput = document.getElementById('explore-search-input');
-            const resultsContainer = document.getElementById('search-results-container');
-            const directory = document.getElementById('users-directory');
-            const query = queryInput ? queryInput.value.trim() : '';
-
-            clearTimeout(searchTimeout);
-
-            if (!query) {
-                renderExploreUsers(getCombinedUsers());
-                if (resultsContainer) resultsContainer.innerHTML = '';
-                return;
-            }
-
-            searchTimeout = setTimeout(async () => {
-                const lowerQuery = query.toLowerCase();
-
-                const matchedCharacters = CHARACTERS.filter(u => 
-                    !blockedUserHandles.has(u.handle) && (
-                        (u.name && u.name.toLowerCase().includes(lowerQuery)) || 
-                        (u.handle && u.handle.toLowerCase().includes(lowerQuery))
-                    )
-                );
-
-                const matchedSlaps = slaps.filter(s => 
-                    !blockedUserHandles.has(s.author.handle) && (
-                        (s.text && s.text.toLowerCase().includes(lowerQuery)) || 
-                        (s.author.name && s.author.name.toLowerCase().includes(lowerQuery)) ||
-                        (s.author.handle && s.author.handle.toLowerCase().includes(lowerQuery))
-                    )
-                );
-
-                let matchedRealUsers = [];
-                try {
-                    const { data, error } = await _supabase
-                        .from('profiles')
-                        .select('*')
-                        .or(`name.ilike.%${query}%,handle.ilike.%${query}%`)
-                        .limit(10);
-
-                    if (!error && data) {
-                        matchedRealUsers = data.filter(u => !blockedUserHandles.has(u.handle));
-                    }
-                } catch (err) {
-                    console.error("Error buscando en Supabase:", err);
-                }
-
-                const usersMap = new Map();
-                matchedCharacters.forEach(u => usersMap.set(u.handle, u));
-                matchedRealUsers.forEach(u => {
-                    usersMap.set(u.handle, {
-                        id: String(u.id || u.handle.replace('@', '')),
-                        name: u.name,
-                        handle: u.handle,
-                        avatar: u.avatar || 'https://placehold.co/100',
-                        bio: u.bio || 'Estudiante registrado en Hollywood Arts.',
-                        mood: u.mood || '😎 Activo'
-                    });
-                });
-
-                const allMatchedUsers = Array.from(usersMap.values());
-
-                if (directory) {
-                    if (allMatchedUsers.length > 0) {
-                        directory.innerHTML = allMatchedUsers.map(u => `
-                            <div class="glass-card rounded-xl p-3 border border-white/10 flex items-center justify-between cursor-pointer hover:bg-white/5 transition-all" onclick="viewUserProfile('${u.handle}')">
-                                <div class="flex items-center gap-3">
-                                    <img src="${u.avatar}" class="w-10 h-10 rounded-full object-cover border border-slap-400">
-                                    <div>
-                                        <p class="text-xs font-bold text-white">${escapeHTML(u.name)}</p>
-                                        <p class="text-[10px] text-slap-400 font-mono">${escapeHTML(u.handle)}</p>
-                                        <p class="text-[10px] text-slate-300 truncate max-w-[150px]">${escapeHTML(u.bio || '')}</p>
-                                    </div>
-                                </div>
-                                <span class="text-xs text-slate-400"><i class="fa-solid fa-chevron-right"></i></span>
-                            </div>
-                        `).join('');
-                    } else {
-                        directory.innerHTML = `<p class="text-xs text-slate-400 text-center py-6 col-span-full">No se encontraron estudiantes con "${escapeHTML(query)}".</p>`;
-                    }
-                }
-
-                if (resultsContainer) {
-                    if (matchedSlaps.length > 0) {
-                        resultsContainer.innerHTML = `
-                            <h4 class="font-fredoka text-sm font-bold text-slate-300 mt-4 mb-3">Publicaciones encontradas:</h4>
-                            ${matchedSlaps.map(slap => `
-                                <div class="glass-card rounded-xl p-3 border border-white/10 mb-2">
-                                    <span class="text-[10px] text-slap-400 font-mono cursor-pointer hover:underline" onclick="viewUserProfile('${slap.author.handle}')">${escapeHTML(slap.author.name)} (${escapeHTML(slap.author.handle)})</span>
-                                    <p class="text-xs text-white mt-1">${escapeHTML(slap.text)}</p>
-                                </div>
-                            `).join('')}
-                        `;
-                    } else {
-                        resultsContainer.innerHTML = '';
-                    }
-                }
-            }, 300);
-        }
-
         function renderChatContacts() {
             const container = document.getElementById('chat-contacts-list');
             const allUsers = getCombinedUsers();
             
-            // Filtrar SOLO los usuarios que actualmente sigues
             const followedContacts = allUsers.filter(c => followedUserIds.has(String(c.id)) && !blockedUserHandles.has(c.handle));
 
             document.getElementById('chat-count-tag').innerText = followedContacts.length;
@@ -1726,11 +1428,8 @@
 
             container.innerHTML = mySlaps.map(slap => `
                 <div class="glass-card rounded-xl p-4 border border-white/10">
-                    <div class="flex justify-between items-start mb-2">
-                        <p class="text-sm text-white">${escapeHTML(slap.text)}</p>
-                        <button onclick="deleteSlap('${slap.id}')" class="text-slate-400 hover:text-red-400 text-xs px-2 py-1"><i class="fa-solid fa-trash"></i></button>
-                    </div>
-                    ${slap.image ? `<div class="rounded-xl overflow-hidden mb-2 max-h-72 bg-black/80 flex items-center justify-center"><img src="${slap.image}" class="w-full h-auto max-h-72 object-contain"></div>` : ''}
+                    <p class="text-sm text-white">${escapeHTML(slap.text)}</p>
+                    ${slap.image ? `<div class="rounded-xl overflow-hidden mt-2 max-h-72 bg-black/80 flex items-center justify-center"><img src="${slap.image}" class="w-full h-auto max-h-72 object-contain"></div>` : ''}
                     <div class="mt-2 text-xs text-slate-400 font-mono">${slap.timestamp} • ${slap.likes} Slaps</div>
                 </div>
             `).join('');
@@ -1756,116 +1455,19 @@
             `).join('');
         }
 
-        async function updateProfileAvatar(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = async function(e) {
-                    currentUser.avatar = e.target.result;
-                    updateUserUI();
-                    document.getElementById('profile-page-avatar').src = currentUser.avatar;
-                    await syncUserMetadata();
-                };
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-
-        async function updateBanner(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = async function(e) {
-                    currentUser.banner = e.target.result;
-                    const bannerImg = document.getElementById('profile-banner-img');
-                    bannerImg.src = currentUser.banner;
-                    bannerImg.classList.remove('hidden');
-                    await syncUserMetadata();
-                };
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-
-        async function saveProfileChanges(e) {
-            e.preventDefault();
-            currentUser.name = document.getElementById('edit-name-input').value || currentUser.name;
-            currentUser.bio = document.getElementById('edit-bio-input').value || currentUser.bio;
-            currentUser.mood = document.getElementById('edit-mood-input').value || currentUser.mood;
-
-            closeModal('edit-profile-modal');
-            updateUserUI();
-            loadMyProfileView();
-            await syncUserMetadata();
-            SoundFX.pop();
-        }
-
         function setTheme(themeName) {
             document.body.className = `${themeName} min-h-screen flex flex-col antialiased selection:bg-slap-500 selection:text-black`;
             SoundFX.click();
         }
 
-        let selectedModalMedia = { type: null, data: null };
-
-        function handleModalMediaSelect(input, type) {
-            if (input.files && input.files[0]) {
-                const file = input.files[0];
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    selectedModalMedia = { type: type, data: e.target.result };
-                    const container = document.getElementById('modal-media-preview-container');
-                    const img = document.getElementById('modal-img-preview');
-                    const audio = document.getElementById('modal-audio-preview');
-
-                    if (container) container.classList.remove('hidden');
-                    if (type === 'image' && img) {
-                        img.src = e.target.result;
-                        img.classList.remove('hidden');
-                        if (audio) audio.classList.add('hidden');
-                    } else if (audio) {
-                        audio.src = e.target.result;
-                        audio.classList.remove('hidden');
-                        if (img) img.classList.add('hidden');
-                    }
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function clearModalMediaPreview() {
-            selectedModalMedia = { type: null, data: null };
-            const container = document.getElementById('modal-media-preview-container');
-            if (container) container.classList.add('hidden');
-            const imgInput = document.getElementById('modal-slap-image-input');
-            const audioInput = document.getElementById('modal-slap-audio-input');
-            if (imgInput) imgInput.value = '';
-            if (audioInput) audioInput.value = '';
-        }
-
-        async function publishSlapFromModal() {
-            const textEl = document.getElementById('modal-slap-text');
-            const text = textEl ? textEl.value.trim() : '';
-
-            if (!text && !selectedModalMedia.data) return;
-
-            await publicarEnNube(text, selectedModalMedia.type, selectedModalMedia.data);
-
-            if (textEl) textEl.value = '';
-            clearModalMediaPreview();
-            closeModal('create-slap-modal');
-            SoundFX.slap();
-        }
-
         function openModal(modalId) {
             const modal = document.getElementById(modalId);
-            if (modal) {
-                modal.classList.remove('hidden');
-                SoundFX.click();
-            }
+            if (modal) modal.classList.remove('hidden');
         }
 
         function closeModal(modalId) {
             const modal = document.getElementById(modalId);
-            if (modal) {
-                modal.classList.add('hidden');
-                SoundFX.click();
-            }
+            if (modal) modal.classList.add('hidden');
         }
 
         function escapeHTML(str) {
