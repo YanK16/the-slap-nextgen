@@ -45,12 +45,19 @@
                         pulseGlow: {
                             '0%, 100%': { boxShadow: '0 0 15px rgba(132, 204, 22, 0.4)' },
                             '50%': { boxShadow: '0 0 25px rgba(255, 42, 133, 0.6)' }
+                        },
+                        logoIntro: {
+                            '0%': { opacity: '0', transform: 'scale(0.5) rotate(-10deg)' },
+                            '50%': { opacity: '1', transform: 'scale(1.1) rotate(5deg)' },
+                            '70%': { transform: 'scale(0.95) rotate(-2deg)' },
+                            '100%': { opacity: '1', transform: 'scale(1) rotate(0deg)' }
                         }
                     },
                     animation: {
                         fadeUp: 'fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
                         pop: 'popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
-                        glow: 'pulseGlow 3s infinite ease-in-out'
+                        glow: 'pulseGlow 3s infinite ease-in-out',
+                        logoIntro: 'logoIntro 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards'
                     }
                 }
             }
@@ -132,9 +139,46 @@
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.6);
         }
+
+        /* Estilos explícitos para forzar el estado del botón Seguir / Siguiendo */
+        .btn-follow-active {
+            background-color: #84cc16 !important;
+            color: #020617 !important;
+            font-weight: 700 !important;
+        }
+        .btn-follow-active:hover {
+            background-color: #a3e635 !important;
+        }
+        .btn-following-active {
+            background-color: #475569 !important;
+            color: #ffffff !important;
+            font-weight: 600 !important;
+        }
+        .btn-following-active:hover {
+            background-color: #334155 !important;
+        }
     </style>
 </head>
 <body class="theme-dark-slap min-h-screen flex flex-col antialiased selection:bg-slap-500 selection:text-black">
+
+    <!-- INTRO SPLASH ANIMATION SCREEN -->
+    <div id="intro-splash" class="fixed inset-0 z-[100] bg-slate-950 flex flex-col items-center justify-center p-4 transition-opacity duration-700">
+        <div class="relative flex flex-col items-center">
+            <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-gradient-to-tr from-slap-500 via-hollywood-pink to-hollywood-purple p-1 shadow-2xl shadow-slap-500/30 animate-logoIntro flex items-center justify-center mb-6">
+                <div class="w-full h-full bg-slate-900 rounded-[22px] flex items-center justify-center">
+                    <span class="text-5xl sm:text-6xl animate-bounce">👏</span>
+                </div>
+            </div>
+            <h1 class="font-fredoka text-3xl sm:text-5xl font-bold tracking-wide bg-gradient-to-r from-slap-400 via-hollywood-pink to-hollywood-purple bg-clip-text text-transparent text-center animate-fadeUp">
+                The Slap <span class="text-xs sm:text-base px-3 py-1 rounded-full bg-slap-500/20 text-slap-400 font-sans tracking-normal border border-slap-500/30">NextGen</span>
+            </h1>
+            <p class="text-xs sm:text-sm text-slate-400 font-mono mt-2 animate-fadeUp" style="animation-delay: 0.2s">Hollywood Arts High • Slap OS v14.4</p>
+            
+            <div class="mt-8 flex items-center gap-2 text-slap-400 text-xs font-mono animate-pulse">
+                <i class="fa-solid fa-circle-notch fa-spin"></i> Cargando experiencia...
+            </div>
+        </div>
+    </div>
 
     <script>
         const SoundFX = {
@@ -236,7 +280,7 @@
     </header>
 
     <!-- AUTH MODAL (Registro e Inicio de Sesión) -->
-    <div id="auth-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-xl animate-fadeUp">
+    <div id="auth-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/85 backdrop-blur-xl animate-fadeUp">
         <div class="glass-card max-w-md w-full rounded-3xl p-6 sm:p-8 border border-white/25 shadow-2xl relative overflow-hidden">
             <div class="absolute -top-24 -right-24 w-48 h-48 bg-slap-500/30 rounded-full blur-3xl pointer-events-none"></div>
             <div class="absolute -bottom-24 -left-24 w-48 h-48 bg-hollywood-pink/30 rounded-full blur-3xl pointer-events-none"></div>
@@ -714,11 +758,15 @@
         let registeredProfiles = [];
 
         window.onload = async function() {
+            // Mostrar animación Splash de bienvenida
+            const introSplash = document.getElementById('intro-splash');
+            
             // 1. Obtener la sesión actual guardada en el navegador
             const { data: { session }, error } = await _supabase.auth.getSession();
 
+            let hasSession = false;
             if (session && session.user) {
-                // Extraer los metadatos del usuario o asignar valores por defecto
+                hasSession = true;
                 const meta = session.user.user_metadata || {};
                 currentUser = {
                     id: session.user.id,
@@ -730,21 +778,8 @@
                     banner: meta.banner || null
                 };
 
-                // Ocultar el modal de inicio de sesión
-                const authModal = document.getElementById('auth-modal');
-                if (authModal) {
-                    authModal.classList.add('hidden');
-                }
-
-                // Actualizar la interfaz con los datos del usuario logueado
                 if (typeof updateUserUI === 'function') {
                     updateUserUI();
-                }
-            } else {
-                // Si no hay sesión activa, aseguramos que el modal se muestre
-                const authModal = document.getElementById('auth-modal');
-                if (authModal) {
-                    authModal.classList.remove('hidden');
                 }
             }
 
@@ -759,6 +794,20 @@
             if (typeof renderSideSuggestions === 'function') {
                 renderSideSuggestions();
             }
+
+            // 4. Finalizar Animación Splash suavemente y mostrar Modal si no hay sesión
+            setTimeout(() => {
+                if (introSplash) {
+                    introSplash.classList.add('opacity-0');
+                    setTimeout(() => {
+                        introSplash.classList.add('hidden');
+                        const authModal = document.getElementById('auth-modal');
+                        if (!hasSession && authModal) {
+                            authModal.classList.remove('hidden');
+                        }
+                    }, 700);
+                }
+            }, 1800);
         };
 
         function switchAuthMode(mode) {
@@ -807,7 +856,6 @@
                     alert("Error al registrarse: " + error.message);
                 } else {
                     if (data.user) {
-                        // INSERTAR PERFIL EN LA TABLA PROFILES
                         const { error: profileError } = await _supabase.from('profiles').insert([{
                             id: data.user.id,
                             name: name,
@@ -966,7 +1014,6 @@
         }
 
         async function publicarEnNube(text, mediaType, mediaData) {
-            // 1. Creamos un Slap temporal para mostrarlo en pantalla de forma INSTANTÁNEA
             const slapTemporal = {
                 id: 'temp_' + Date.now(),
                 author: {
@@ -982,11 +1029,9 @@
                 timestamp: 'Hace un momento'
             };
 
-            // Lo ponemos al principio del arreglo local y redibujamos el feed al instante
             slaps.unshift(slapTemporal);
             renderSlaps();
 
-            // 2. Enviamos los datos a Supabase en segundo plano
             const { data, error } = await _supabase.from('slaps').insert([{
                 author_name: currentUser.name,
                 author_handle: currentUser.handle,
@@ -1000,9 +1045,8 @@
             if (error) {
                 alert("Hubo un error al sincronizar el Slap con la base de datos.");
                 console.error(error);
-                await cargarSlapsRemotos(); // Si falla, recargamos el estado real
+                await cargarSlapsRemotos();
             } else if (data && data[0]) {
-                // Actualizamos el ID temporal con el ID real que generó la base de datos
                 slapTemporal.id = data[0].id;
             }
         }
@@ -1126,6 +1170,10 @@
             document.getElementById('profile-banner-btn-label').classList.remove('hidden');
             document.getElementById('profile-avatar-btn-label').classList.remove('hidden');
 
+            // Limpiar acciones de perfil externo
+            const actionBtnGroup = document.getElementById('profile-external-action-group');
+            if (actionBtnGroup) actionBtnGroup.remove();
+
             if (currentUser.banner) {
                 const bannerImg = document.getElementById('profile-banner-img');
                 bannerImg.src = currentUser.banner;
@@ -1137,7 +1185,7 @@
             renderProfileSlaps();
         }
 
-       function viewUserProfile(handle) {
+        function viewUserProfile(handle) {
             SoundFX.click();
             let targetUser = null;
             if (currentUser && currentUser.handle === handle) {
@@ -1164,22 +1212,37 @@
             document.getElementById('profile-avatar-btn-label').classList.add('hidden');
             document.getElementById('profile-banner-img').classList.add('hidden');
 
-            // --- AGREGAR BOTÓN DE SEGUIR EN EL PERFIL ---
+            // --- ACCIONES DE PERFIL EXTERNO ---
             const profileHeaderActions = document.querySelector('#tab-profile .flex.flex-col.sm\\:flex-row.items-center.sm\\:items-end');
             
-            // Eliminar botón de seguir previo si existía para no duplicarlo
-            const existingFollowBtn = document.getElementById('profile-follow-action-btn');
-            if (existingFollowBtn) existingFollowBtn.remove();
+            const oldActionGroup = document.getElementById('profile-external-action-group');
+            if (oldActionGroup) oldActionGroup.remove();
 
-            const isFollowing = followedUserIds.has(targetUser.id);
-            const followBtnHtml = `
-                <button id="profile-follow-action-btn" onclick="toggleFollow('${targetUser.id}')" class="${isFollowing ? 'bg-white/20 hover:bg-white/30 text-white font-medium' : 'bg-slap-500 hover:bg-slap-400 text-slate-950 font-bold'} px-4 py-2 rounded-xl text-xs transition-all shadow-md active:scale-95">
-                    ${isFollowing ? 'Siguiendo ✓' : 'Seguir +'}
-                </button>
-            `;
-            profileHeaderActions.insertAdjacentHTML('beforeend', followBtnHtml);
+            const isMe = currentUser && currentUser.handle === targetUser.handle;
+
+            if (!isMe) {
+                const isFollowing = followedUserIds.has(targetUser.id);
+                const actionGroupHtml = `
+                    <div id="profile-external-action-group" class="flex items-center gap-2">
+                        <button id="profile-follow-action-btn" onclick="toggleFollow('${targetUser.id}')" class="${isFollowing ? 'btn-following-active' : 'btn-follow-active'} px-4 py-2 rounded-xl text-xs transition-all shadow-md active:scale-95">
+                            ${isFollowing ? 'Siguiendo ✓' : 'Seguir +'}
+                        </button>
+                        ${isFollowing ? `
+                            <button onclick="directOpenChat('${targetUser.id}')" class="bg-hollywood-purple hover:bg-purple-600 text-white font-bold px-3.5 py-2 rounded-xl text-xs transition-all shadow-md flex items-center gap-1.5 active:scale-95">
+                                <i class="fa-solid fa-comments"></i> Mensaje
+                            </button>
+                        ` : ''}
+                    </div>
+                `;
+                profileHeaderActions.insertAdjacentHTML('beforeend', actionGroupHtml);
+            }
 
             renderExternalProfileSlaps(targetUser.handle);
+        }
+
+        function directOpenChat(userId) {
+            switchTab('chat');
+            openChat(userId);
         }
 
         function highlightExploreNav() {
@@ -1370,24 +1433,23 @@
 
         function toggleFollow(userId) {
             SoundFX.click();
+            const allUsers = getCombinedUsers();
+            const target = allUsers.find(u => u.id === userId);
+
             if (followedUserIds.has(userId)) {
+                const targetName = target ? target.name : 'este usuario';
+                const confirmUnfollow = confirm(`¿Estás seguro de que deseas dejar de seguir a ${targetName}?`);
+                if (!confirmUnfollow) return;
                 followedUserIds.delete(userId);
             } else {
                 followedUserIds.add(userId);
             }
+
             updateUserUI();
 
-            // Actualizar el estilo y texto del botón en la vista de perfil si está abierto
-            const profileBtn = document.getElementById('profile-follow-action-btn');
-            if (profileBtn && viewingProfileUser && viewingProfileUser.id === userId) {
-                const isFollowing = followedUserIds.has(userId);
-                if (isFollowing) {
-                    profileBtn.className = "bg-white/20 hover:bg-white/30 text-white font-medium px-4 py-2 rounded-xl text-xs transition-all shadow-md active:scale-95";
-                    profileBtn.innerText = "Siguiendo ✓";
-                } else {
-                    profileBtn.className = "bg-slap-500 hover:bg-slap-400 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs transition-all shadow-md active:scale-95";
-                    profileBtn.innerText = "Seguir +";
-                }
+            // Si estamos en la vista de perfil de ese usuario, re-renderizamos la vista
+            if (viewingProfileUser && viewingProfileUser.id === userId) {
+                viewUserProfile(viewingProfileUser.handle);
             }
         }
 
@@ -1419,7 +1481,8 @@
 
         function renderSideSuggestions() {
             const list = document.getElementById('side-suggestions-list');
-            const suggestions = CHARACTERS.filter(c => !followedUserIds.has(c.id) && !blockedUserHandles.has(c.handle)).slice(0, 3);
+            const allUsers = getCombinedUsers();
+            const suggestions = allUsers.filter(c => (!currentUser || c.handle !== currentUser.handle) && !followedUserIds.has(c.id) && !blockedUserHandles.has(c.handle)).slice(0, 3);
             
             if(suggestions.length === 0) {
                 list.innerHTML = `<p class="text-xs text-slate-400 text-center py-2">¡Ya sigues a todos los compañeros!</p>`;
@@ -1546,11 +1609,14 @@
 
         function renderChatContacts() {
             const container = document.getElementById('chat-contacts-list');
-            const followedChars = CHARACTERS.filter(c => followedUserIds.has(c.id) && !blockedUserHandles.has(c.handle));
+            const allUsers = getCombinedUsers();
+            
+            // Filtrar SOLO los usuarios que actualmente sigues
+            const followedContacts = allUsers.filter(c => followedUserIds.has(c.id) && !blockedUserHandles.has(c.handle));
 
-            document.getElementById('chat-count-tag').innerText = followedChars.length;
+            document.getElementById('chat-count-tag').innerText = followedContacts.length;
 
-            if (followedChars.length === 0) {
+            if (followedContacts.length === 0) {
                 container.innerHTML = `
                     <div class="p-4 text-center text-xs text-slate-400">
                         No sigues a nadie aún.<br>Sigue a estudiantes en <strong>Explorar</strong> para chatear.
@@ -1559,12 +1625,12 @@
                 return;
             }
 
-            container.innerHTML = followedChars.map(char => `
+            container.innerHTML = followedContacts.map(char => `
                 <div onclick="openChat('${char.id}')" class="p-3 hover:bg-white/10 cursor-pointer transition-colors flex items-center gap-3 ${activeChatId === char.id ? 'bg-white/15 border-l-4 border-slap-400' : ''}">
                     <img src="${char.avatar}" class="w-8 h-8 rounded-full object-cover border border-slap-400">
                     <div class="truncate">
                         <h5 class="text-xs font-bold text-white truncate">${char.name}</h5>
-                        <p class="text-[10px] text-slap-400 font-mono truncate">${char.mood}</p>
+                        <p class="text-[10px] text-slap-400 font-mono truncate">${char.mood || '😎 Activo'}</p>
                     </div>
                 </div>
             `).join('');
@@ -1572,11 +1638,14 @@
 
         function openChat(charId) {
             activeChatId = charId;
-            const char = CHARACTERS.find(c => c.id === charId);
+            const allUsers = getCombinedUsers();
+            const char = allUsers.find(c => c.id === charId);
             
-            document.getElementById('chat-active-name').innerText = char.name;
-            document.getElementById('chat-active-avatar').src = char.avatar;
-            document.getElementById('chat-active-status').innerText = 'En línea en Slap OS';
+            if (char) {
+                document.getElementById('chat-active-name').innerText = char.name;
+                document.getElementById('chat-active-avatar').src = char.avatar;
+                document.getElementById('chat-active-status').innerText = 'En línea en Slap OS';
+            }
 
             renderChatContacts();
             renderChatMessages();
@@ -1618,19 +1687,24 @@
             renderChatMessages();
             SoundFX.chat();
 
-            setTimeout(() => {
-                if (!messages[targetChatId]) messages[targetChatId] = [];
-                const replies = AUTO_REPLIES[targetChatId] || ["¡The Slap es genial! 👏"];
-                const randomReply = replies[Math.floor(Math.random() * replies.length)];
-                
-                messages[targetChatId].push({
-                    text: randomReply,
-                    fromMe: false,
-                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                });
-                renderChatMessages();
-                SoundFX.chat();
-            }, 1200);
+            // SÓLO ENVIAR RESPUESTAS AUTOMÁTICAS SI ES UN PERSONAJE OFICIAL DE LA SERIE
+            const isBotCharacter = CHARACTERS.some(c => c.id === targetChatId);
+
+            if (isBotCharacter) {
+                setTimeout(() => {
+                    if (!messages[targetChatId]) messages[targetChatId] = [];
+                    const replies = AUTO_REPLIES[targetChatId] || ["¡The Slap es genial! 👏"];
+                    const randomReply = replies[Math.floor(Math.random() * replies.length)];
+                    
+                    messages[targetChatId].push({
+                        text: randomReply,
+                        fromMe: false,
+                        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    });
+                    renderChatMessages();
+                    SoundFX.chat();
+                }, 1200);
+            }
         }
 
         function renderProfileSlaps() {
