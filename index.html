@@ -153,10 +153,10 @@
             <h1 class="font-fredoka text-3xl sm:text-5xl font-bold tracking-wide bg-gradient-to-r from-slap-400 via-hollywood-pink to-hollywood-purple bg-clip-text text-transparent text-center animate-fadeUp">
                 The Slap <span class="text-xs sm:text-base px-3 py-1 rounded-full bg-slap-500/20 text-slap-400 font-sans tracking-normal border border-slap-500/30">NextGen</span>
             </h1>
-            <p class="text-xs sm:text-sm text-slate-400 font-mono mt-2 animate-fadeUp" style="animation-delay: 0.2s">Hollywood Arts High • Slap OS v14.9</p>
+            <p class="text-xs sm:text-sm text-slate-400 font-mono mt-2 animate-fadeUp" style="animation-delay: 0.2s">Hollywood Arts High • Slap OS v15.0</p>
             
             <div class="mt-8 flex items-center gap-2 text-slap-400 text-xs font-mono animate-pulse">
-                <i class="fa-solid fa-circle-notch fa-spin"></i> Sincronizando Slap OS...
+                <i class="fa-solid fa-circle-notch fa-spin"></i> Sincronizando perfil móvil...
             </div>
         </div>
     </div>
@@ -751,6 +751,15 @@
         window.onload = async function() {
             const introSplash = document.getElementById('intro-splash');
             
+            // CARGA DE RESPALDO DESDE LOCALSTORAGE PARA MOVILES
+            const localSavedUser = localStorage.getItem('slap_current_user');
+            if (localSavedUser) {
+                try {
+                    currentUser = JSON.parse(localSavedUser);
+                    updateUserUI();
+                } catch(e){}
+            }
+
             await cargarPerfilesRemotos();
             
             const { data: { session } } = await _supabase.auth.getSession();
@@ -759,6 +768,8 @@
             if (session && session.user) {
                 hasSession = true;
                 await cargarPerfilUsuarioActual(session.user.id, session.user.email);
+            } else if (currentUser) {
+                hasSession = true; // Mantener sesión móvil si el respaldo local existe
             }
 
             await cargarSlapsRemotos();
@@ -806,7 +817,7 @@
                     bio: data.bio || 'Estudiante en Hollywood Arts High School.',
                     banner: data.banner || null
                 };
-            } else {
+            } else if (!currentUser) {
                 currentUser = {
                     id: String(userId),
                     name: email.split('@')[0],
@@ -817,6 +828,7 @@
                     banner: null
                 };
             }
+            localStorage.setItem('slap_current_user', JSON.stringify(currentUser));
             updateUserUI();
         }
 
@@ -886,6 +898,7 @@
                         banner: null
                     };
 
+                    localStorage.setItem('slap_current_user', JSON.stringify(currentUser));
                     await cargarPerfilesRemotos();
                     document.getElementById('auth-modal').classList.add('hidden');
                     updateUserUI();
@@ -933,6 +946,7 @@
                 bio: 'Invitado en Hollywood Arts.',
                 banner: null
             };
+            localStorage.setItem('slap_current_user', JSON.stringify(currentUser));
             document.getElementById('auth-modal').classList.add('hidden');
             updateUserUI();
             SoundFX.pop();
@@ -940,6 +954,7 @@
 
         async function logoutUser() {
             await _supabase.auth.signOut();
+            localStorage.removeItem('slap_current_user');
             currentUser = null;
             document.getElementById('auth-modal').classList.remove('hidden');
             SoundFX.click();
@@ -1020,6 +1035,7 @@
                             currentUser.banner = myProfile.banner || null;
                             currentUser.bio = myProfile.bio || currentUser.bio;
                             currentUser.mood = myProfile.mood || currentUser.mood;
+                            localStorage.setItem('slap_current_user', JSON.stringify(currentUser));
                         }
                     }
 
@@ -1408,6 +1424,8 @@
                 reader.onload = async function(e) {
                     const base64Img = e.target.result;
                     currentUser.avatar = base64Img;
+                    localStorage.setItem('slap_current_user', JSON.stringify(currentUser));
+
                     document.getElementById('profile-page-avatar').src = base64Img;
                     document.getElementById('header-avatar').src = base64Img;
                     document.getElementById('side-avatar').src = base64Img;
@@ -1430,6 +1448,8 @@
                 reader.onload = async function(e) {
                     const base64Img = e.target.result;
                     currentUser.banner = base64Img;
+                    localStorage.setItem('slap_current_user', JSON.stringify(currentUser));
+
                     const bannerImg = document.getElementById('profile-banner-img');
                     bannerImg.src = base64Img;
                     bannerImg.classList.remove('hidden');
@@ -1452,6 +1472,7 @@
             currentUser.name = name;
             currentUser.bio = bio;
             currentUser.mood = mood;
+            localStorage.setItem('slap_current_user', JSON.stringify(currentUser));
 
             document.getElementById('profile-page-name').innerText = name;
             document.getElementById('profile-page-bio').innerText = bio || 'Estudiante en Hollywood Arts High School.';
