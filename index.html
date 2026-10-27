@@ -153,10 +153,10 @@
             <h1 class="font-fredoka text-3xl sm:text-5xl font-bold tracking-wide bg-gradient-to-r from-slap-400 via-hollywood-pink to-hollywood-purple bg-clip-text text-transparent text-center animate-fadeUp">
                 The Slap <span class="text-xs sm:text-base px-3 py-1 rounded-full bg-slap-500/20 text-slap-400 font-sans tracking-normal border border-slap-500/30">NextGen</span>
             </h1>
-            <p class="text-xs sm:text-sm text-slate-400 font-mono mt-2 animate-fadeUp" style="animation-delay: 0.2s">Hollywood Arts High • Slap OS v15.0</p>
+            <p class="text-xs sm:text-sm text-slate-400 font-mono mt-2 animate-fadeUp" style="animation-delay: 0.2s">Hollywood Arts High • Slap OS v15.1</p>
             
             <div class="mt-8 flex items-center gap-2 text-slap-400 text-xs font-mono animate-pulse">
-                <i class="fa-solid fa-circle-notch fa-spin"></i> Sincronizando perfil móvil...
+                <i class="fa-solid fa-circle-notch fa-spin"></i> Sincronizando sesión y perfiles...
             </div>
         </div>
     </div>
@@ -751,7 +751,7 @@
         window.onload = async function() {
             const introSplash = document.getElementById('intro-splash');
             
-            // CARGA DE RESPALDO DESDE LOCALSTORAGE PARA MOVILES
+            // RESPALDO DE SEGURIDAD LOCAL
             const localSavedUser = localStorage.getItem('slap_current_user');
             if (localSavedUser) {
                 try {
@@ -769,7 +769,7 @@
                 hasSession = true;
                 await cargarPerfilUsuarioActual(session.user.id, session.user.email);
             } else if (currentUser) {
-                hasSession = true; // Mantener sesión móvil si el respaldo local existe
+                hasSession = true;
             }
 
             await cargarSlapsRemotos();
@@ -801,13 +801,24 @@
         };
 
         async function cargarPerfilUsuarioActual(userId, email) {
-            const { data, error } = await _supabase
+            // BUSQUEDA INTELIGENTE: Busca por ID primero, o por correo/handle para no duplicar
+            let { data } = await _supabase
                 .from('profiles')
                 .select('*')
                 .eq('id', userId)
-                .single();
+                .maybeSingle();
 
-            if (!error && data) {
+            if (!data && email) {
+                const cleanHandle = '@' + email.split('@')[0];
+                const { data: altData } = await _supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('handle', cleanHandle)
+                    .maybeSingle();
+                data = altData;
+            }
+
+            if (data) {
                 currentUser = {
                     id: String(data.id),
                     name: data.name,
@@ -817,11 +828,11 @@
                     bio: data.bio || 'Estudiante en Hollywood Arts High School.',
                     banner: data.banner || null
                 };
-            } else if (!currentUser) {
+            } else {
                 currentUser = {
                     id: String(userId),
-                    name: email.split('@')[0],
-                    handle: '@' + email.split('@')[0],
+                    name: email ? email.split('@')[0] : 'Estudiante',
+                    handle: email ? '@' + email.split('@')[0] : '@estudiante',
                     mood: '😎 Activo',
                     avatar: 'https://placehold.co/100',
                     bio: 'Estudiante en Hollywood Arts High School.',
@@ -877,7 +888,9 @@
                 if (error) {
                     alert("Error al registrarse: " + error.message);
                 } else {
-                    const uId = data.user ? data.user.id : 'guest_' + Date.now();
+                    const uId = data.user ? data.user.id : 'user_' + Date.now();
+                    
+                    // Upsert único por ID para no duplicar
                     await _supabase.from('profiles').upsert([{
                         id: uId,
                         name: name,
@@ -886,7 +899,7 @@
                         bio: 'Estudiante en Hollywood Arts High School.',
                         mood: mood,
                         banner: null
-                    }]);
+                    }], { onConflict: 'id' });
 
                     currentUser = {
                         id: String(uId),
@@ -928,7 +941,7 @@
             });
 
             if (error) {
-                alert("Error al iniciar sesión: Verifique su correo o contraseña.");
+                alert("Error al iniciar sesión: " + error.message);
             } else if (data.user) {
                 await cargarPerfilUsuarioActual(data.user.id, data.user.email);
                 document.getElementById('auth-modal').classList.add('hidden');
@@ -1028,8 +1041,9 @@
                     
                     const { data: { session } } = await _supabase.auth.getSession();
                     if (session && session.user && currentUser) {
-                        const myProfile = registeredProfiles.find(p => String(p.id) === String(session.user.id));
+                        const myProfile = registeredProfiles.find(p => String(p.id) === String(session.user.id) || p.handle === currentUser.handle);
                         if (myProfile) {
+                            currentUser.id = String(myProfile.id);
                             currentUser.name = myProfile.name;
                             currentUser.avatar = myProfile.avatar || currentUser.avatar;
                             currentUser.banner = myProfile.banner || null;
