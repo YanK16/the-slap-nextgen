@@ -153,10 +153,10 @@
             <h1 class="font-fredoka text-3xl sm:text-5xl font-bold tracking-wide bg-gradient-to-r from-slap-400 via-hollywood-pink to-hollywood-purple bg-clip-text text-transparent text-center animate-fadeUp">
                 The Slap <span class="text-xs sm:text-base px-3 py-1 rounded-full bg-slap-500/20 text-slap-400 font-sans tracking-normal border border-slap-500/30">NextGen</span>
             </h1>
-            <p class="text-xs sm:text-sm text-slate-400 font-mono mt-2 animate-fadeUp" style="animation-delay: 0.2s">Hollywood Arts High • Slap OS v17.0</p>
+            <p class="text-xs sm:text-sm text-slate-400 font-mono mt-2 animate-fadeUp" style="animation-delay: 0.2s">Hollywood Arts High • Slap OS v17.2</p>
             
             <div class="mt-8 flex items-center gap-2 text-slap-400 text-xs font-mono animate-pulse">
-                <i class="fa-solid fa-circle-notch fa-spin"></i> Sincronizando con Supabase...
+                <i class="fa-solid fa-circle-notch fa-spin"></i> Sincronizando seguidores y datos con Supabase...
             </div>
         </div>
     </div>
@@ -742,15 +742,19 @@
             if (session && session.user) {
                 hasSession = true;
                 await cargarPerfilUsuarioActual(session.user.id);
+                // IMPORTANTE: Cargamos los seguidores inmediatamente al validar la sesión
+                await cargarSeguidoresRemotos();
             }
 
-            await cargarSeguidoresRemotos();
             await cargarSlapsRemotos();
             await cargarMensajesRemotos();
             suscribirTiempoReal();
 
             setInterval(async () => {
                 await cargarSlapsRemotosSilencioso();
+                if (currentUser) {
+                    await cargarSeguidoresRemotosSilencioso();
+                }
                 if (activeChatId) {
                     await cargarMensajesRemotosSilencioso();
                 }
@@ -806,6 +810,28 @@
             if (!error && data) {
                 followedUserIds = new Set(data.map(item => String(item.following_id)));
                 updateUserUI();
+                if (viewingProfileUser) {
+                    renderProfileActions(viewingProfileUser);
+                }
+            }
+        }
+
+        async function cargarSeguidoresRemotosSilencioso() {
+            if (!currentUser) return;
+            const { data, error } = await _supabase
+                .from('followers')
+                .select('following_id')
+                .eq('follower_id', currentUser.id);
+
+            if (!error && data) {
+                const nuevasIds = new Set(data.map(item => String(item.following_id)));
+                if (nuevasIds.size !== followedUserIds.size || Array.from(nuevasIds).some(id => !followedUserIds.has(id))) {
+                    followedUserIds = nuevasIds;
+                    updateUserUI();
+                    if (viewingProfileUser) {
+                        renderProfileActions(viewingProfileUser);
+                    }
+                }
             }
         }
 
@@ -879,6 +905,7 @@
                     };
 
                     await cargarPerfilesRemotos();
+                    await cargarSeguidoresRemotos();
                     document.getElementById('auth-modal').classList.add('hidden');
                     updateUserUI();
                     SoundFX.pop();
@@ -901,6 +928,7 @@
             } else if (data.user) {
                 await cargarPerfilUsuarioActual(data.user.id);
                 await cargarSeguidoresRemotos();
+                await cargarMensajesRemotos();
                 document.getElementById('auth-modal').classList.add('hidden');
                 SoundFX.pop();
             }
@@ -909,6 +937,7 @@
         async function logoutUser() {
             await _supabase.auth.signOut();
             currentUser = null;
+            followedUserIds.clear();
             document.getElementById('auth-modal').classList.remove('hidden');
             SoundFX.click();
         }
