@@ -153,10 +153,10 @@
             <h1 class="font-fredoka text-3xl sm:text-5xl font-bold tracking-wide bg-gradient-to-r from-slap-400 via-hollywood-pink to-hollywood-purple bg-clip-text text-transparent text-center animate-fadeUp">
                 The Slap <span class="text-xs sm:text-base px-3 py-1 rounded-full bg-slap-500/20 text-slap-400 font-sans tracking-normal border border-slap-500/30">NextGen</span>
             </h1>
-            <p class="text-xs sm:text-sm text-slate-400 font-mono mt-2 animate-fadeUp" style="animation-delay: 0.2s">Hollywood Arts High • Slap OS v15.2</p>
+            <p class="text-xs sm:text-sm text-slate-400 font-mono mt-2 animate-fadeUp" style="animation-delay: 0.2s">Hollywood Arts High • Slap OS v16.1</p>
             
             <div class="mt-8 flex items-center gap-2 text-slap-400 text-xs font-mono animate-pulse">
-                <i class="fa-solid fa-circle-notch fa-spin"></i> Conectando con Supabase...
+                <i class="fa-solid fa-circle-notch fa-spin"></i> Sincronizando plataforma con Supabase...
             </div>
         </div>
     </div>
@@ -260,7 +260,7 @@
         </div>
     </header>
 
-    <!-- AUTH MODAL (OBLIGATORIO REGISTRO/LOGIN) -->
+    <!-- AUTH MODAL -->
     <div id="auth-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-3 sm:p-4 bg-black/90 backdrop-blur-2xl animate-fadeUp overflow-y-auto">
         <div class="glass-card max-w-sm w-full rounded-2xl p-5 sm:p-6 border border-white/25 shadow-2xl relative overflow-hidden my-auto max-h-[90vh] overflow-y-auto">
             <div class="absolute -top-24 -right-24 w-48 h-48 bg-slap-500/30 rounded-full blur-3xl pointer-events-none"></div>
@@ -279,7 +279,7 @@
                 <button type="button" id="tab-btn-login" onclick="switchAuthMode('login')" class="py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white transition-all">Iniciar Sesión</button>
             </div>
 
-            <!-- REGISTRO ESTRICTO -->
+            <!-- REGISTRO -->
             <form id="register-form" onsubmit="handleAuthRegister(event)" class="space-y-3">
                 <div>
                     <label class="block text-[11px] font-medium text-slate-300 mb-1">Nombre Completo</label>
@@ -306,7 +306,7 @@
                 </button>
             </form>
 
-            <!-- INICIO SESION ESTRICTO -->
+            <!-- INICIO SESION -->
             <form id="login-form" onsubmit="handleAuthLogin(event)" class="space-y-3.5 hidden">
                 <div>
                     <label class="block text-[11px] font-medium text-slate-300 mb-1">Correo Electrónico</label>
@@ -731,6 +731,7 @@
                 await cargarPerfilUsuarioActual(session.user.id);
             }
 
+            await cargarSeguidoresRemotos();
             await cargarSlapsRemotos();
             await cargarMensajesRemotos();
             suscribirTiempoReal();
@@ -778,8 +779,20 @@
                 };
                 updateUserUI();
             } else {
-                // Si no hay perfil en la tabla, forzar cierre de sesión
                 await logoutUser();
+            }
+        }
+
+        async function cargarSeguidoresRemotos() {
+            if (!currentUser) return;
+            const { data, error } = await _supabase
+                .from('followers')
+                .select('following_id')
+                .eq('follower_id', currentUser.id);
+
+            if (!error && data) {
+                followedUserIds = new Set(data.map(item => String(item.following_id)));
+                updateUserUI();
             }
         }
 
@@ -816,7 +829,6 @@
 
             const avatarUrl = 'https://placehold.co/100x100/84cc16/ffffff?text=' + name.charAt(0);
 
-            // 1. Registrar en Supabase Auth
             const { data, error } = await _supabase.auth.signUp({
                 email: email,
                 password: password
@@ -830,7 +842,6 @@
             if (data.user) {
                 const uId = data.user.id;
 
-                // 2. Crear inmediatamente el perfil oficial en la tabla profiles
                 const { error: profileError } = await _supabase.from('profiles').insert([{
                     id: uId,
                     name: name,
@@ -876,6 +887,7 @@
                 alert("Error al iniciar sesión: Verifique su correo o contraseña.");
             } else if (data.user) {
                 await cargarPerfilUsuarioActual(data.user.id);
+                await cargarSeguidoresRemotos();
                 document.getElementById('auth-modal').classList.add('hidden');
                 SoundFX.pop();
             }
@@ -906,7 +918,8 @@
                     image: item.image,
                     audio: item.audio,
                     likes: item.likes || 0,
-                    comments: [],
+                    likedBy: item.liked_by || [],
+                    comments: item.comments || [],
                     timestamp: new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                 }));
                 renderSlaps();
@@ -931,11 +944,12 @@
                     image: item.image,
                     audio: item.audio,
                     likes: item.likes || 0,
-                    comments: [],
+                    likedBy: item.liked_by || [],
+                    comments: item.comments || [],
                     timestamp: new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                 }));
 
-                if (nuevosSlaps.length !== slaps.length || (nuevosSlaps[0] && slaps[0] && nuevosSlaps[0].id !== slaps[0].id)) {
+                if (JSON.stringify(nuevosSlaps) !== JSON.stringify(slaps)) {
                     slaps = nuevosSlaps;
                     renderSlaps();
                 }
@@ -1003,26 +1017,9 @@
         }
 
         function suscribirTiempoReal() {
-            _supabase
-                .channel('public:slaps')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'slaps' }, async () => {
-                    await cargarSlapsRemotos();
-                })
-                .subscribe();
-
-            _supabase
-                .channel('public:profiles')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, async () => {
-                    await cargarPerfilesRemotos();
-                })
-                .subscribe();
-
-            _supabase
-                .channel('public:messages')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, async () => {
-                    await cargarMensajesRemotos();
-                })
-                .subscribe();
+            _supabase.channel('public:slaps').on('postgres_changes', { event: '*', schema: 'public', table: 'slaps' }, async () => { await cargarSlapsRemotos(); }).subscribe();
+            _supabase.channel('public:profiles').on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, async () => { await cargarPerfilesRemotos(); }).subscribe();
+            _supabase.channel('public:messages').on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, async () => { await cargarMensajesRemotos(); }).subscribe();
         }
 
         function getCombinedUsers() {
@@ -1070,7 +1067,9 @@
                 text: text,
                 image: mediaType === 'image' ? mediaData : null,
                 audio: mediaType === 'audio' ? mediaData : null,
-                likes: 0
+                likes: 0,
+                liked_by: [],
+                comments: []
             }]).select();
 
             if (publishBtn) {
@@ -1104,6 +1103,58 @@
             const text = document.getElementById('modal-slap-text').value.trim();
             if (!text && !modalSelectedMedia.data) return;
             await publicarEnNube(text, modalSelectedMedia.type, modalSelectedMedia.data, true);
+        }
+
+        async function toggleLike(slapId) {
+            if (!currentUser) return;
+            const slap = slaps.find(s => s.id === slapId);
+            if (!slap) return;
+
+            let likedBy = slap.likedBy || [];
+            let likesCount = slap.likes || 0;
+
+            const index = likedBy.indexOf(currentUser.id);
+            if (index > -1) {
+                likedBy.splice(index, 1);
+                likesCount = Math.max(0, likesCount - 1);
+            } else {
+                likedBy.push(currentUser.id);
+                likesCount += 1;
+                SoundFX.pop();
+            }
+
+            await _supabase.from('slaps').update({ likes: likesCount, liked_by: likedBy }).eq('id', slapId);
+            await cargarSlapsRemotos();
+        }
+
+        async function addComment(slapId) {
+            if (!currentUser) return;
+            const input = document.getElementById(`comment-input-${slapId}`);
+            const text = input.value.trim();
+            if (!text) return;
+
+            const slap = slaps.find(s => s.id === slapId);
+            if (!slap) return;
+
+            const newComment = {
+                authorName: currentUser.name,
+                authorAvatar: currentUser.avatar,
+                text: text,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            };
+
+            let comments = slap.comments || [];
+            comments.push(newComment);
+
+            input.value = '';
+            await _supabase.from('slaps').update({ comments: comments }).eq('id', slapId);
+            await cargarSlapsRemotos();
+            SoundFX.chat();
+        }
+
+        function toggleComments(slapId) {
+            const section = document.getElementById(`comments-section-${slapId}`);
+            if (section) section.classList.toggle('hidden');
         }
 
         function toggleSlapMenu(event, slapId) {
@@ -1300,7 +1351,7 @@
             followBtn.onclick = () => toggleFollow(targetIdStr);
         }
 
-        function toggleFollow(userId) {
+        async function toggleFollow(userId) {
             SoundFX.click();
             const idStr = String(userId);
             const allUsers = getCombinedUsers();
@@ -1309,9 +1360,12 @@
             if (followedUserIds.has(idStr)) {
                 const targetName = target ? target.name : 'este usuario';
                 if (!confirm(`¿Deseas dejar de seguir a ${targetName}?`)) return;
+                
                 followedUserIds.delete(idStr);
+                await _supabase.from('followers').delete().eq('follower_id', currentUser.id).eq('following_id', idStr);
             } else {
                 followedUserIds.add(idStr);
+                await _supabase.from('followers').insert([{ follower_id: currentUser.id, following_id: idStr }]);
             }
 
             updateUserUI();
@@ -1475,6 +1529,8 @@
                 const currentAvatar = authorProfile ? authorProfile.avatar : slap.author.avatar;
 
                 const isMySlap = currentUser && slap.author.handle === currentUser.handle;
+                const hasLiked = currentUser && slap.likedBy && slap.likedBy.includes(currentUser.id);
+                const commentsList = slap.comments || [];
 
                 return `
                     <div class="glass-card rounded-2xl p-4 sm:p-5 border border-white/10 shadow-md transition-all animate-fadeUp relative">
@@ -1508,6 +1564,42 @@
 
                         ${slap.image ? `<div class="rounded-xl overflow-hidden mb-3 max-h-[500px] bg-black/80 flex items-center justify-center"><img src="${slap.image}" class="w-full h-auto max-h-[500px] object-contain"></div>` : ''}
                         ${slap.audio ? `<div class="bg-black/30 p-2 rounded-xl mb-3 border border-white/10"><audio controls src="${slap.audio}" class="w-full"></audio></div>` : ''}
+
+                        <!-- ACCIONES DE LIKES Y COMENTARIOS -->
+                        <div class="flex items-center gap-6 pt-3 border-t border-white/10 text-xs text-slate-300">
+                            <button onclick="toggleLike('${slap.id}')" class="flex items-center gap-1.5 hover:text-slap-400 transition-colors ${hasLiked ? 'text-slap-400 font-bold' : ''}">
+                                <i class="${hasLiked ? 'fa-solid' : 'fa-regular'} fa-heart text-base"></i> <span>${slap.likes || 0}</span>
+                            </button>
+                            <button onclick="toggleComments('${slap.id}')" class="flex items-center gap-1.5 hover:text-hollywood-pink transition-colors">
+                                <i class="fa-regular fa-comment text-base"></i> <span>${commentsList.length} Comentarios</span>
+                            </button>
+                        </div>
+
+                        <!-- SECCIÓN DE COMENTARIOS -->
+                        <div id="comments-section-${slap.id}" class="hidden mt-3 pt-3 border-t border-white/5 space-y-3">
+                            <div class="space-y-2 max-h-48 overflow-y-auto">
+                                ${commentsList.length === 0 ? `<p class="text-[11px] text-slate-500 italic">No hay comentarios aún. ¡Sé el primero en comentar!</p>` : ''}
+                                ${commentsList.map(c => `
+                                    <div class="bg-black/20 p-2.5 rounded-xl border border-white/5 flex items-start gap-2.5">
+                                        <img src="${c.authorAvatar || 'https://placehold.co/40'}" class="w-7 h-7 rounded-full object-cover mt-0.5">
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-[11px] font-bold text-white">${escapeHTML(c.authorName)}</span>
+                                                <span class="text-[9px] text-slate-500 font-mono">${c.time}</span>
+                                            </div>
+                                            <p class="text-[11px] text-slate-200 mt-0.5">${escapeHTML(c.text)}</p>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+
+                            <div class="flex items-center gap-2 pt-1">
+                                <input type="text" id="comment-input-${slap.id}" placeholder="Escribe un comentario..." class="flex-1 bg-black/40 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-slap-400">
+                                <button onclick="addComment('${slap.id}')" class="bg-slap-500 hover:bg-slap-400 text-slate-950 font-bold px-3 py-1.5 rounded-xl text-xs transition-all">
+                                    Enviar
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 `;
             }).join('');
