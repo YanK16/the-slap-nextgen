@@ -153,10 +153,10 @@
             <h1 class="font-fredoka text-3xl sm:text-5xl font-bold tracking-wide bg-gradient-to-r from-slap-400 via-hollywood-pink to-hollywood-purple bg-clip-text text-transparent text-center animate-fadeUp">
                 The Slap <span class="text-xs sm:text-base px-3 py-1 rounded-full bg-slap-500/20 text-slap-400 font-sans tracking-normal border border-slap-500/30">NextGen</span>
             </h1>
-            <p class="text-xs sm:text-sm text-slate-400 font-mono mt-2 animate-fadeUp" style="animation-delay: 0.2s">Hollywood Arts High • Slap OS v14.8</p>
+            <p class="text-xs sm:text-sm text-slate-400 font-mono mt-2 animate-fadeUp" style="animation-delay: 0.2s">Hollywood Arts High • Slap OS v14.9</p>
             
             <div class="mt-8 flex items-center gap-2 text-slap-400 text-xs font-mono animate-pulse">
-                <i class="fa-solid fa-circle-notch fa-spin"></i> Cargando sesión y perfiles...
+                <i class="fa-solid fa-circle-notch fa-spin"></i> Sincronizando Slap OS...
             </div>
         </div>
     </div>
@@ -762,11 +762,15 @@
             }
 
             await cargarSlapsRemotos();
+            await cargarMensajesRemotos();
             suscribirTiempoReal();
 
             setInterval(async () => {
                 await cargarSlapsRemotosSilencioso();
-            }, 4000);
+                if (activeChatId) {
+                    await cargarMensajesRemotosSilencioso();
+                }
+            }, 3000);
 
             renderExploreUsers(getCombinedUsers());
             renderSideSuggestions();
@@ -868,7 +872,8 @@
                         handle: handle,
                         avatar: finalAvatar,
                         bio: 'Estudiante en Hollywood Arts High School.',
-                        mood: mood
+                        mood: mood,
+                        banner: null
                     }]);
 
                     currentUser = {
@@ -1012,7 +1017,7 @@
                         if (myProfile) {
                             currentUser.name = myProfile.name;
                             currentUser.avatar = myProfile.avatar || currentUser.avatar;
-                            currentUser.banner = myProfile.banner || currentUser.banner;
+                            currentUser.banner = myProfile.banner || null;
                             currentUser.bio = myProfile.bio || currentUser.bio;
                             currentUser.mood = myProfile.mood || currentUser.mood;
                         }
@@ -1023,6 +1028,53 @@
                 }
             } catch (e) {
                 console.error("Error cargando perfiles:", e);
+            }
+        }
+
+        async function cargarMensajesRemotos() {
+            if (!currentUser) return;
+            const { data, error } = await _supabase
+                .from('messages')
+                .select('*')
+                .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
+                .order('created_at', { ascending: true });
+
+            if (!error && data) {
+                messages = {};
+                data.forEach(m => {
+                    const partnerId = String(m.sender_id === currentUser.id ? m.receiver_id : m.sender_id);
+                    if (!messages[partnerId]) messages[partnerId] = [];
+                    messages[partnerId].push({
+                        text: m.text,
+                        fromMe: m.sender_id === currentUser.id,
+                        time: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    });
+                });
+                if (activeChatId) renderChatMessages();
+            }
+        }
+
+        async function cargarMensajesRemotosSilencioso() {
+            if (!currentUser) return;
+            const { data, error } = await _supabase
+                .from('messages')
+                .select('*')
+                .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
+                .order('created_at', { ascending: true });
+
+            if (!error && data) {
+                const newMessages = {};
+                data.forEach(m => {
+                    const partnerId = String(m.sender_id === currentUser.id ? m.receiver_id : m.sender_id);
+                    if (!newMessages[partnerId]) newMessages[partnerId] = [];
+                    newMessages[partnerId].push({
+                        text: m.text,
+                        fromMe: m.sender_id === currentUser.id,
+                        time: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    });
+                });
+                messages = newMessages;
+                if (activeChatId) renderChatMessages();
             }
         }
 
@@ -1038,6 +1090,13 @@
                 .channel('public:profiles')
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, async () => {
                     await cargarPerfilesRemotos();
+                })
+                .subscribe();
+
+            _supabase
+                .channel('public:messages')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, async () => {
+                    await cargarMensajesRemotos();
                 })
                 .subscribe();
         }
@@ -1244,12 +1303,12 @@
 
             document.getElementById('profile-external-action-group').classList.add('hidden');
 
+            const bannerImg = document.getElementById('profile-banner-img');
             if (currentUser.banner) {
-                const bannerImg = document.getElementById('profile-banner-img');
                 bannerImg.src = currentUser.banner;
                 bannerImg.classList.remove('hidden');
             } else {
-                document.getElementById('profile-banner-img').classList.add('hidden');
+                bannerImg.classList.add('hidden');
             }
 
             renderProfileSlaps();
@@ -1278,7 +1337,14 @@
             document.getElementById('edit-profile-btn').classList.add('hidden');
             document.getElementById('profile-banner-btn-label').classList.add('hidden');
             document.getElementById('profile-avatar-btn-label').classList.add('hidden');
-            document.getElementById('profile-banner-img').classList.add('hidden');
+            
+            const bannerImg = document.getElementById('profile-banner-img');
+            if (targetUser.banner) {
+                bannerImg.src = targetUser.banner;
+                bannerImg.classList.remove('hidden');
+            } else {
+                bannerImg.classList.add('hidden');
+            }
 
             renderProfileActions(targetUser);
             renderExternalProfileSlaps(targetUser.handle);
@@ -1641,6 +1707,11 @@
 
             const chatList = messages[activeChatId] || [];
 
+            if (chatList.length === 0) {
+                container.innerHTML = `<div class="text-center text-xs text-slate-400 py-10">No hay mensajes aún. ¡Envía el primero!</div>`;
+                return;
+            }
+
             container.innerHTML = chatList.map(msg => `
                 <div class="flex flex-col ${msg.fromMe ? 'items-end' : 'items-start'} animate-fadeUp">
                     <div class="max-w-[80%] rounded-2xl px-4 py-2 text-xs shadow-md ${msg.fromMe ? 'bg-slap-500 text-slate-950 rounded-br-none font-medium' : 'bg-white/10 text-white rounded-bl-none border border-white/10'}">
@@ -1653,19 +1724,26 @@
             container.scrollTop = container.scrollHeight;
         }
 
-        function sendChatMessage() {
+        async function sendChatMessage() {
             const input = document.getElementById('chat-message-input');
             const text = input.value.trim();
-            if (!text || !activeChatId) return;
+            if (!text || !activeChatId || !currentUser) return;
 
             const targetChatId = activeChatId;
-            if (!messages[targetChatId]) messages[targetChatId] = [];
-
-            const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            messages[targetChatId].push({ text: text, fromMe: true, time: timeStr });
             input.value = '';
-            renderChatMessages();
-            SoundFX.chat();
+
+            const { error } = await _supabase.from('messages').insert([{
+                sender_id: currentUser.id,
+                receiver_id: targetChatId,
+                text: text
+            }]);
+
+            if (!error) {
+                await cargarMensajesRemotos();
+                SoundFX.chat();
+            } else {
+                alert("Error al enviar mensaje: " + error.message);
+            }
         }
 
         function renderProfileSlaps() {
