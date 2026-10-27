@@ -153,10 +153,10 @@
             <h1 class="font-fredoka text-3xl sm:text-5xl font-bold tracking-wide bg-gradient-to-r from-slap-400 via-hollywood-pink to-hollywood-purple bg-clip-text text-transparent text-center animate-fadeUp">
                 The Slap <span class="text-xs sm:text-base px-3 py-1 rounded-full bg-slap-500/20 text-slap-400 font-sans tracking-normal border border-slap-500/30">NextGen</span>
             </h1>
-            <p class="text-xs sm:text-sm text-slate-400 font-mono mt-2 animate-fadeUp" style="animation-delay: 0.2s">Hollywood Arts High • Slap OS v16.1</p>
+            <p class="text-xs sm:text-sm text-slate-400 font-mono mt-2 animate-fadeUp" style="animation-delay: 0.2s">Hollywood Arts High • Slap OS v17.0</p>
             
             <div class="mt-8 flex items-center gap-2 text-slap-400 text-xs font-mono animate-pulse">
-                <i class="fa-solid fa-circle-notch fa-spin"></i> Sincronizando plataforma con Supabase...
+                <i class="fa-solid fa-circle-notch fa-spin"></i> Sincronizando con Supabase...
             </div>
         </div>
     </div>
@@ -330,7 +330,7 @@
         <div class="glass-card max-w-md w-full rounded-2xl p-6 border border-white/20 shadow-2xl relative">
             <button onclick="closeModal('report-modal')" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
             <h3 class="font-fredoka text-xl font-bold text-white mb-2 flex items-center gap-2">
-                <i class="fa-solid fa-triangle-exclamation text-yellow-400"></i> Denunciar Publicación
+                <i class="fa-solid fa-triangle-exclamation text-yellow-400"></i> Denunciar Publicación / Mensaje
             </h3>
             <p class="text-xs text-slate-300 mb-4">Indica la causa de tu reporte.</p>
             
@@ -691,6 +691,19 @@
         </div>
     </div>
 
+    <!-- Edit Message Modal -->
+    <div id="edit-message-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+        <div class="glass-card max-w-sm w-full rounded-2xl p-6 border border-white/20 shadow-2xl relative">
+            <button onclick="closeModal('edit-message-modal')" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            <h3 class="font-fredoka text-lg font-bold text-white mb-4">Editar Mensaje</h3>
+            <input type="hidden" id="edit-message-id">
+            <textarea id="edit-message-input" rows="3" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-slap-400 mb-4"></textarea>
+            <button onclick="saveEditedMessage()" class="w-full bg-slap-500 hover:bg-slap-400 text-slate-950 font-bold py-2.5 rounded-xl text-xs uppercase tracking-wider shadow-md">
+                Guardar Cambios
+            </button>
+        </div>
+    </div>
+
     <script>
         // ================= CONFIGURACIÓN DE SUPABASE =================
         const SUPABASE_URL = 'https://oojlstfwedzotjtwiwrm.supabase.co';
@@ -983,7 +996,9 @@
                     const partnerId = String(m.sender_id === currentUser.id ? m.receiver_id : m.sender_id);
                     if (!messages[partnerId]) messages[partnerId] = [];
                     messages[partnerId].push({
+                        id: m.id,
                         text: m.text,
+                        sender_id: m.sender_id,
                         fromMe: m.sender_id === currentUser.id,
                         time: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                     });
@@ -1006,7 +1021,9 @@
                     const partnerId = String(m.sender_id === currentUser.id ? m.receiver_id : m.sender_id);
                     if (!newMessages[partnerId]) newMessages[partnerId] = [];
                     newMessages[partnerId].push({
+                        id: m.id,
                         text: m.text,
+                        sender_id: m.sender_id,
                         fromMe: m.sender_id === currentUser.id,
                         time: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                     });
@@ -1020,6 +1037,7 @@
             _supabase.channel('public:slaps').on('postgres_changes', { event: '*', schema: 'public', table: 'slaps' }, async () => { await cargarSlapsRemotos(); }).subscribe();
             _supabase.channel('public:profiles').on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, async () => { await cargarPerfilesRemotos(); }).subscribe();
             _supabase.channel('public:messages').on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, async () => { await cargarMensajesRemotos(); }).subscribe();
+            _supabase.channel('public:followers').on('postgres_changes', { event: '*', schema: 'public', table: 'followers' }, async () => { await cargarSeguidoresRemotos(); }).subscribe();
         }
 
         function getCombinedUsers() {
@@ -1164,8 +1182,15 @@
             if (menu) menu.classList.toggle('hidden');
         }
 
+        function toggleMessageMenu(event, msgId) {
+            event.stopPropagation();
+            closeAllDropdowns();
+            const menu = document.getElementById('msg-menu-' + msgId);
+            if (menu) menu.classList.toggle('hidden');
+        }
+
         function closeAllDropdowns(event) {
-            document.querySelectorAll('[id^="menu-"]').forEach(m => m.classList.add('hidden'));
+            document.querySelectorAll('[id^="menu-"], [id^="msg-menu-"]').forEach(m => m.classList.add('hidden'));
         }
 
         async function deleteSlap(slapId) {
@@ -1184,8 +1209,40 @@
             }
         }
 
-        function openReportModal(slapId) {
-            currentReportingSlapId = slapId;
+        async function deleteMessage(msgId) {
+            if (!confirm("¿Deseas eliminar este mensaje?")) return;
+            const { error } = await _supabase.from('messages').delete().eq('id', msgId);
+            if (!error) {
+                await cargarMensajesRemotos();
+                SoundFX.pop();
+            } else {
+                alert("Error al eliminar mensaje: " + error.message);
+            }
+        }
+
+        function openEditMessageModal(msgId, currentText) {
+            document.getElementById('edit-message-id').value = msgId;
+            document.getElementById('edit-message-input').value = currentText;
+            openModal('edit-message-modal');
+        }
+
+        async function saveEditedMessage() {
+            const msgId = document.getElementById('edit-message-id').value;
+            const newText = document.getElementById('edit-message-input').value.trim();
+            if (!newText) return;
+
+            const { error } = await _supabase.from('messages').update({ text: newText }).eq('id', msgId);
+            if (!error) {
+                closeModal('edit-message-modal');
+                await cargarMensajesRemotos();
+                SoundFX.pop();
+            } else {
+                alert("Error al editar mensaje: " + error.message);
+            }
+        }
+
+        function openReportModal(id, isMessage = false) {
+            currentReportingSlapId = id;
             document.getElementById('report-reason-input').value = '';
             openModal('report-modal');
         }
@@ -1196,8 +1253,8 @@
             if (!reason) return;
 
             const adminEmail = "denuncias@theslapnextgen.com";
-            const subject = encodeURIComponent(`Denuncia de publicación en The Slap NextGen (ID: ${currentReportingSlapId})`);
-            const body = encodeURIComponent(`Hola Administrador,\n\nSe ha reportado una publicación.\n\n- ID de publicación: ${currentReportingSlapId}\n- Causa:\n${reason}\n\nAtentamente,\nModeración The Slap NextGen`);
+            const subject = encodeURIComponent(`Denuncia en The Slap NextGen (ID: ${currentReportingSlapId})`);
+            const body = encodeURIComponent(`Hola Administrador,\n\nSe ha reportado un elemento.\n\n- ID: ${currentReportingSlapId}\n- Causa:\n${reason}\n\nAtentamente,\nModeración The Slap NextGen`);
 
             window.location.href = `mailto:${adminEmail}?subject=${subject}&body=${body}`;
             closeModal('report-modal');
@@ -1731,9 +1788,29 @@
             }
 
             container.innerHTML = chatList.map(msg => `
-                <div class="flex flex-col ${msg.fromMe ? 'items-end' : 'items-start'} animate-fadeUp">
-                    <div class="max-w-[80%] rounded-2xl px-4 py-2 text-xs shadow-md ${msg.fromMe ? 'bg-slap-500 text-slate-950 rounded-br-none font-medium' : 'bg-white/10 text-white rounded-bl-none border border-white/10'}">
-                        ${escapeHTML(msg.text)}
+                <div class="flex flex-col ${msg.fromMe ? 'items-end' : 'items-start'} animate-fadeUp relative group">
+                    <div class="flex items-center gap-2 max-w-[80%]">
+                        <div class="rounded-2xl px-4 py-2 text-xs shadow-md ${msg.fromMe ? 'bg-slap-500 text-slate-950 rounded-br-none font-medium' : 'bg-white/10 text-white rounded-bl-none border border-white/10'}">
+                            ${escapeHTML(msg.text)}
+                        </div>
+                        <div class="relative">
+                            <button onclick="toggleMessageMenu(event, '${msg.id}')" class="text-slate-400 hover:text-white text-xs px-1 py-0.5 rounded opacity-75 hover:opacity-100">
+                                <i class="fa-solid fa-ellipsis-vertical"></i>
+                            </button>
+                            <div id="msg-menu-${msg.id}" class="hidden absolute right-0 mt-1 w-32 bg-slate-900 border border-white/15 rounded-xl shadow-2xl py-1 z-30 text-xs">
+                                <button onclick="openReportModal('${msg.id}', true)" class="w-full text-left px-3 py-2 text-yellow-400 hover:bg-white/10 flex items-center gap-2">
+                                    <i class="fa-solid fa-triangle-exclamation"></i> Denunciar
+                                </button>
+                                ${msg.fromMe ? `
+                                    <button onclick="openEditMessageModal('${msg.id}', '${escapeHTML(msg.text)}')" class="w-full text-left px-3 py-2 text-sky-400 hover:bg-white/10 flex items-center gap-2 border-t border-white/10">
+                                        <i class="fa-solid fa-pen"></i> Editar
+                                    </button>
+                                    <button onclick="deleteMessage('${msg.id}')" class="w-full text-left px-3 py-2 text-red-400 hover:bg-white/10 flex items-center gap-2 border-t border-white/10">
+                                        <i class="fa-solid fa-trash"></i> Borrar
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
                     </div>
                     <span class="text-[9px] text-slate-400 mt-1 font-mono">${msg.time}</span>
                 </div>
