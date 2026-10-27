@@ -153,10 +153,10 @@
             <h1 class="font-fredoka text-3xl sm:text-5xl font-bold tracking-wide bg-gradient-to-r from-slap-400 via-hollywood-pink to-hollywood-purple bg-clip-text text-transparent text-center animate-fadeUp">
                 The Slap <span class="text-xs sm:text-base px-3 py-1 rounded-full bg-slap-500/20 text-slap-400 font-sans tracking-normal border border-slap-500/30">NextGen</span>
             </h1>
-            <p class="text-xs sm:text-sm text-slate-400 font-mono mt-2 animate-fadeUp" style="animation-delay: 0.2s">Hollywood Arts High • Slap OS v14.6</p>
+            <p class="text-xs sm:text-sm text-slate-400 font-mono mt-2 animate-fadeUp" style="animation-delay: 0.2s">Hollywood Arts High • Slap OS v14.8</p>
             
             <div class="mt-8 flex items-center gap-2 text-slap-400 text-xs font-mono animate-pulse">
-                <i class="fa-solid fa-circle-notch fa-spin"></i> Cargando experiencia...
+                <i class="fa-solid fa-circle-notch fa-spin"></i> Cargando sesión y perfiles...
             </div>
         </div>
     </div>
@@ -751,6 +751,8 @@
         window.onload = async function() {
             const introSplash = document.getElementById('intro-splash');
             
+            await cargarPerfilesRemotos();
+            
             const { data: { session } } = await _supabase.auth.getSession();
 
             let hasSession = false;
@@ -760,8 +762,11 @@
             }
 
             await cargarSlapsRemotos();
-            await cargarPerfilesRemotos();
             suscribirTiempoReal();
+
+            setInterval(async () => {
+                await cargarSlapsRemotosSilencioso();
+            }, 4000);
 
             renderExploreUsers(getCombinedUsers());
             renderSideSuggestions();
@@ -966,11 +971,53 @@
             }
         }
 
+        async function cargarSlapsRemotosSilencioso() {
+            const { data, error } = await _supabase
+                .from('slaps')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (!error && data) {
+                const nuevosSlaps = data.map(item => ({
+                    id: item.id,
+                    author: {
+                        name: item.author_name,
+                        handle: item.author_handle,
+                        avatar: item.author_avatar
+                    },
+                    text: item.text,
+                    image: item.image,
+                    audio: item.audio,
+                    likes: item.likes || 0,
+                    comments: [],
+                    timestamp: new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                }));
+
+                if (nuevosSlaps.length !== slaps.length || (nuevosSlaps[0] && slaps[0] && nuevosSlaps[0].id !== slaps[0].id)) {
+                    slaps = nuevosSlaps;
+                    renderSlaps();
+                }
+            }
+        }
+
         async function cargarPerfilesRemotos() {
             try {
                 const { data, error } = await _supabase.from('profiles').select('*');
                 if (!error && data) {
                     registeredProfiles = data;
+                    
+                    const { data: { session } } = await _supabase.auth.getSession();
+                    if (session && session.user && currentUser) {
+                        const myProfile = registeredProfiles.find(p => String(p.id) === String(session.user.id));
+                        if (myProfile) {
+                            currentUser.name = myProfile.name;
+                            currentUser.avatar = myProfile.avatar || currentUser.avatar;
+                            currentUser.banner = myProfile.banner || currentUser.banner;
+                            currentUser.bio = myProfile.bio || currentUser.bio;
+                            currentUser.mood = myProfile.mood || currentUser.mood;
+                        }
+                    }
+
                     renderExploreUsers(getCombinedUsers());
                     renderSideSuggestions();
                 }
@@ -982,38 +1029,8 @@
         function suscribirTiempoReal() {
             _supabase
                 .channel('public:slaps')
-                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'slaps' }, payload => {
-                    const nuevo = payload.new;
-                    const existe = slaps.some(s => s.id === nuevo.id);
-                    if (!existe) {
-                        slaps.unshift({
-                            id: nuevo.id,
-                            author: {
-                                name: nuevo.author_name,
-                                handle: nuevo.author_handle,
-                                avatar: nuevo.author_avatar
-                            },
-                            text: nuevo.text,
-                            image: nuevo.image,
-                            audio: nuevo.audio,
-                            likes: nuevo.likes || 0,
-                            comments: [],
-                            timestamp: 'Hace un momento'
-                        });
-                        renderSlaps();
-                        if (viewingProfileUser) {
-                            renderExternalProfileSlaps(viewingProfileUser.handle);
-                        } else if (!document.getElementById('tab-profile').classList.contains('hidden')) {
-                            renderProfileSlaps();
-                        }
-                    }
-                })
-                .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'slaps' }, payload => {
-                    slaps = slaps.filter(s => s.id !== payload.old.id);
-                    renderSlaps();
-                    if (!document.getElementById('tab-profile').classList.contains('hidden')) {
-                        renderProfileSlaps();
-                    }
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'slaps' }, async () => {
+                    await cargarSlapsRemotos();
                 })
                 .subscribe();
 
@@ -1038,7 +1055,8 @@
                         handle: p.handle,
                         avatar: p.avatar || 'https://placehold.co/100',
                         bio: p.bio || 'Estudiante registrado en Hollywood Arts.',
-                        mood: p.mood || '😎 Activo'
+                        mood: p.mood || '😎 Activo',
+                        banner: p.banner || null
                     });
                 }
             });
@@ -1105,7 +1123,6 @@
             await publicarEnNube(text, modalSelectedMedia.type, modalSelectedMedia.data, true);
         }
 
-        // FUNCIONES DE ACCIONES EN PUBLICACIONES (MENÚ, BORRAR, DENUNCIAR)
         function toggleSlapMenu(event, slapId) {
             event.stopPropagation();
             closeAllDropdowns();
@@ -1165,6 +1182,7 @@
             document.getElementById('side-name').innerText = currentUser.name;
             document.getElementById('side-handle').innerText = currentUser.handle;
             document.getElementById('side-mood').innerText = currentUser.mood;
+            document.getElementById('side-followers').innerText = 0;
             document.getElementById('side-following').innerText = followedUserIds.size;
 
             document.getElementById('feed-user-avatar').src = currentUser.avatar;
@@ -1461,7 +1479,6 @@
             const allUsers = getCombinedUsers();
 
             container.innerHTML = filteredSlaps.map(slap => {
-                // Actualizar avatar en tiempo real si el usuario cambió su foto
                 const authorProfile = allUsers.find(u => u.handle === slap.author.handle);
                 const currentAvatar = authorProfile ? authorProfile.avatar : slap.author.avatar;
 
@@ -1469,7 +1486,6 @@
 
                 return `
                     <div class="glass-card rounded-2xl p-4 sm:p-5 border border-white/10 shadow-md transition-all animate-fadeUp relative">
-                        <!-- MENÚ SUPERIOR DERECHO (DENUNCIAR / BORRAR) -->
                         <div class="absolute top-4 right-4">
                             <button onclick="toggleSlapMenu(event, '${slap.id}')" class="text-slate-400 hover:text-white px-2 py-1 rounded-lg transition-colors text-xs">
                                 <i class="fa-solid fa-ellipsis-vertical"></i>
