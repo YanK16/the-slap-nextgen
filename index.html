@@ -1442,28 +1442,51 @@
         }
 
         async function toggleFollow(userId) {
-            SoundFX.click();
-            const idStr = String(userId);
-            const allUsers = getCombinedUsers();
-            const target = allUsers.find(u => String(u.id) === idStr);
+    SoundFX.click();
+    const idStr = String(userId);
+    const allUsers = getCombinedUsers();
+    const target = allUsers.find(u => String(u.id) === idStr);
 
-            if (followedUserIds.has(idStr)) {
-                const targetName = target ? target.name : 'este usuario';
-                if (!confirm(`¿Deseas dejar de seguir a ${targetName}?`)) return;
-                
-                followedUserIds.delete(idStr);
-                await _supabase.from('followers').delete().eq('follower_id', currentUser.id).eq('following_id', idStr);
-            } else {
-                followedUserIds.add(idStr);
-                await _supabase.from('followers').insert([{ follower_id: currentUser.id, following_id: idStr }]);
-            }
+    const followBtn = document.getElementById('btn-follow-action');
+    const msgBtn = document.getElementById('btn-message-action');
 
-            updateUserUI();
+    if (followedUserIds.has(idStr)) {
+        const targetName = target ? target.name : 'este usuario';
+        if (!confirm(`¿Deseas dejar de seguir a ${targetName}?`)) return;
+        
+        // 1. Cambiar estado local
+        followedUserIds.delete(idStr);
 
-            if (viewingProfileUser && String(viewingProfileUser.id) === idStr) {
-                renderProfileActions(viewingProfileUser);
-            }
+        // 2. CAMBIO VISUAL INSTANTÁNEO (Punto 2)
+        if (followBtn) {
+            followBtn.className = "btn-state-follow px-4 py-2 rounded-xl text-xs transition-all shadow-md active:scale-95";
+            followBtn.innerText = "Seguir +";
         }
+        if (msgBtn) msgBtn.classList.add('hidden');
+
+        // 3. Guardar en Supabase
+        await _supabase.from('followers').delete().eq('follower_id', currentUser.id).eq('following_id', idStr);
+    } else {
+        // 1. Cambiar estado local
+        followedUserIds.add(idStr);
+
+        // 2. CAMBIO VISUAL INSTANTÁNEO (Punto 2)
+        if (followBtn) {
+            followBtn.className = "btn-state-following px-4 py-2 rounded-xl text-xs transition-all shadow-md active:scale-95";
+            followBtn.innerText = "Siguiendo ✓";
+        }
+        if (msgBtn) {
+            msgBtn.classList.remove('hidden');
+            msgBtn.onclick = () => directOpenChat(idStr);
+        }
+
+        // 3. Guardar en Supabase
+        await _supabase.from('followers').insert([{ follower_id: currentUser.id, following_id: idStr }]);
+    }
+
+    // Actualizar resto de componentes (listas laterales, etc.)
+    updateUserUI();
+}
 
         function directOpenChat(userId) {
             switchTab('chat');
