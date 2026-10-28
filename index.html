@@ -728,6 +728,7 @@
         let selectedMedia = { type: null, data: null };
         let modalSelectedMedia = { type: null, data: null };
         let viewingProfileUser = null; 
+        let currentTabContext = 'feed'; // Rastrea la pestaña activa actual
         let registeredProfiles = [];
         let currentReportingSlapId = null;
 
@@ -742,7 +743,6 @@
             if (session && session.user) {
                 hasSession = true;
                 await cargarPerfilUsuarioActual(session.user.id);
-                // IMPORTANTE: Cargamos los seguidores inmediatamente al validar la sesión
                 await cargarSeguidoresRemotos();
             }
 
@@ -1312,8 +1312,11 @@
             renderChatContacts();
         }
 
-        function switchTab(tabId) {
+        function switchTab(tabId, keepTabHighlight = false) {
             SoundFX.click();
+            if (!keepTabHighlight) {
+                currentTabContext = tabId;
+            }
             viewingProfileUser = null; 
             
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
@@ -1331,19 +1334,20 @@
             const activeTab = document.getElementById('tab-' + tabId);
             if (activeTab) activeTab.classList.remove('hidden');
 
-            const activeBtn = document.getElementById('nav-' + tabId);
+            const highlightId = currentTabContext;
+            const activeBtn = document.getElementById('nav-' + highlightId);
             if (activeBtn) {
                 activeBtn.classList.add('bg-slap-500', 'text-black', 'shadow-md', 'shadow-slap-500/20');
                 activeBtn.classList.remove('text-slate-300');
             }
 
-            const mobileActiveBtn = document.getElementById('mobile-nav-' + tabId);
+            const mobileActiveBtn = document.getElementById('mobile-nav-' + highlightId);
             if (mobileActiveBtn) {
                 mobileActiveBtn.classList.add('text-slap-400', 'font-bold');
                 mobileActiveBtn.classList.remove('text-slate-400');
             }
 
-            if(tabId === 'profile') {
+            if(tabId === 'profile' && !keepTabHighlight) {
                 loadMyProfileView();
             }
         }
@@ -1387,7 +1391,7 @@
             if (!targetUser) return;
 
             viewingProfileUser = targetUser;
-            switchTab('profile');
+            switchTab('profile', true); // Se pasa true para conservar la pestaña activa en la barra de navegación (Ej: Explorar)
 
             document.getElementById('profile-page-avatar').src = targetUser.avatar;
             document.getElementById('profile-page-name').innerText = targetUser.name;
