@@ -728,7 +728,7 @@
         let selectedMedia = { type: null, data: null };
         let modalSelectedMedia = { type: null, data: null };
         let viewingProfileUser = null; 
-        let currentTabContext = 'feed'; // Rastrea la pestaña activa actual
+        let currentTabContext = 'feed'; // Rastrea la pestaña activa navegación
         let registeredProfiles = [];
         let currentReportingSlapId = null;
 
@@ -1152,32 +1152,45 @@
             await publicarEnNube(text, modalSelectedMedia.type, modalSelectedMedia.data, true);
         }
 
+        // ================= LIKES OPTIMISTAS (RESPUESTA INSTANTÁNEA) =================
         async function toggleLike(slapId) {
             if (!currentUser) return;
             const slap = slaps.find(s => s.id === slapId);
             if (!slap) return;
 
-            let likedBy = slap.likedBy || [];
-            let likesCount = slap.likes || 0;
+            if (!slap.likedBy) slap.likedBy = [];
+            if (!slap.likes) slap.likes = 0;
 
-            const index = likedBy.indexOf(currentUser.id);
+            const index = slap.likedBy.indexOf(currentUser.id);
+            
+            // 1. Cambio local e instantáneo en pantalla
             if (index > -1) {
-                likedBy.splice(index, 1);
-                likesCount = Math.max(0, likesCount - 1);
+                slap.likedBy.splice(index, 1);
+                slap.likes = Math.max(0, slap.likes - 1);
             } else {
-                likedBy.push(currentUser.id);
-                likesCount += 1;
+                slap.likedBy.push(currentUser.id);
+                slap.likes += 1;
                 SoundFX.pop();
             }
 
-            await _supabase.from('slaps').update({ likes: likesCount, liked_by: likedBy }).eq('id', slapId);
-            await cargarSlapsRemotos();
+            renderSlaps();
+
+            // 2. Sincronización en segundo plano con Supabase
+            const { error } = await _supabase
+                .from('slaps')
+                .update({ likes: slap.likes, liked_by: slap.likedBy })
+                .eq('id', slapId);
+
+            if (error) {
+                console.error("Error al actualizar likes en la nube:", error);
+            }
         }
 
+        // ================= COMENTARIOS OPTIMISTAS (RESPUESTA INSTANTÁNEA) =================
         async function addComment(slapId) {
             if (!currentUser) return;
             const input = document.getElementById(`comment-input-${slapId}`);
-            const text = input.value.trim();
+            const text = input ? input.value.trim() : '';
             if (!text) return;
 
             const slap = slaps.find(s => s.id === slapId);
@@ -1190,13 +1203,25 @@
                 time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             };
 
-            let comments = slap.comments || [];
-            comments.push(newComment);
+            if (!slap.comments) slap.comments = [];
 
-            input.value = '';
-            await _supabase.from('slaps').update({ comments: comments }).eq('id', slapId);
-            await cargarSlapsRemotos();
+            // 1. Agregar localmente e instantáneo a la pantalla
+            slap.comments.push(newComment);
+            if (input) input.value = '';
+            
+            renderSlaps();
+            toggleComments(slapId);
             SoundFX.chat();
+
+            // 2. Guardar en segundo plano en Supabase
+            const { error } = await _supabase
+                .from('slaps')
+                .update({ comments: slap.comments })
+                .eq('id', slapId);
+
+            if (error) {
+                console.error("Error al guardar comentario en la nube:", error);
+            }
         }
 
         function toggleComments(slapId) {
@@ -1391,7 +1416,7 @@
             if (!targetUser) return;
 
             viewingProfileUser = targetUser;
-            switchTab('profile', true); // Se pasa true para conservar la pestaña activa en la barra de navegación (Ej: Explorar)
+            switchTab('profile', true);
 
             document.getElementById('profile-page-avatar').src = targetUser.avatar;
             document.getElementById('profile-page-name').innerText = targetUser.name;
@@ -1441,52 +1466,48 @@
             followBtn.onclick = () => toggleFollow(targetIdStr);
         }
 
+        // ================= SEGUIMIENTO INSTANTÁNEO EN PANTALLA =================
         async function toggleFollow(userId) {
-    SoundFX.click();
-    const idStr = String(userId);
-    const allUsers = getCombinedUsers();
-    const target = allUsers.find(u => String(u.id) === idStr);
+            SoundFX.click();
+            const idStr = String(userId);
+            const allUsers = getCombinedUsers();
+            const target = allUsers.find(u => String(u.id) === idStr);
 
-    const followBtn = document.getElementById('btn-follow-action');
-    const msgBtn = document.getElementById('btn-message-action');
+            const followBtn = document.getElementById('btn-follow-action');
+            const msgBtn = document.getElementById('btn-message-action');
 
-    if (followedUserIds.has(idStr)) {
-        const targetName = target ? target.name : 'este usuario';
-        if (!confirm(`¿Deseas dejar de seguir a ${targetName}?`)) return;
-        
-        // 1. Cambiar estado local
-        followedUserIds.delete(idStr);
+            if (followedUserIds.has(idStr)) {
+                const targetName = target ? target.name : 'este usuario';
+                if (!confirm(`¿Deseas dejar de seguir a ${targetName}?`)) return;
 
-        // 2. CAMBIO VISUAL INSTANTÁNEO (Punto 2)
-        if (followBtn) {
-            followBtn.className = "btn-state-follow px-4 py-2 rounded-xl text-xs transition-all shadow-md active:scale-95";
-            followBtn.innerText = "Seguir +";
+                followedUserIds.delete(idStr);
+
+                // Cambiar estado visual inmediatamente
+                if (followBtn) {
+                    followBtn.className = "btn-state-follow px-4 py-2 rounded-xl text-xs transition-all shadow-md active:scale-95";
+                    followBtn.innerText = "Seguir +";
+                }
+                if (msgBtn) msgBtn.classList.add('hidden');
+
+                await _supabase.from('followers').delete().eq('follower_id', currentUser.id).eq('following_id', idStr);
+            } else {
+                followedUserIds.add(idStr);
+
+                // Cambiar estado visual inmediatamente
+                if (followBtn) {
+                    followBtn.className = "btn-state-following px-4 py-2 rounded-xl text-xs transition-all shadow-md active:scale-95";
+                    followBtn.innerText = "Siguiendo ✓";
+                }
+                if (msgBtn) {
+                    msgBtn.classList.remove('hidden');
+                    msgBtn.onclick = () => directOpenChat(idStr);
+                }
+
+                await _supabase.from('followers').insert([{ follower_id: currentUser.id, following_id: idStr }]);
+            }
+
+            updateUserUI();
         }
-        if (msgBtn) msgBtn.classList.add('hidden');
-
-        // 3. Guardar en Supabase
-        await _supabase.from('followers').delete().eq('follower_id', currentUser.id).eq('following_id', idStr);
-    } else {
-        // 1. Cambiar estado local
-        followedUserIds.add(idStr);
-
-        // 2. CAMBIO VISUAL INSTANTÁNEO (Punto 2)
-        if (followBtn) {
-            followBtn.className = "btn-state-following px-4 py-2 rounded-xl text-xs transition-all shadow-md active:scale-95";
-            followBtn.innerText = "Siguiendo ✓";
-        }
-        if (msgBtn) {
-            msgBtn.classList.remove('hidden');
-            msgBtn.onclick = () => directOpenChat(idStr);
-        }
-
-        // 3. Guardar en Supabase
-        await _supabase.from('followers').insert([{ follower_id: currentUser.id, following_id: idStr }]);
-    }
-
-    // Actualizar resto de componentes (listas laterales, etc.)
-    updateUserUI();
-}
 
         function directOpenChat(userId) {
             switchTab('chat');
