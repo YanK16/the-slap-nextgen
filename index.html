@@ -260,7 +260,7 @@
         </div>
     </header>
 
-    <!-- AUTH MODAL -->
+    <!-- AUTH MODAL CON OPCIÓN DE INVITADO -->
     <div id="auth-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-3 sm:p-4 bg-black/90 backdrop-blur-2xl animate-fadeUp overflow-y-auto">
         <div class="glass-card max-w-sm w-full rounded-2xl p-5 sm:p-6 border border-white/25 shadow-2xl relative overflow-hidden my-auto max-h-[90vh] overflow-y-auto">
             <div class="absolute -top-24 -right-24 w-48 h-48 bg-slap-500/30 rounded-full blur-3xl pointer-events-none"></div>
@@ -322,6 +322,13 @@
                     <i class="fa-solid fa-right-to-bracket mr-1"></i> Entrar a mi Cuenta
                 </button>
             </form>
+
+            <!-- BOTÓN DE ENTRAR COMO INVITADO -->
+            <div class="mt-4 pt-3 border-t border-white/10 text-center">
+                <button type="button" onclick="loginAsGuest()" class="w-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-medium py-2 rounded-xl text-xs transition-all flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-eye"></i> Entrar como Invitado (Solo lectura)
+                </button>
+            </div>
         </div>
     </div>
 
@@ -577,7 +584,7 @@
 
                     <div class="pt-4 border-t border-white/10 flex flex-col sm:flex-row gap-3">
                         <button onclick="logoutUser()" class="flex-1 bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 text-red-300 font-bold py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión
+                            <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión / Cambiar Cuenta
                         </button>
                     </div>
                 </div>
@@ -720,6 +727,7 @@
         ];
 
         let currentUser = null;
+        let isGuest = false; // Identifica modo invitado
         let followedUserIds = new Set();
         let blockedUserHandles = new Set();
         let slaps = [];
@@ -728,7 +736,7 @@
         let selectedMedia = { type: null, data: null };
         let modalSelectedMedia = { type: null, data: null };
         let viewingProfileUser = null; 
-        let currentTabContext = 'feed'; // Rastrea la pestaña activa navegación
+        let currentTabContext = 'feed'; 
         let registeredProfiles = [];
         let currentReportingSlapId = null;
 
@@ -752,7 +760,7 @@
 
             setInterval(async () => {
                 await cargarSlapsRemotosSilencioso();
-                if (currentUser) {
+                if (currentUser && !isGuest) {
                     await cargarSeguidoresRemotosSilencioso();
                 }
                 if (activeChatId) {
@@ -794,14 +802,35 @@
                     bio: data.bio || 'Estudiante en Hollywood Arts High School.',
                     banner: data.banner || null
                 };
+                isGuest = false;
                 updateUserUI();
             } else {
                 await logoutUser();
             }
         }
 
+        // ================= MODO INVITADO =================
+        function loginAsGuest() {
+            SoundFX.click();
+            isGuest = true;
+            currentUser = {
+                id: 'guest_user',
+                name: 'Invitado',
+                handle: '@invitado',
+                mood: '👁️ Observador',
+                avatar: 'https://placehold.co/100x100/475569/ffffff?text=INV',
+                bio: 'Modo Invitado: Solo visualización.',
+                banner: null
+            };
+
+            followedUserIds.clear();
+            document.getElementById('auth-modal').classList.add('hidden');
+            updateUserUI();
+            SoundFX.pop();
+        }
+
         async function cargarSeguidoresRemotos() {
-            if (!currentUser) return;
+            if (!currentUser || isGuest) return;
             const { data, error } = await _supabase
                 .from('followers')
                 .select('following_id')
@@ -817,7 +846,7 @@
         }
 
         async function cargarSeguidoresRemotosSilencioso() {
-            if (!currentUser) return;
+            if (!currentUser || isGuest) return;
             const { data, error } = await _supabase
                 .from('followers')
                 .select('following_id')
@@ -903,6 +932,7 @@
                         bio: 'Estudiante en Hollywood Arts High School.',
                         banner: null
                     };
+                    isGuest = false;
 
                     await cargarPerfilesRemotos();
                     await cargarSeguidoresRemotos();
@@ -926,6 +956,7 @@
             if (error) {
                 alert("Error al iniciar sesión: Verifique su correo o contraseña.");
             } else if (data.user) {
+                isGuest = false;
                 await cargarPerfilUsuarioActual(data.user.id);
                 await cargarSeguidoresRemotos();
                 await cargarMensajesRemotos();
@@ -937,6 +968,7 @@
         async function logoutUser() {
             await _supabase.auth.signOut();
             currentUser = null;
+            isGuest = false;
             followedUserIds.clear();
             document.getElementById('auth-modal').classList.remove('hidden');
             SoundFX.click();
@@ -1012,7 +1044,7 @@
         }
 
         async function cargarMensajesRemotos() {
-            if (!currentUser) return;
+            if (!currentUser || isGuest) return;
             const { data, error } = await _supabase
                 .from('messages')
                 .select('*')
@@ -1037,7 +1069,7 @@
         }
 
         async function cargarMensajesRemotosSilencioso() {
-            if (!currentUser) return;
+            if (!currentUser || isGuest) return;
             const { data, error } = await _supabase
                 .from('messages')
                 .select('*')
@@ -1088,7 +1120,7 @@
                 }
             });
 
-            if (currentUser && currentUser.handle) {
+            if (currentUser && currentUser.handle && !isGuest) {
                 usersMap.set(currentUser.handle, currentUser);
             }
 
@@ -1096,6 +1128,10 @@
         }
 
         async function publicarEnNube(text, mediaType, mediaData, modalMode = false) {
+            if (isGuest) {
+                alert("Modo Invitado: No puedes realizar publicaciones. Inicia sesión con una cuenta para participar.");
+                return;
+            }
             if (!currentUser) {
                 alert("Debes iniciar sesión para publicar.");
                 return;
@@ -1141,19 +1177,31 @@
         }
 
         async function publishSlap() {
+            if (isGuest) {
+                alert("Modo Invitado: No puedes publicar Slaps.");
+                return;
+            }
             const text = document.getElementById('new-slap-text').value.trim();
             if (!text && !selectedMedia.data) return;
             await publicarEnNube(text, selectedMedia.type, selectedMedia.data, false);
         }
 
         async function publishSlapFromModal() {
+            if (isGuest) {
+                alert("Modo Invitado: No puedes publicar Slaps.");
+                return;
+            }
             const text = document.getElementById('modal-slap-text').value.trim();
             if (!text && !modalSelectedMedia.data) return;
             await publicarEnNube(text, modalSelectedMedia.type, modalSelectedMedia.data, true);
         }
 
-        // ================= LIKES OPTIMISTAS (RESPUESTA INSTANTÁNEA) =================
+        // ================= LIKES (DESHABILITADO EN MODO INVITADO) =================
         async function toggleLike(slapId) {
+            if (isGuest) {
+                alert("Modo Invitado: No puedes dar likes. Regístrate o inicia sesión para interactuar.");
+                return;
+            }
             if (!currentUser) return;
             const slap = slaps.find(s => s.id === slapId);
             if (!slap) return;
@@ -1163,7 +1211,6 @@
 
             const index = slap.likedBy.indexOf(currentUser.id);
             
-            // 1. Cambio local e instantáneo en pantalla
             if (index > -1) {
                 slap.likedBy.splice(index, 1);
                 slap.likes = Math.max(0, slap.likes - 1);
@@ -1175,7 +1222,6 @@
 
             renderSlaps();
 
-            // 2. Sincronización en segundo plano con Supabase
             const { error } = await _supabase
                 .from('slaps')
                 .update({ likes: slap.likes, liked_by: slap.likedBy })
@@ -1186,8 +1232,12 @@
             }
         }
 
-        // ================= COMENTARIOS OPTIMISTAS (RESPUESTA INSTANTÁNEA) =================
+        // ================= COMENTARIOS (DESHABILITADO EN MODO INVITADO) =================
         async function addComment(slapId) {
+            if (isGuest) {
+                alert("Modo Invitado: No puedes comentar publicaciones.");
+                return;
+            }
             if (!currentUser) return;
             const input = document.getElementById(`comment-input-${slapId}`);
             const text = input ? input.value.trim() : '';
@@ -1205,7 +1255,6 @@
 
             if (!slap.comments) slap.comments = [];
 
-            // 1. Agregar localmente e instantáneo a la pantalla
             slap.comments.push(newComment);
             if (input) input.value = '';
             
@@ -1213,7 +1262,6 @@
             toggleComments(slapId);
             SoundFX.chat();
 
-            // 2. Guardar en segundo plano en Supabase
             const { error } = await _supabase
                 .from('slaps')
                 .update({ comments: slap.comments })
@@ -1248,6 +1296,7 @@
         }
 
         async function deleteSlap(slapId) {
+            if (isGuest) return;
             if (!confirm("¿Estás seguro de que deseas eliminar esta publicación?")) return;
             
             const { error } = await _supabase.from('slaps').delete().eq('id', slapId);
@@ -1264,6 +1313,7 @@
         }
 
         async function deleteMessage(msgId) {
+            if (isGuest) return;
             if (!confirm("¿Deseas eliminar este mensaje?")) return;
             const { error } = await _supabase.from('messages').delete().eq('id', msgId);
             if (!error) {
@@ -1275,12 +1325,14 @@
         }
 
         function openEditMessageModal(msgId, currentText) {
+            if (isGuest) return;
             document.getElementById('edit-message-id').value = msgId;
             document.getElementById('edit-message-input').value = currentText;
             openModal('edit-message-modal');
         }
 
         async function saveEditedMessage() {
+            if (isGuest) return;
             const msgId = document.getElementById('edit-message-id').value;
             const newText = document.getElementById('edit-message-input').value.trim();
             if (!newText) return;
@@ -1301,6 +1353,7 @@
             openModal('report-modal');
         }
 
+        // ================= DENUNCIAS DIRECTAS POR MAILTO =================
         function submitReport(e) {
             e.preventDefault();
             const reason = document.getElementById('report-reason-input').value.trim();
@@ -1308,7 +1361,7 @@
 
             const adminEmail = "denuncias@theslapnextgen.com";
             const subject = encodeURIComponent(`Denuncia en The Slap NextGen (ID: ${currentReportingSlapId})`);
-            const body = encodeURIComponent(`Hola Administrador,\n\nSe ha reportado un elemento.\n\n- ID: ${currentReportingSlapId}\n- Causa:\n${reason}\n\nAtentamente,\nModeración The Slap NextGen`);
+            const body = encodeURIComponent(`Hola Administrador,\n\nSe ha reportado un elemento en la plataforma.\n\n- ID Elemento: ${currentReportingSlapId}\n- Razon / Causa:\n${reason}\n\nAtentamente,\nModeración The Slap NextGen`);
 
             window.location.href = `mailto:${adminEmail}?subject=${subject}&body=${body}`;
             closeModal('report-modal');
@@ -1328,7 +1381,7 @@
             document.getElementById('side-handle').innerText = currentUser.handle;
             document.getElementById('side-mood').innerText = currentUser.mood;
             document.getElementById('side-followers').innerText = 0;
-            document.getElementById('side-following').innerText = followedUserIds.size;
+            document.getElementById('side-following').innerText = isGuest ? 0 : followedUserIds.size;
 
             document.getElementById('feed-user-avatar').src = currentUser.avatar;
 
@@ -1384,12 +1437,18 @@
             document.getElementById('profile-page-name').innerText = currentUser.name;
             document.getElementById('profile-page-handle').innerText = currentUser.handle;
             document.getElementById('profile-page-bio').innerText = currentUser.bio || 'Estudiante en Hollywood Arts High School.';
-            document.getElementById('profile-count-following').innerText = followedUserIds.size;
-            document.getElementById('profile-section-title').innerText = "Mis Publicaciones";
+            document.getElementById('profile-count-following').innerText = isGuest ? 0 : followedUserIds.size;
+            document.getElementById('profile-section-title').innerText = isGuest ? "Publicaciones del Invitado" : "Mis Publicaciones";
             
-            document.getElementById('edit-profile-btn').classList.remove('hidden');
-            document.getElementById('profile-banner-btn-label').classList.remove('hidden');
-            document.getElementById('profile-avatar-btn-label').classList.remove('hidden');
+            if (isGuest) {
+                document.getElementById('edit-profile-btn').classList.add('hidden');
+                document.getElementById('profile-banner-btn-label').classList.add('hidden');
+                document.getElementById('profile-avatar-btn-label').classList.add('hidden');
+            } else {
+                document.getElementById('edit-profile-btn').classList.remove('hidden');
+                document.getElementById('profile-banner-btn-label').classList.remove('hidden');
+                document.getElementById('profile-avatar-btn-label').classList.remove('hidden');
+            }
 
             document.getElementById('profile-external-action-group').classList.add('hidden');
 
@@ -1401,12 +1460,17 @@
                 bannerImg.classList.add('hidden');
             }
 
-            renderProfileSlaps();
+            if (isGuest) {
+                document.getElementById('profile-slaps-container').innerHTML = `<div class="glass-card rounded-2xl p-6 text-center text-xs text-slate-400">Estás en Modo Invitado. Inicia sesión para publicar contenido.</div>`;
+                document.getElementById('profile-count-slaps').innerText = 0;
+            } else {
+                renderProfileSlaps();
+            }
         }
 
         function viewUserProfile(handle) {
             SoundFX.click();
-            if (currentUser && currentUser.handle === handle) {
+            if (currentUser && currentUser.handle === handle && !isGuest) {
                 switchTab('profile');
                 return;
             }
@@ -1447,6 +1511,15 @@
 
             if (!actionContainer || !followBtn || !msgBtn) return;
 
+            if (isGuest) {
+                actionContainer.classList.remove('hidden');
+                followBtn.className = "btn-state-follow px-4 py-2 rounded-xl text-xs transition-all shadow-md";
+                followBtn.innerText = "Seguir +";
+                followBtn.onclick = () => alert("Modo Invitado: No puedes seguir usuarios. Inicia sesión con una cuenta.");
+                msgBtn.classList.add('hidden');
+                return;
+            }
+
             const targetIdStr = String(targetUser.id);
             const isFollowing = followedUserIds.has(targetIdStr);
 
@@ -1466,8 +1539,12 @@
             followBtn.onclick = () => toggleFollow(targetIdStr);
         }
 
-        // ================= SEGUIMIENTO INSTANTÁNEO EN PANTALLA =================
+        // ================= SEGUIR (DESHABILITADO EN MODO INVITADO) =================
         async function toggleFollow(userId) {
+            if (isGuest) {
+                alert("Modo Invitado: No puedes seguir usuarios.");
+                return;
+            }
             SoundFX.click();
             const idStr = String(userId);
             const allUsers = getCombinedUsers();
@@ -1482,7 +1559,6 @@
 
                 followedUserIds.delete(idStr);
 
-                // Cambiar estado visual inmediatamente
                 if (followBtn) {
                     followBtn.className = "btn-state-follow px-4 py-2 rounded-xl text-xs transition-all shadow-md active:scale-95";
                     followBtn.innerText = "Seguir +";
@@ -1493,7 +1569,6 @@
             } else {
                 followedUserIds.add(idStr);
 
-                // Cambiar estado visual inmediatamente
                 if (followBtn) {
                     followBtn.className = "btn-state-following px-4 py-2 rounded-xl text-xs transition-all shadow-md active:scale-95";
                     followBtn.innerText = "Siguiendo ✓";
@@ -1510,11 +1585,20 @@
         }
 
         function directOpenChat(userId) {
+            if (isGuest) {
+                alert("Modo Invitado: No tienes acceso a SlapChat.");
+                return;
+            }
             switchTab('chat');
             openChat(userId);
         }
 
+        // ================= AVATAR Y BANNER (DESHABILITADO EN MODO INVITADO) =================
         async function updateAvatarFile(input) {
+            if (isGuest) {
+                alert("Modo Invitado: No puedes cambiar tu foto de perfil.");
+                return;
+            }
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
                 reader.onload = async function(e) {
@@ -1538,6 +1622,10 @@
         }
 
         async function updateBannerFile(input) {
+            if (isGuest) {
+                alert("Modo Invitado: No puedes cambiar el banner.");
+                return;
+            }
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
                 reader.onload = async function(e) {
@@ -1557,6 +1645,7 @@
 
         async function saveProfileChanges(e) {
             e.preventDefault();
+            if (isGuest) return;
             const name = document.getElementById('edit-name-input').value.trim();
             const bio = document.getElementById('edit-bio-input').value.trim();
             const mood = document.getElementById('edit-mood-input').value;
@@ -1584,6 +1673,7 @@
         }
 
         function handleMediaSelect(input, type) {
+            if (isGuest) return;
             if (input.files && input.files[0]) {
                 const file = input.files[0];
                 const reader = new FileReader();
@@ -1616,6 +1706,7 @@
         }
 
         function handleModalMediaSelect(input, type) {
+            if (isGuest) return;
             if (input.files && input.files[0]) {
                 const file = input.files[0];
                 const reader = new FileReader();
@@ -1662,8 +1753,8 @@
                 const authorProfile = allUsers.find(u => u.handle === slap.author.handle);
                 const currentAvatar = authorProfile ? authorProfile.avatar : slap.author.avatar;
 
-                const isMySlap = currentUser && slap.author.handle === currentUser.handle;
-                const hasLiked = currentUser && slap.likedBy && slap.likedBy.includes(currentUser.id);
+                const isMySlap = currentUser && !isGuest && slap.author.handle === currentUser.handle;
+                const hasLiked = currentUser && !isGuest && slap.likedBy && slap.likedBy.includes(currentUser.id);
                 const commentsList = slap.comments || [];
 
                 return `
@@ -1782,10 +1873,10 @@
             const list = document.getElementById('side-suggestions-list');
             if (!list) return;
             const allUsers = getCombinedUsers();
-            const suggestions = allUsers.filter(c => (!currentUser || c.handle !== currentUser.handle) && !followedUserIds.has(String(c.id)) && !blockedUserHandles.has(c.handle)).slice(0, 3);
+            const suggestions = allUsers.filter(c => (!currentUser || isGuest || c.handle !== currentUser.handle) && !followedUserIds.has(String(c.id)) && !blockedUserHandles.has(c.handle)).slice(0, 3);
             
             if(suggestions.length === 0) {
-                list.innerHTML = `<p class="text-xs text-slate-400 text-center py-2">¡Ya sigues a todos los compañeros!</p>`;
+                list.innerHTML = `<p class="text-xs text-slate-400 text-center py-2">Sugerencias no disponibles.</p>`;
                 return;
             }
 
@@ -1808,6 +1899,10 @@
         function renderChatContacts() {
             const container = document.getElementById('chat-contacts-list');
             if (!container) return;
+            if (isGuest) {
+                container.innerHTML = `<div class="p-4 text-center text-xs text-slate-400">Modo Invitado: Chat no disponible.</div>`;
+                return;
+            }
             const allUsers = getCombinedUsers();
             
             const followedContacts = allUsers.filter(c => followedUserIds.has(String(c.id)) && !blockedUserHandles.has(c.handle));
@@ -1835,6 +1930,7 @@
         }
 
         function openChat(charId) {
+            if (isGuest) return;
             activeChatId = String(charId);
             const allUsers = getCombinedUsers();
             const char = allUsers.find(c => String(c.id) === activeChatId);
@@ -1852,6 +1948,10 @@
 
         function renderChatMessages() {
             const container = document.getElementById('chat-messages-container');
+            if (isGuest) {
+                container.innerHTML = `<div class="text-center text-xs text-slate-400 py-10">Función deshabilitada para invitados.</div>`;
+                return;
+            }
             if (!activeChatId) {
                 container.innerHTML = `<div class="text-center text-xs text-slate-400 py-10">Selecciona un contacto para chatear.</div>`;
                 return;
@@ -1897,6 +1997,7 @@
         }
 
         async function sendChatMessage() {
+            if (isGuest) return;
             const input = document.getElementById('chat-message-input');
             const text = input.value.trim();
             if (!text || !activeChatId || !currentUser) return;
@@ -1920,7 +2021,7 @@
 
         function renderProfileSlaps() {
             const container = document.getElementById('profile-slaps-container');
-            if (!currentUser) return;
+            if (!currentUser || isGuest) return;
             const mySlaps = slaps.filter(s => s.author.handle === currentUser.handle);
 
             document.getElementById('profile-count-slaps').innerText = mySlaps.length;
@@ -1985,6 +2086,10 @@
         }
 
         function openModal(modalId) {
+            if (isGuest && (modalId === 'create-slap-modal' || modalId === 'edit-profile-modal')) {
+                alert("Modo Invitado: Esta función está reservada para usuarios registrados.");
+                return;
+            }
             if (modalId === 'edit-profile-modal' && currentUser) {
                 document.getElementById('edit-name-input').value = currentUser.name || '';
                 document.getElementById('edit-bio-input').value = currentUser.bio || '';
