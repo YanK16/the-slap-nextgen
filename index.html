@@ -153,10 +153,10 @@
             <h1 class="font-fredoka text-3xl sm:text-5xl font-bold tracking-wide bg-gradient-to-r from-slap-400 via-hollywood-pink to-hollywood-purple bg-clip-text text-transparent text-center animate-fadeUp">
                 The Slap <span class="text-xs sm:text-base px-3 py-1 rounded-full bg-slap-500/20 text-slap-400 font-sans tracking-normal border border-slap-500/30">NextGen</span>
             </h1>
-            <p class="text-xs sm:text-sm text-slate-400 font-mono mt-2 animate-fadeUp" style="animation-delay: 0.2s">Hollywood Arts High • Slap OS v17.3</p>
+            <p class="text-xs sm:text-sm text-slate-400 font-mono mt-2 animate-fadeUp" style="animation-delay: 0.2s">Hollywood Arts High • Slap OS v17.4</p>
             
             <div class="mt-8 flex items-center gap-2 text-slap-400 text-xs font-mono animate-pulse">
-                <i class="fa-solid fa-circle-notch fa-spin"></i> Cargando perfiles y publicaciones...
+                <i class="fa-solid fa-circle-notch fa-spin"></i> Iniciando Slap OS...
             </div>
         </div>
     </div>
@@ -734,50 +734,39 @@
         window.onload = async function() {
             const introSplash = document.getElementById('intro-splash');
             
-            // 1. Cargamos primero los perfiles de la base de datos
-            await cargarPerfilesRemotos();
-            
-            // 2. Verificamos la sesión
-            const { data: { session } } = await _supabase.auth.getSession();
+            // Carga simultánea y optimizada (rápida para celulares)
+            const sessionPromise = _supabase.auth.getSession();
+            const profilesPromise = cargarPerfilesRemotos();
+            const slapsPromise = cargarSlapsRemotos();
+
+            const [{ data: { session } }] = await Promise.all([sessionPromise, profilesPromise, slapsPromise]);
 
             let hasSession = false;
             if (session && session.user) {
                 hasSession = true;
                 await cargarPerfilUsuarioActual(session.user.id);
                 await cargarSeguidoresRemotos();
+                await cargarMensajesRemotos();
             }
 
-            // 3. Cargamos publicaciones y mensajes
-            await cargarSlapsRemotos();
-            await cargarMensajesRemotos();
             suscribirTiempoReal();
 
-            // 4. Renderizamos explícitamente el directorio y sugerencias
+            // Renderizado inicial seguro para móviles
+            renderSlaps();
             renderExploreUsers(getCombinedUsers());
             renderSideSuggestions();
 
-            setInterval(async () => {
-                await cargarSlapsRemotosSilencioso();
-                if (currentUser) {
-                    await cargarSeguidoresRemotosSilencioso();
-                }
-                if (activeChatId) {
-                    await cargarMensajesRemotosSilencioso();
-                }
-            }, 3000);
-
-            setTimeout(() => {
-                if (introSplash) {
-                    introSplash.classList.add('opacity-0');
-                    setTimeout(() => {
-                        introSplash.classList.add('hidden');
+            // Ocultar pantalla de carga rápidamente
+            if (introSplash) {
+                introSplash.classList.add('opacity-0');
+                setTimeout(() => {
+                    introSplash.classList.add('hidden');
+                    if (!hasSession) {
                         const authModal = document.getElementById('auth-modal');
-                        if (!hasSession && authModal) {
-                            authModal.classList.remove('hidden');
-                        }
-                    }, 700);
-                }
-            }, 1800);
+                        if (authModal) authModal.classList.remove('hidden');
+                    }
+                }, 500);
+            }
         };
 
         async function cargarPerfilUsuarioActual(userId) {
@@ -815,25 +804,6 @@
                 updateUserUI();
                 if (viewingProfileUser) {
                     renderProfileActions(viewingProfileUser);
-                }
-            }
-        }
-
-        async function cargarSeguidoresRemotosSilencioso() {
-            if (!currentUser) return;
-            const { data, error } = await _supabase
-                .from('followers')
-                .select('following_id')
-                .eq('follower_id', currentUser.id);
-
-            if (!error && data) {
-                const nuevasIds = new Set(data.map(item => String(item.following_id)));
-                if (nuevasIds.size !== followedUserIds.size || Array.from(nuevasIds).some(id => !followedUserIds.has(id))) {
-                    followedUserIds = nuevasIds;
-                    updateUserUI();
-                    if (viewingProfileUser) {
-                        renderProfileActions(viewingProfileUser);
-                    }
                 }
             }
         }
@@ -972,36 +942,6 @@
             }
         }
 
-        async function cargarSlapsRemotosSilencioso() {
-            const { data, error } = await _supabase
-                .from('slaps')
-                .select('*')
-                .order('created_at', { ascending: false });
-
-            if (!error && data) {
-                const nuevosSlaps = data.map(item => ({
-                    id: item.id,
-                    author: {
-                        name: item.author_name,
-                        handle: item.author_handle,
-                        avatar: item.author_avatar
-                    },
-                    text: item.text,
-                    image: item.image,
-                    audio: item.audio,
-                    likes: item.likes || 0,
-                    likedBy: item.liked_by || [],
-                    comments: item.comments || [],
-                    timestamp: new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                }));
-
-                if (JSON.stringify(nuevosSlaps) !== JSON.stringify(slaps)) {
-                    slaps = nuevosSlaps;
-                    renderSlaps();
-                }
-            }
-        }
-
         async function cargarPerfilesRemotos() {
             try {
                 const { data, error } = await _supabase.from('profiles').select('*');
@@ -1009,7 +949,7 @@
                     registeredProfiles = data;
                     renderExploreUsers(getCombinedUsers());
                     renderSideSuggestions();
-                    renderSlaps(); // Re-renderiza slaps al cargar perfiles para actualizar avatares
+                    renderSlaps();
                 }
             } catch (e) {
                 console.error("Error cargando perfiles:", e);
@@ -1041,32 +981,6 @@
             }
         }
 
-        async function cargarMensajesRemotosSilencioso() {
-            if (!currentUser) return;
-            const { data, error } = await _supabase
-                .from('messages')
-                .select('*')
-                .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
-                .order('created_at', { ascending: true });
-
-            if (!error && data) {
-                const newMessages = {};
-                data.forEach(m => {
-                    const partnerId = String(m.sender_id === currentUser.id ? m.receiver_id : m.sender_id);
-                    if (!newMessages[partnerId]) newMessages[partnerId] = [];
-                    newMessages[partnerId].push({
-                        id: m.id,
-                        text: m.text,
-                        sender_id: m.sender_id,
-                        fromMe: m.sender_id === currentUser.id,
-                        time: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                    });
-                });
-                messages = newMessages;
-                if (activeChatId) renderChatMessages();
-            }
-        }
-
         function suscribirTiempoReal() {
             _supabase.channel('public:slaps').on('postgres_changes', { event: '*', schema: 'public', table: 'slaps' }, async () => { await cargarSlapsRemotos(); }).subscribe();
             _supabase.channel('public:profiles').on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, async () => { await cargarPerfilesRemotos(); }).subscribe();
@@ -1076,11 +990,8 @@
 
         function getCombinedUsers() {
             const usersMap = new Map();
-            
-            // Personajes estáticos de la serie
             CHARACTERS.forEach(c => usersMap.set(c.handle, { ...c, id: String(c.id) }));
 
-            // Perfiles reales registrados en la base de datos de Supabase
             registeredProfiles.forEach(p => {
                 if (p.handle) {
                     const uId = String(p.id || p.handle.replace('@', ''));
