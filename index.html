@@ -153,7 +153,7 @@
             <h1 class="font-fredoka text-3xl sm:text-5xl font-bold tracking-wide bg-gradient-to-r from-slap-400 via-hollywood-pink to-hollywood-purple bg-clip-text text-transparent text-center animate-fadeUp">
                 The Slap <span class="text-xs sm:text-base px-3 py-1 rounded-full bg-slap-500/20 text-slap-400 font-sans tracking-normal border border-slap-500/30">NextGen</span>
             </h1>
-            <p class="text-xs sm:text-sm text-slate-400 font-mono mt-2 animate-fadeUp" style="animation-delay: 0.2s">Hollywood Arts High • Slap OS v17.8</p>
+            <p class="text-xs sm:text-sm text-slate-400 font-mono mt-2 animate-fadeUp" style="animation-delay: 0.2s">Hollywood Arts High • Slap OS v17.7</p>
             
             <div class="mt-8 flex items-center gap-2 text-slap-400 text-xs font-mono animate-pulse">
                 <i class="fa-solid fa-circle-notch fa-spin"></i> Sincronizando Slap OS...
@@ -1320,6 +1320,7 @@
             viewingProfileUser = null;
             switchTab('profile');
             
+            // Resaltar botón de perfil en el menú
             const profileBtn = document.getElementById('nav-profile');
             if(profileBtn) {
                 profileBtn.classList.add('bg-slap-500', 'text-black', 'shadow-md', 'shadow-slap-500/20');
@@ -1392,7 +1393,6 @@
             document.getElementById('profile-page-bio').innerText = targetUser.bio || 'Estudiante en Hollywood Arts.';
             document.getElementById('profile-section-title').innerText = `Publicaciones de ${targetUser.name}`;
             
-            // BLOQUEO ABSOLUTO DE EDICIÓN EN PERFILES AJENOS
             document.getElementById('edit-profile-btn').classList.add('hidden');
             document.getElementById('profile-banner-btn-label').classList.add('hidden');
             document.getElementById('profile-avatar-btn-label').classList.add('hidden');
@@ -1473,7 +1473,7 @@
         }
 
         async function updateAvatarFile(input) {
-            if (isGuest || viewingProfileUser) return; // Doble seguridad contra edición externa
+            if (isGuest) return;
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
                 reader.onload = async function(e) {
@@ -1498,7 +1498,7 @@
         }
 
         async function updateBannerFile(input) {
-            if (isGuest || viewingProfileUser) return; // Doble seguridad contra edición externa
+            if (isGuest) return;
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
                 reader.onload = async function(e) {
@@ -1518,7 +1518,7 @@
 
         async function saveProfileChanges(e) {
             e.preventDefault();
-            if (isGuest || viewingProfileUser) return; // Doble seguridad contra edición externa
+            if (isGuest) return;
             const name = document.getElementById('edit-name-input').value.trim();
             const bio = document.getElementById('edit-bio-input').value.trim();
             const mood = document.getElementById('edit-mood-input').value;
@@ -1961,7 +1961,7 @@
 
         function openModal(modalId) {
             if (modalId === 'edit-profile-modal') {
-                if (isGuest || viewingProfileUser) return;
+                if (isGuest) return;
                 if (currentUser) {
                     document.getElementById('edit-name-input').value = currentUser.name || '';
                     document.getElementById('edit-bio-input').value = currentUser.bio || '';
