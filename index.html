@@ -153,10 +153,10 @@
             <h1 class="font-fredoka text-3xl sm:text-5xl font-bold tracking-wide bg-gradient-to-r from-slap-400 via-hollywood-pink to-hollywood-purple bg-clip-text text-transparent text-center animate-fadeUp">
                 The Slap <span class="text-xs sm:text-base px-3 py-1 rounded-full bg-slap-500/20 text-slap-400 font-sans tracking-normal border border-slap-500/30">NextGen</span>
             </h1>
-            <p class="text-xs sm:text-sm text-slate-400 font-mono mt-2 animate-fadeUp" style="animation-delay: 0.2s">Hollywood Arts High • Slap OS v17.5</p>
+            <p class="text-xs sm:text-sm text-slate-400 font-mono mt-2 animate-fadeUp" style="animation-delay: 0.2s">Hollywood Arts High • Slap OS v17.6</p>
             
             <div class="mt-8 flex items-center gap-2 text-slap-400 text-xs font-mono animate-pulse">
-                <i class="fa-solid fa-circle-notch fa-spin"></i> Preparando Slap OS...
+                <i class="fa-solid fa-circle-notch fa-spin"></i> Sincronizando Slap OS...
             </div>
         </div>
     </div>
@@ -741,11 +741,10 @@
         window.onload = async function() {
             const introSplash = document.getElementById('intro-splash');
             
-            const sessionPromise = _supabase.auth.getSession();
-            const profilesPromise = cargarPerfilesRemotos();
-            const slapsPromise = cargarSlapsRemotos();
-
-            const [{ data: { session } }] = await Promise.all([sessionPromise, profilesPromise, slapsPromise]);
+            // Carga secuencial estricta para garantizar que los Slaps lleguen antes de pintar la UI
+            const { data: { session } } = await _supabase.auth.getSession();
+            await cargarPerfilesRemotos();
+            await cargarSlapsRemotos();
 
             let hasSession = false;
             if (session && session.user) {
@@ -789,7 +788,6 @@
             document.getElementById('auth-modal').classList.add('hidden');
             updateUserUI();
 
-            // Bloquear acciones de escritura para invitado
             const newSlapBox = document.getElementById('new-slap-box-container');
             if (newSlapBox) {
                 newSlapBox.innerHTML = `
@@ -985,7 +983,6 @@
                     registeredProfiles = data;
                     renderExploreUsers(getCombinedUsers());
                     renderSideSuggestions();
-                    renderSlaps();
                 }
             } catch (e) {
                 console.error("Error cargando perfiles:", e);
