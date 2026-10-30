@@ -153,7 +153,7 @@
             <h1 class="font-fredoka text-3xl sm:text-5xl font-bold tracking-wide bg-gradient-to-r from-slap-400 via-hollywood-pink to-hollywood-purple bg-clip-text text-transparent text-center animate-fadeUp">
                 The Slap <span class="text-xs sm:text-base px-3 py-1 rounded-full bg-slap-500/20 text-slap-400 font-sans tracking-normal border border-slap-500/30">NextGen</span>
             </h1>
-            <p class="text-xs sm:text-sm text-slate-400 font-mono mt-2 animate-fadeUp" style="animation-delay: 0.2s">Hollywood Arts High • Slap OS v17.6</p>
+            <p class="text-xs sm:text-sm text-slate-400 font-mono mt-2 animate-fadeUp" style="animation-delay: 0.2s">Hollywood Arts High • Slap OS v17.7</p>
             
             <div class="mt-8 flex items-center gap-2 text-slap-400 text-xs font-mono animate-pulse">
                 <i class="fa-solid fa-circle-notch fa-spin"></i> Sincronizando Slap OS...
@@ -238,7 +238,7 @@
                     <i class="fa-solid fa-comments"></i> SlapChat
                     <span id="chat-badge" class="hidden absolute -top-1 -right-1 w-3 h-3 bg-hollywood-pink rounded-full animate-ping"></span>
                 </button>
-                <button onclick="switchTab('profile')" id="nav-profile" class="nav-btn text-sm font-medium px-4 py-2 rounded-xl transition-all flex items-center gap-2 text-slate-300 hover:text-white hover:bg-white/10">
+                <button onclick="openMyProfile()" id="nav-profile" class="nav-btn text-sm font-medium px-4 py-2 rounded-xl transition-all flex items-center gap-2 text-slate-300 hover:text-white hover:bg-white/10">
                     <i class="fa-solid fa-user"></i> Mi Perfil
                 </button>
                 <button onclick="switchTab('settings')" id="nav-settings" class="nav-btn text-sm font-medium px-4 py-2 rounded-xl transition-all flex items-center gap-2 text-slate-300 hover:text-white hover:bg-white/10">
@@ -247,7 +247,7 @@
             </nav>
 
             <div class="flex items-center gap-3">
-                <div id="user-pill" class="hidden sm:flex items-center gap-2.5 bg-white/5 border border-white/10 px-3 py-1.5 rounded-full">
+                <div id="user-pill" class="hidden sm:flex items-center gap-2.5 bg-white/5 border border-white/10 px-3 py-1.5 rounded-full cursor-pointer hover:bg-white/10 transition-colors" onclick="openMyProfile()">
                     <img id="header-avatar" src="" alt="Avatar" class="w-7 h-7 rounded-full object-cover border border-slap-400">
                     <span id="header-username" class="text-xs font-semibold text-slate-200">@usuario</span>
                     <span id="header-mood" class="text-[10px] px-2 py-0.5 rounded-full bg-hollywood-purple/30 text-purple-300 font-medium">😊 Normal</span>
@@ -621,7 +621,7 @@
             <span>SlapChat</span>
             <span id="mobile-chat-badge" class="hidden absolute top-1 right-2 w-2 h-2 bg-hollywood-pink rounded-full animate-ping"></span>
         </button>
-        <button onclick="switchTab('profile')" id="mobile-nav-profile" class="mobile-nav-btn flex flex-col items-center gap-1 text-[11px] font-medium py-1 px-3 rounded-xl text-slate-400 hover:text-white transition-all">
+        <button onclick="openMyProfile()" id="mobile-nav-profile" class="mobile-nav-btn flex flex-col items-center gap-1 text-[11px] font-medium py-1 px-3 rounded-xl text-slate-400 hover:text-white transition-all">
             <i class="fa-solid fa-user text-lg"></i>
             <span>Perfil</span>
         </button>
@@ -741,7 +741,6 @@
         window.onload = async function() {
             const introSplash = document.getElementById('intro-splash');
             
-            // Carga secuencial estricta para garantizar que los Slaps lleguen antes de pintar la UI
             const { data: { session } } = await _supabase.auth.getSession();
             await cargarPerfilesRemotos();
             await cargarSlapsRemotos();
@@ -1293,13 +1292,13 @@
             if (activeTab) activeTab.classList.remove('hidden');
 
             const activeBtn = document.getElementById('nav-' + tabId);
-            if (activeBtn) {
+            if (activeBtn && tabId !== 'profile') {
                 activeBtn.classList.add('bg-slap-500', 'text-black', 'shadow-md', 'shadow-slap-500/20');
                 activeBtn.classList.remove('text-slate-300');
             }
 
             const mobileActiveBtn = document.getElementById('mobile-nav-' + tabId);
-            if (mobileActiveBtn) {
+            if (mobileActiveBtn && tabId !== 'profile') {
                 mobileActiveBtn.classList.add('text-slap-400', 'font-bold');
                 mobileActiveBtn.classList.remove('text-slate-400');
             }
@@ -1314,6 +1313,23 @@
                 renderSlaps();
             } else if(tabId === 'explore') {
                 renderExploreUsers(getCombinedUsers());
+            }
+        }
+
+        function openMyProfile() {
+            viewingProfileUser = null;
+            switchTab('profile');
+            
+            // Resaltar botón de perfil en el menú
+            const profileBtn = document.getElementById('nav-profile');
+            if(profileBtn) {
+                profileBtn.classList.add('bg-slap-500', 'text-black', 'shadow-md', 'shadow-slap-500/20');
+                profileBtn.classList.remove('text-slate-300');
+            }
+            const mobileProfileBtn = document.getElementById('mobile-nav-profile');
+            if(mobileProfileBtn) {
+                mobileProfileBtn.classList.add('text-slap-400', 'font-bold');
+                mobileProfileBtn.classList.remove('text-slate-400');
             }
         }
 
@@ -1357,8 +1373,7 @@
         function viewUserProfile(handle) {
             SoundFX.click();
             if (currentUser && currentUser.handle === handle) {
-                viewingProfileUser = null;
-                switchTab('profile');
+                openMyProfile();
                 return;
             }
 
